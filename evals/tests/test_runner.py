@@ -1,69 +1,46 @@
-"""The case runner: clean storage per case, simulated reviewer, bounded resumes."""
+"""The case runner: a clean directory per case, and one broken case never stops the rest."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
-from evals.runner import Case, CaseRunner, load_cases
+from evals.runner import Case, load_cases, run_each
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-class FakePipeline:
-    """Pauses once for review, then finishes; records the directory it was given."""
-
-    instances: list[FakePipeline] = []
-
-    def __init__(self, workdir: Path) -> None:
-        self.workdir = workdir
-        FakePipeline.instances.append(self)
-
-    def start(self, case: Case) -> dict[str, Any]:
-        return {"__interrupt__": {"flagged": ["expiry_date"]}, "run_id": case.case_id}
-
-    def resume(self, case: Case, payload: dict[str, Any]) -> dict[str, Any]:
-        return {"run_id": case.case_id, "status": "done", "answer": payload}
+def cases(n: int) -> list[Case]:
+    return load_cases(ROOT / "evals" / "cases" / "synthetic")[:n]
 
 
-class LoopingPipeline(FakePipeline):
-    def resume(self, case: Case, payload: dict[str, Any]) -> dict[str, Any]:
-        return {"__interrupt__": {"flagged": ["x"]}}
+def test_every_case_gets_its_own_new_empty_directory() -> None:
+    seen: list[tuple[Path, list[Path]]] = []
+
+    def run_one(case: Case, workdir: Path) -> dict[str, Any]:
+        seen.append((workdir, list(workdir.iterdir())))
+        (workdir / "app.sqlite3").write_text("state")
+        return {"ok": True}
+
+    run_each(cases(3), run_one)
+
+    assert len({w for w, _ in seen}) == 3
+    assert all(contents == [] for _, contents in seen)
+    assert not any(w.exists() for w, _ in seen)  # removed afterwards
 
 
-def approve_all(payload: dict[str, Any], case: Case) -> dict[str, Any]:
-    return {"decisions": [{"field": f, "action": "approve"} for f in payload["flagged"]]}
+def test_a_failing_case_is_recorded_and_the_others_still_run() -> None:
+    def run_one(case: Case, workdir: Path) -> dict[str, Any]:
+        if case.case_id == first.case_id:
+            raise ValueError("broken document")
+        return {"ok": True}
 
+    three = cases(3)
+    first = three[0]
+    results = run_each(three, run_one)
 
-def test_every_case_runs_in_its_own_clean_directory(tmp_path: Path) -> None:
-    FakePipeline.instances.clear()
-    cases = load_cases(ROOT / "evals" / "cases" / "synthetic", groups={"clean"})[:3]
-
-    CaseRunner(FakePipeline, approve_all, workroot=tmp_path).run(cases)
-
-    dirs = [p.workdir for p in FakePipeline.instances]
-    assert len(set(dirs)) == 3
-
-
-def test_the_simulated_reviewer_answers_each_pause(tmp_path: Path) -> None:
-    case = load_cases(ROOT / "evals" / "cases" / "synthetic", groups={"near_expiry"})[0]
-
-    (result,) = CaseRunner(FakePipeline, approve_all, workroot=tmp_path).run([case])
-
-    assert result.final_state["status"] == "done"
-    assert result.resumes == 1
-    assert result.error is None
-
-
-def test_a_run_that_never_finishes_stops_at_the_resume_limit(tmp_path: Path) -> None:
-    case = load_cases(ROOT / "evals" / "cases" / "synthetic", groups={"clean"})[0]
-
-    (result,) = CaseRunner(LoopingPipeline, approve_all, workroot=tmp_path, max_resumes=3).run(
-        [case]
-    )
-
-    assert result.resumes == 3
-    assert result.error == "resume_limit"
+    assert results[first.case_id] == {"error": "ValueError"}
+    assert sum(r.get("ok", False) for r in results.values()) == 2
 
 
 def test_cases_load_with_filters_on_split_and_group() -> None:

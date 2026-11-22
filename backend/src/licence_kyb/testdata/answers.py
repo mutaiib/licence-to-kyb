@@ -12,6 +12,7 @@ Faults: ``malformed`` (invalid twice), ``malformed_once`` (invalid, then valid),
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import replace
 from datetime import date
 from pathlib import Path
@@ -251,10 +252,12 @@ class LabelDemoTransport:
             for part in m["content"]
             if isinstance(part, dict)
         )
-        for case in self.cases:
-            values = case.get("expected_values") or {}
-            number = values.get("licence_number")
-            if number and number in text:
+        # A whole token, not part of a longer number; longer numbers first, because a short
+        # number (IFZA: 5 digits) can sit inside another authority's number.
+        tokens = set(re.findall(r"[\w-]+", text))
+        numbered = [c for c in self.cases if (c.get("expected_values") or {}).get("licence_number")]
+        for case in sorted(numbered, key=lambda c: -len(c["expected_values"]["licence_number"])):
+            if case["expected_values"]["licence_number"] in tokens:
                 return case
         return None
 

@@ -11,8 +11,8 @@ from datetime import UTC, datetime, time
 from licence_kyb.api.app import create_app
 from licence_kyb.clock import FixedClock, SystemClock
 from licence_kyb.config import Settings, active_profile, active_profile_name
-from licence_kyb.llm.client import AnthropicTransport, DailyBudget, LLMClient, Transport
-from licence_kyb.llm.openai_compatible import OpenAICompatibleTransport
+from licence_kyb.llm.client import DailyBudget, LLMClient, Transport
+from licence_kyb.llm.select import profile_transport
 from licence_kyb.logging import configure_logging
 from licence_kyb.pipeline import Deps, Pipeline
 from licence_kyb.security import Cipher
@@ -35,20 +35,7 @@ def model_transport(settings: Settings) -> Transport:
         "model profile",
         extra={"profile": active_profile_name() or "default", "provider": profile.provider},
     )
-    if profile.provider == "openai_compatible":
-        if profile.base_url is None:
-            raise SystemExit("the model profile needs a base_url (config/models.yaml)")
-        price = profile.price_per_mtok
-        key = settings.model_api_key.get_secret_value() if settings.model_api_key else None
-        return OpenAICompatibleTransport.for_url(
-            profile.base_url,
-            vision=profile.vision,
-            api_key=key,
-            timeout_seconds=profile.deadline_seconds or 900.0,
-            prices=(price.input, price.output, price.cache_read) if price else (0.0, 0.0, 0.0),
-        )
-    key = settings.anthropic_api_key.get_secret_value() if settings.anthropic_api_key else None
-    return AnthropicTransport(key)
+    return profile_transport(profile, settings)
 
 
 def build() -> object:
