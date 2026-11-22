@@ -243,21 +243,21 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 3 (write first; they must fail)
 
-- [ ] T069 [P] [US3] Write gate tests from the "Confidence and routing" table in `backend/tests/unit/test_gate.py`, and Hypothesis properties in `backend/tests/unit/test_gate_properties.py`. The properties include "reject only with a file reason, `out_of_scope` or a corroborated `expired`".
-- [ ] T070 [P] [US3] Write calibration tests in `backend/tests/unit/test_calibrate.py`. On a labelled fixture set of signal rows (one row per field: its signals and whether the value was right), the fitted thresholds reach ≥ 99% critical-field precision among `ready` cases in the calibration split. The tests never use the test split.
-- [ ] T071 [P] [US3] Write Vitest tests in `frontend/tests/confidence.test.tsx`: each flagged field shows its score, its threshold and the signal behind a low score
+- [X] T069 [P] [US3] Write gate tests from the "Confidence and routing" table in `backend/tests/unit/test_gate.py`, and Hypothesis properties in `backend/tests/unit/test_gate_properties.py`. The properties include "reject only with a file reason, `out_of_scope` or a corroborated `expired`".
+- [X] T070 [P] [US3] Write calibration tests in `backend/tests/unit/test_calibrate.py`. On a labelled fixture set of signal rows (one row per field: its signals and whether the value was right), the fitted thresholds reach ≥ 99% critical-field precision among `ready` cases in the calibration split. The tests never use the test split.
+- [X] T071 [P] [US3] Write Vitest tests in `frontend/tests/confidence.test.tsx`: each flagged field shows its score, its threshold and the signal behind a low score
 
 ### Implementation for User Story 3
 
-- [ ] T072 [P] [US3] Implement the confidence node in `backend/src/licence_kyb/nodes/confidence.py`. It stores the score and every signal.
-- [ ] T073 [P] [US3] Implement the gate node in `backend/src/licence_kyb/nodes/gate.py`:
+- [X] T072 [P] [US3] Implement the confidence node in `backend/src/licence_kyb/nodes/confidence.py`. It stores the score and every signal.
+- [X] T073 [P] [US3] Implement the gate node in `backend/src/licence_kyb/nodes/gate.py`:
   - corroborated `expired` → reject
   - uncorroborated → `expiry_uncertain`
   - `fallback_model` is never `ready`
   - `not_applicable` checks never fail
-- [ ] T074 [US3] Implement `scripts/calibrate.py`. It fits the weights and thresholds on the calibration split through `evals/runner.py`, and writes `backend/config/thresholds.yaml` with a fit summary. Until a live eval runs (it needs a model API key), `thresholds.yaml` holds documented default values marked `fitted: false` (research R5).
-- [ ] T075 [US3] Insert confidence → gate between validate and map_form in `backend/src/licence_kyb/pipeline.py`, replacing the User Story 1 `decide` node. A `ready` run waits at `awaiting_submit` (no field decisions needed); every other route waits at `awaiting_review` or `rejected`.
-- [ ] T076 [US3] Show the score, threshold and signals in a `ConfidenceDetails` component (`frontend/src/components/ConfidenceDetails.tsx`) inside the field details of `frontend/src/pages/ReviewPage.tsx`, with their strings in `frontend/src/copy.ts`. Open the US3 pull request into `develop`.
+- [X] T074 [US3] Implement `scripts/calibrate.py`. It fits the weights and thresholds on the calibration split through `evals/runner.py`, and writes `backend/config/thresholds.yaml` with a fit summary. Until a live eval runs (it needs a model API key), `thresholds.yaml` holds documented default values marked `fitted: false` (research R5).
+- [X] T075 [US3] Insert confidence between validate and map_form, and replace the User Story 1 `decide` node with `gate`, in `backend/src/licence_kyb/pipeline.py`. A `ready` run waits at `awaiting_submit` (no field decisions needed); every other route waits at `awaiting_review` or `rejected`.
+- [X] T076 [US3] Show the score, threshold and signals in a `ConfidenceDetails` component (`frontend/src/components/ConfidenceDetails.tsx`) inside the field details of `frontend/src/pages/ReviewPage.tsx`, with their strings in `frontend/src/copy.ts`. Open the US3 pull request into `develop`.
 
 **Checkpoint**: clean licences arrive with no flagged fields. Risky ones are flagged with reason codes, and nothing is rejected on an uncorroborated value.
 

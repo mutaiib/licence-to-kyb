@@ -17,6 +17,10 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   its evidence on the page; sign-in, upload with progress and a read-only review page.
 - User Story 2: approve, correct, override, reject, reopen, retry and submit. A
   submission is stored once per approved form version and must read back the same.
+- User Story 3: each read field gets a confidence score from six evidence signals; the
+  gate routes each run to ready, needs review or reject. An expired licence is rejected
+  only when the expiry is corroborated. `scripts/calibrate.py` fits thresholds on real
+  readings; until then they are documented defaults (`fitted: false`).
 
 ### Changed
 - Readability pass: one source for shared constants and types, all SQL in `Database`,
