@@ -268,6 +268,8 @@ def main() -> None:
         for c in load_cases(CASES, groups=set(args.groups) if args.groups else None)
         if (REPO_ROOT / c.document).exists()
     ]
+    if args.limit:  # a slow model: the first cases of the chosen split only
+        cases = [c for c in cases if c.split == args.split][: args.limit]
     inner: Transport = (
         LabelDemoTransport(CASES)
         if args.model == "scripted"
