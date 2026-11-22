@@ -17,13 +17,13 @@ make setup                        # uv sync --frozen; npm ci; pre-commit install
 make data                         # generate synthetic licences and ground truth (fixed seed)
 ```
 
-For a run with a real model, `cp .env.example .env` and set `ANTHROPIC_API_KEY`, `FERNET_KEYS`,
+For a run with a real model, `cp .env.example backend/.env` and set `ANTHROPIC_API_KEY`, `FERNET_KEYS`,
 `SESSION_SECRET` and `REVIEWER_ACCOUNTS` (argon2id hashes). The demo below makes its own.
 
 ## Run the checks
 
 ```bash
-make lint                         # ruff, mypy --strict, eslint, tsc, copy check, gitleaks
+make lint                         # ruff, mypy --strict, tsc, eslint, prettier, copy check (gitleaks runs in pre-commit and CI)
 make test                         # unit, graph and API tests, offline, with a fixed clock
 make eval                         # offline: scripted model, no cost; report in evals/reports/
 make eval-live                    # the models of MODEL_PROFILE (paid on the API, free locally)
@@ -37,7 +37,7 @@ cd frontend && npm run dev        # UI on http://127.0.0.1:5173; the demo passwo
 ```
 
 - **With Claude:** set `ANTHROPIC_API_KEY` and run the backend without demo mode (`make demo` runs
-  the Docker Compose stack: UI on http://localhost:5173, API on :8000).
+  the Docker Compose stack: UI and API on http://localhost:5173).
 - **With a local model:** `scripts/fetch_llama_server.sh`, then `make local-model` in its own
   terminal, then the backend with `MODEL_PROFILE=local`.
 - **Browser check of every row below:** `scripts/browser_check.sh` (needs `chrome-devtools-axi`).
@@ -46,8 +46,8 @@ cd frontend && npm run dev        # UI on http://127.0.0.1:5173; the demo passwo
 
 | Story | Steps | Expected result |
 |---|---|---|
-| US1 | Upload `data/generated/clean_001.pdf` with the business name from its ground truth. | The form shows every value from `det_clean_001.json`, each with its evidence text. |
-| US1 | Upload `data/generated/injected_001.pdf`. | Same values and route as `det_clean_001`. |
+| US1 | Upload `data/generated/clean_001.pdf` with the business name from its ground truth. | The form shows every value from `evals/cases/synthetic/clean_001.json`, each with its evidence text. |
+| US1 | Upload `data/generated/injected_001.pdf`. | Same values and route as `clean_001`. |
 | US2 | Upload `data/generated/near_expiry_001.pdf`. Correct the expiry date, approve, and submit. | One submission, marked as verified. The audit shows the correction and the reviewer. |
 | US2 | Click Submit again. | Same submission ID. No second submission. |
 | US2 | Stop the stack while a run waits for review, start it again, and open the run. | Same flagged fields. |

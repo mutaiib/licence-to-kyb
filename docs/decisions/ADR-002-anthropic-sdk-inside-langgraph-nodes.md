@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted.
+Accepted. Amended by [ADR-004](ADR-004-provider-neutral-model-calls.md): the provider is now chosen by configuration (a model profile), so changing provider no longer means changing a module.
 
 ## Context
 

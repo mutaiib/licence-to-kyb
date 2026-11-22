@@ -29,7 +29,7 @@ Every hand-off between steps carries a typed, schema-validated object, because c
 - **The wrapper:** `Field[T]`, with `status`, `origin`, `evidence_quote` and `page` ([data model](../../specs/001-licence-to-kyb/data-model.md)).
 - **The four layers:** [architecture §6](../architecture.md#6-schema-validation-in-four-layers).
 - **The closed lists:** reason and error codes ([data model](../../specs/001-licence-to-kyb/data-model.md#reason-codes)), each mapped to one string in [UI copy](../ui-copy.md).
-- **The model-call contract:** `client.messages.parse()` with a Pydantic model ([model calls](../../specs/001-licence-to-kyb/contracts/model-calls.md)).
+- **The model-call contract:** `client.beta.messages.parse()` with a Pydantic model ([model calls](../../specs/001-licence-to-kyb/contracts/model-calls.md)).
 - **Generated frontend types:** they come from the backend's OpenAPI schema, so the two sides cannot drift apart silently.
 
 ## Mistakes to avoid

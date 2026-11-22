@@ -45,10 +45,10 @@ Each practice is listed with how it is enforced. A practice that nothing enforce
 ## 2. Commits, versions and changelog
 
 - **Commit messages: [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).**
-  - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`, `ci`, `chore`, `eval`.
+  - Types: `feat`, `fix`, `docs`, `style`, `test`, `refactor`, `perf`, `build`, `ci`, `chore`, `revert`, `eval`.
   - The scope is the component, for example `feat(rules): add QR mismatch check`.
   - A breaking change uses `!` or a `BREAKING CHANGE:` footer.
-  - Enforced by `commitlint` in a `commit-msg` hook and on the PR title in CI.
+  - Enforced by `scripts/check_commit_msg.py` in a `commit-msg` pre-commit hook, and on the PR title in CI (`amannn/action-semantic-pull-request`).
 - **Versioning: [Semantic Versioning 2.0.0](https://semver.org/).**
   - MAJOR: an API contract or schema change that breaks clients.
   - MINOR: a new capability.
@@ -82,19 +82,16 @@ The constitution's Principle VI applies: tests assert outcomes and values, never
 | API | `pytest` with the FastAPI test client | every push |
 | Frontend | Vitest and Testing Library | every push |
 | Browser | chrome-devtools-axi against the running stack | release branches |
-| Evals: real API, labelled cases | `evals/run.py` | manual workflow dispatch, and every release branch |
+| Evals: labelled cases | `evals/run.py` | every release branch with the scripted model (no cost); the real model only on a manual workflow dispatch with `model=profile` |
 
-**Required status checks before a merge:**
-1. lint and format
-2. type checks
-3. unit, graph and API tests
-4. coverage of at least 90% lines on `rules/`, `nodes/confidence.py`, `nodes/gate.py` and `nodes/map_form.py`, the deterministic core
-5. frontend tests and build
-6. the OpenAPI types are up to date
-7. the UI copy check
-8. secret scan
-9. dependency audit
-10. Conventional Commit PR title
+**Required status checks before a merge** (the seven jobs of `.github/workflows/ci.yml`):
+1. **backend:** ruff lint and format, `mypy --strict`, unit, graph and API tests, coverage of at least 90% lines on the deterministic core (`rules/`, `nodes/confidence.py`, `nodes/gate.py`, `nodes/map_form.py`), the eval harness tests, and a dependency audit (`pip-audit`)
+2. **frontend:** typecheck, ESLint, Prettier, tests, build, and a dependency audit (`npm audit`)
+3. **API contract:** the generated TypeScript types match the backend's OpenAPI schema
+4. **docker images:** both images build, start as a non-root user and pass a smoke test
+5. **UI copy:** every interface string passes the ASD-STE100 check
+6. **secret scan:** gitleaks
+7. **pull-request title:** Conventional Commits
 
 **Eval gate for releases.** A release branch merges only if its eval report meets the targets in the spec, or the README states the gap and the reason. Regressions against the previous release report are listed in the PR.
 

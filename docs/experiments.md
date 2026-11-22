@@ -24,7 +24,7 @@ Each experiment changes one thing, runs the full eval suite, and records the mea
 
 **What it shows:**
 - **A weak model sends work to a person; it does not submit wrong values.** Neither run reached "ready". On ADCB the evidence check caught the misread values and the resolver ran out of budget, as designed. No safety violations.
-- **The misses are the hard fields.** The model read every date, the licence number, the legal form and the English trade name correctly on both licences. It missed the activities, the people and the Arabic trade name. Those are the long, list-shaped and bilingual fields.
+- **The misses are mostly the hard fields.** On both licences the model read the licence number, the legal form, the English trade name, and the issue and expiry dates correctly. It missed the activities on both; the Arabic name and the issuing authority on `clean_002`; and the people, the chamber number and the establishment date on ADCB. Lists and bilingual fields fail most.
 - **The report hid one failure.** Reason accuracy allows extra codes, so `processing_failed` on a clean case still scored 100% there. The report now counts runs that stopped in processing.
 - **Speed rules out the full suite on this machine.** At 25 to 50 minutes per licence, the 45 test cases would take 19 to 37 hours. The full eval (T101), the resolver on/off comparison and fitted thresholds need the Claude API or a GPU.
 
@@ -42,7 +42,7 @@ flow), not the model's reading.** Real reading quality needs `--model profile`.
 | Review rate, realistic mix | 28.2% |
 | Field accuracy | 100% for every field |
 | Safety violations | 0 |
-| p95 per stage | preprocess 1.6 s; every other stage well inside its budget |
+| p95 per stage | preprocess 1.7 s; every other stage well inside its budget |
 
 Found by this first run: demo mode matched a short licence number inside a longer one and
 answered for the wrong case (fixed: whole numbers, longest first). The report and its

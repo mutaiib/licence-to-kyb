@@ -6,6 +6,7 @@ Read it in this order:
 
 1. [The system in one paragraph](#1-the-system-in-one-paragraph)
 2. [One licence, start to finish](#2-one-licence-start-to-finish)
+   - [As built: the graph, node by node](#as-built)
 3. [Why a workflow with one agent](#3-why-a-workflow-with-one-agent)
 4. [The pipeline](#4-the-pipeline)
 5. [What each step receives and returns](#5-what-each-step-receives-and-returns)
@@ -67,12 +68,30 @@ In code, both pauses (10 and 11) are one `wait_for_reviewer` node, and one `appl
 
 ## As built
 
-The graph in [`pipeline.py`](../backend/src/licence_kyb/pipeline.py), node by node:
+Section 4 shows the pipeline as designed. This is the graph as built in [`pipeline.py`](../backend/src/licence_kyb/pipeline.py), with the exact node names and the conditions on each branch. Blue nodes call a model; the rest is code.
 
-```
-preprocess → route → extract → validate ⇄ resolve (at most 2 rounds) → confidence → map_form
-  → gate → persist → wait_for_reviewer ⇄ apply_action → END (done)
-                                          └→ route or extract (retry after a failure)
+```mermaid
+flowchart TD
+    START([upload accepted]) --> preprocess
+    preprocess --> route
+    route -- "trade licence" --> extract
+    route -- "not a licence / unclear" --> gate
+    extract -- "both readings parsed" --> validate
+    extract -- "processing failed" --> map_form
+    validate -- "a re-readable check failed,<br/>round < 2, last round helped" --> resolve
+    resolve -- "proposals" --> validate
+    validate -- "nothing to re-read" --> confidence
+    confidence --> map_form
+    map_form --> gate
+    gate --> persist
+    persist --> wait_for_reviewer
+    wait_for_reviewer -- "interrupt(): pause until<br/>the reviewer acts" --> apply_action
+    apply_action -- "more decisions needed" --> wait_for_reviewer
+    apply_action -. "reviewer retries processing" .-> RETRY[["back to the step that failed:<br/>preprocess, route or extract"]]
+    apply_action -- "submitted and read back" --> DONE([END])
+
+    classDef model fill:#dbeafe,stroke:#1d4ed8,color:#0b1f4d
+    class route,extract,resolve model
 ```
 
 | Node | What it does | Model? |
@@ -93,7 +112,7 @@ preprocess → route → extract → validate ⇄ resolve (at most 2 rounds) →
 
 **The question that decides it:** can the steps be written down before the document is read?
 
-For a trade licence, yes. The steps are always the same: check, read, classify, extract, validate, decide, fill, review, submit. A **workflow** handles fixed steps best. Code controls the order, every step has a typed output, and each output can be tested on its own.
+For a trade licence, yes. The steps are always the same: check, read, classify, extract, validate, decide, fill the form, review, submit. A **workflow** handles fixed steps best. Code controls the order, every step has a typed output, and each output can be tested on its own.
 
 **Only one step cannot be scripted in advance:** how to repair a value that failed a check. A blurred expiry date, an English name that disagrees with the Arabic one, and a licence number in the wrong format each need a different investigation. That step is the **resolver agent**: a model that chooses its own read-only tool calls inside a hard budget.
 
@@ -140,7 +159,7 @@ flowchart TD
 - **Side effects live in their own nodes.** LangGraph runs a node again from its start when the node resumes. So the review node only collects decisions. Separate nodes write the decisions, audit events, form versions, captured corrections and the submission, and each write has a unique key. A repeated node writes nothing new ([data model](../specs/001-licence-to-kyb/data-model.md#writes-and-resumption)).
 - **Processing never stalls, and a person can always continue.**
   - On startup, every run left in `received` or `processing` resumes from its last checkpoint.
-  - A run past its 120 s deadline goes to review with `processing_failed`.
+  - A run past its deadline (120 s; a model profile can set more, for example 1,800 s for a local CPU model) goes to review with `processing_failed`.
   - When the daily token budget is exhausted, new runs skip the model steps and go to review with `budget_exhausted`.
   - In review, the reviewer can retry processing from the last completed step, or enter the values by hand.
 - **The resolver loop has hard limits.** They are defined once, in the [resolver contract](../specs/001-licence-to-kyb/contracts/resolver-tools.md#budgets-the-only-definition). Code decides when the loop stops, not the model.
@@ -213,7 +232,7 @@ Each layer answers a different question. A value that passes one layer can still
 
 | Layer | Question | Mechanism | Example failure it catches |
 |---|---|---|---|
-| 1 API | Is the reply the right shape? | Structured outputs (`client.messages.parse(output_format=Model)`) for route and extract. `strict: true` tools with `additionalProperties: false` for the resolver. | A missing field, or a string where a list is required. |
+| 1 API | Is the reply the right shape? | Structured outputs (`client.beta.messages.parse(output_format=Model)`; an OpenAI-compatible server gets a `json_schema` response format) for route and extract. `strict: true` tools with `additionalProperties: false` for the resolver. | A missing field, or a string where a list is required. |
 | 2 Pydantic | Are the types and local rules valid? | Enums, DD/MM/YYYY date parsing, `0 ≤ share_pct ≤ 100`. | A share of 120%, or the date 31/02/2026. |
 | 3 Business rules | Are the values correct for this licence? | Plain-code rules (see [test cases](../specs/001-licence-to-kyb/test-cases.md)). | Expired licence, expiry date before issue date, wrong number format for the authority, shares that do not sum to 100. |
 | 4 Grounding | Did the document really say this? | The `evidence_quote` must appear in the OCR text (fuzzy match ≥ 0.85), and the value must appear in its quote. | A value that the model invented or misread. |
@@ -238,7 +257,7 @@ sequenceDiagram
     participant H as Harness (code)
     participant M as Model
     participant T as Tool (code)
-    H->>M: system prompt + failed fields + validation report + 7 tool definitions
+    H->>M: system prompt + failed fields + validation report + tool definitions (7, or 6 for a text-only model)
     M-->>H: stop_reason=tool_use: licence_reread_region(page=1, field=expiry_date, region=top_right)
     H->>H: check budget, check scope (field must have failed), validate arguments
     H->>T: run tool
@@ -249,6 +268,40 @@ sequenceDiagram
     M-->>H: stop_reason=tool_use: finish(summary)
     H->>H: send proposals back to Validate
 ```
+
+### The agent loop, with its limits
+
+The sequence above is one good path. This is every path through one resolver round ([`nodes/resolve.py`](../backend/src/licence_kyb/nodes/resolve.py), [`tools/runner.py`](../backend/src/licence_kyb/tools/runner.py)). Code makes every stop decision; the model only picks the next tool.
+
+```mermaid
+flowchart TD
+    IN([failed, re-readable fields]) --> BRIEF[Build the brief:<br/>failed fields, report, tool definitions]
+    BRIEF --> HARD{Hard limit reached?<br/>6 turns, 40k tokens,<br/>12 tool calls or 45 s}
+    HARD -- yes --> KEEP[Stop. Keep the proposals so far.<br/>Reason: resolver_budget]
+    HARD -- no --> CALL[Call the model]
+    CALL --> STOP{stop_reason}
+    STOP -- "no tool call" --> DONE
+    STOP -- "model error or refusal" --> ENDR[Stop the round.<br/>Keep the proposals so far.]
+    STOP -- tool_use --> CHECK{Runner checks the call:<br/>known tool? arguments valid?<br/>field in scope? page exists?<br/>not a duplicate?}
+    CHECK -- no --> ERR[tool_result, is_error=true:<br/>what failed, why, what to do next]
+    CHECK -- "duplicate call" --> DUP[The earlier result again,<br/>with a notice not to repeat]
+    DUP --> HARD
+    CHECK -- yes --> RUN[Run the read-only tool]
+    RUN --> SOFT{Soft limit reached?<br/>5 turns, 32k tokens, 35 s}
+    SOFT -- "yes, and not propose_fix/finish" --> WRAP[Add a notice to the result:<br/>propose fixes and finish now]
+    SOFT -- no --> RES[tool_result in words]
+    WRAP --> RES
+    ERR --> HARD
+    RES --> FIN{Was it finish?}
+    FIN -- no --> HARD
+    FIN -- yes --> DONE([Proposals go back to Validate])
+    KEEP --> DONE
+    ENDR --> DONE
+```
+
+- **A proposal is never applied by the agent.** Validate runs every rule on it. It is accepted only if no blocking or re-readable check still fails.
+- **At most 2 rounds per run,** and a second round runs only if the first one helped.
+- **Limits live in one file:** [`backend/config/budgets.yaml`](../backend/config/budgets.yaml). A model profile can give a slow model more seconds.
 
 ### Request
 
@@ -263,7 +316,7 @@ Code sends the system prompt, the failed fields, the validation report and the t
     "type": "object",
     "properties": {
       "page": {"type": "integer", "minimum": 1, "maximum": 5},
-      "field": {"type": "string", "enum": ["licence_number", "trade_name_en", "trade_name_ar", "legal_form", "issue_date", "expiry_date", "people", "activities"]},
+      "field": {"type": "string", "enum": ["expiry_date"]},
       "region": {"type": "string", "enum": ["top_left", "top_right", "middle", "bottom_left", "bottom_right", "full_page"]}
     },
     "required": ["page", "field", "region"],
@@ -315,7 +368,8 @@ It never contains a stack trace. A failed call never ends the run. Example (show
 
 ### The resolver's tools
 
-All of these tools are read-only and share the `licence_` prefix:
+The five read tools share the `licence_` prefix; `propose_fix` and `finish` only record the agent's output. The `field` argument lists only the fields that failed in this run (above: only `expiry_date`), so the model cannot ask about a field that passed. A text-only model profile does not get `licence_reread_region`.
+
 
 | Tool | Reads or writes | Purpose |
 |---|---|---|
@@ -359,7 +413,7 @@ When the loop stops at a hard limit, code keeps the best accepted fixes, and the
 | Self-rating | The model's `self_confidence`, with a small weight. |
 
 **Calibration.**
-- `scripts/calibrate.py` fits the weights and a threshold for each field on the **calibration split** of the labelled cases.
+- `scripts/calibrate.py` fits a threshold for each field (the signal weights stay at their documented defaults) on the **calibration split** of the labelled cases.
 - It maximises the share of `ready` runs, subject to at least **99% precision on critical fields**, and writes `config/thresholds.<profile>.yaml` (thresholds are fitted per model profile). Until a live eval provides real readings, `config/thresholds.yaml` holds documented defaults marked `fitted: false`.
 - The critical fields are the licence number, legal names, legal form, expiry date and owners.
 - Metrics are reported on the separate **test split**, with a 95% interval. This avoids grading the thresholds on the data they were fitted to.
@@ -391,7 +445,27 @@ A check that does not apply is `not_applicable` and never blocks `ready`. Exampl
 **Steps to prevent careless approvals:**
 - Only flagged fields are expanded.
 - Each flagged field needs its own Approve or Correct.
-- "Approve form" is disabled while any flagged field has no decision.
+- A "Next step" card shows one thing to do now, with at most one main button. "Approve form" appears only after every flagged field has a decision; "Submit" appears only after the form is approved ([handbook 15](handbook/15-ux-for-human-review.md)).
+
+**The states of a run** (the `status` the API returns):
+
+```mermaid
+stateDiagram-v2
+    [*] --> received: upload accepted
+    received --> processing
+    processing --> awaiting_review: gate says needs review,<br/>or processing failed
+    processing --> awaiting_submit: gate says ready
+    processing --> rejected: gate says reject
+    awaiting_review --> awaiting_submit: reviewer approves the form
+    awaiting_submit --> awaiting_review: reviewer changes a value<br/>(the approval no longer applies)
+    awaiting_review --> processing: reviewer retries processing
+    awaiting_review --> rejected: reviewer rejects
+    awaiting_submit --> rejected: reviewer rejects
+    rejected --> awaiting_review: reviewer reopens
+    awaiting_submit --> done: reviewer submits (needs an approval of this<br/>form version), and the stored record reads back equal
+    awaiting_submit --> awaiting_review: the stored record reads back different<br/>(verification_failed, new form version)
+    done --> [*]
+```
 
 **A value entered by a reviewer** is marked "entered by reviewer". Every rule applies to it except the evidence check, which is "not applicable".
 
@@ -514,20 +588,36 @@ Every step, model call and tool call records a span in SQLite. Each span stores:
 
 | Component | Technology | Path |
 |---|---|---|
-| Graph and steps | Python 3.12, LangGraph, SQLite checkpointer | `backend/src/licence_kyb/graph.py`, `nodes/` |
-| Model calls | official `anthropic` SDK | `backend/src/licence_kyb/llm/` |
+| Graph and steps | Python 3.12, LangGraph, SQLite checkpointer | `backend/src/licence_kyb/pipeline.py` (the graph), `graph.py` (checkpointer), `nodes/` |
+| Model calls | official `anthropic` SDK (default), any OpenAI-compatible server by model profile | `backend/src/licence_kyb/llm/`, `backend/config/models.yaml` |
+| Limits and thresholds | YAML | `backend/config/budgets.yaml`, `backend/config/thresholds.yaml` |
 | Schemas | Pydantic | `backend/src/licence_kyb/schemas/` |
 | Rules | plain Python, one module per rule family | `backend/src/licence_kyb/rules/` |
 | Resolver tools | plain Python | `backend/src/licence_kyb/tools/` |
 | Authority profiles | YAML | `backend/src/licence_kyb/profiles/` |
-| OCR and rendering | pypdfium2, pdfplumber, Tesseract (`eng+ara`), OpenCV QR | `nodes/preprocess.py` |
+| OCR and rendering | pypdfium2, pdfplumber, Tesseract (`eng+ara`), OpenCV QR | `backend/src/licence_kyb/nodes/preprocess.py` |
 | API | FastAPI | `backend/src/licence_kyb/api/` |
 | UI | React 19, Vite, TypeScript, Astryx (`@astryxdesign/core`, `theme-neutral`) | `frontend/` |
-| Test data | Jinja2 + WeasyPrint templates, Pillow/OpenCV degradations | `scripts/gen_licences.py` |
+| Test data | reportlab rendering, Pillow/OpenCV degradations | `backend/src/licence_kyb/testdata/` (`render.py`, `degrade.py`), run by `scripts/gen_licences.py` |
 | Operations | startup resume, deadline sweep, retention schedule, daily budget, health checks | `backend/src/licence_kyb/ops.py` |
 | Evals | Python harness, state-based graders, held-out split | `evals/` |
 
+```mermaid
+flowchart LR
+    B[Browser<br/>React + Astryx] -- "HTTPS, session cookie,<br/>CSRF token" --> API[FastAPI<br/>api/]
+    API --> P[Pipeline<br/>LangGraph graph]
+    P --> CK[(SQLite<br/>checkpoints)]
+    P --> DB[(SQLite<br/>runs, audit, spans)]
+    P --> FS[(Encrypted files<br/>var/)]
+    P -- "LLMClient" --> T{Transport}
+    T --> ANT[Claude API<br/>anthropic SDK]
+    T --> OAI[OpenAI-compatible server<br/>llama.cpp, vLLM, Ollama]
+    P --> OCR[Tesseract, pdfium]
+    P --> REG[Registry mock]
+```
+
 **Related documents:**
+- [Reference: API, configuration, rules, reason codes](reference.md)
 - [Problem statement](problem-statement.md)
 - [Design worksheet](design-worksheet.md)
 - [Feature spec, plan and tasks](../specs/001-licence-to-kyb/)

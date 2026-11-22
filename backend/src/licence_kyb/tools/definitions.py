@@ -75,13 +75,15 @@ DESCRIPTIONS = {
     "register. Use it when the licence number or expiry date is in doubt. Returns the status "
     "and expiry, or says that no record exists.",
     "licence_lookup_activity": "Search the activity catalogue by code or by words. Use it when "
-    "an activity code or description is unclear.",
+    "an activity code or description is unclear. Do not use it for other fields. Returns the "
+    "matching activities, or says that nothing matches.",
     "licence_get_validation_report": "Return the checks that still fail. Use it after you "
-    "propose fixes to see what still fails.",
+    "propose fixes to see what still fails. Do not call it twice without a new proposal in "
+    "between: the result does not change.",
     "propose_fix": "Propose a corrected value for one failed field. The value is used only if "
     "every check on the field passes. Call it once per field. Write dates as DD/MM/YYYY.",
     "finish": "End the investigation. Call it after your proposals, or when nothing more can "
-    "be found.",
+    "be found. Do not call other tools after it: the investigation is over.",
 }
 
 

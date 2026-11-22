@@ -18,7 +18,7 @@ A repository looks mature when its standards are **enforced**: branch rules, a C
 
 ### Commits and releases
 
-- Conventional Commits, checked by commitlint.
+- Conventional Commits, checked by `scripts/check_commit_msg.py` (commit-msg hook) and on the pull-request title in CI.
 - Semantic Versioning, with annotated, signed tags.
 - A Keep a Changelog entry that links the eval report.
 
