@@ -4,7 +4,7 @@ Upload a UAE trade licence and get a checked, pre-filled KYB onboarding form. A 
 
 > **Purpose:** a complete, tested reference implementation of an agentic document workflow, and a handbook for revisiting the ideas behind it.
 >
-> **Status:** all six user stories are built, tested and merged through reviewed pull requests, with an offline eval baseline. Real reading accuracy is measured with a model: the Claude API, or a local open-weight model (see [Run it](#run-it)). Those numbers are not in yet.
+> **Status:** release [0.1.0](https://github.com/mutaiib/licence-to-kyb/releases/tag/v0.1.0). All six user stories are built, tested and merged through reviewed pull requests. Measured: an offline eval baseline and the first real readings on a local model. **Pending:** the full eval with a real model, cost and latency on the API, and reviewer timing. [docs/status.md](docs/status.md) lists each item and why it is pending.
 
 | Review: the fields to examine come first | Runs on a phone | Trace of one run |
 |---|---|---|
@@ -12,13 +12,26 @@ Upload a UAE trade licence and get a checked, pre-filled KYB onboarding form. A 
 
 ## How it works
 
+```mermaid
+flowchart LR
+    U([Upload]) --> P[Read the pages<br/>OCR, QR]
+    P --> R[Identify the<br/>document]
+    R --> E[Copy the fields<br/>twice]
+    E --> V[Check every value]
+    V -- "a value failed a check<br/>a re-read can fix" --> A[Agent: re-read<br/>read-only tools,<br/>hard limits]
+    A -- proposals --> V
+    V --> C[Score confidence<br/>from evidence]
+    C --> G{Route}
+    G -- ready --> H[Person reviews,<br/>approves, submits]
+    G -- needs review --> H
+    G -- reject --> X([Rejected, can be reopened])
+    H --> S([Stored, read back, done])
+
+    classDef model fill:#dbeafe,stroke:#1d4ed8,color:#0b1f4d
+    class R,E,A model
 ```
-upload → check the file → read the pages (OCR, QR) → identify the document (model)
-       → copy the fields, twice (model) → check the values (code)
-       → [re-read failed values: one agent, read-only tools, hard limits] → check again
-       → score confidence from evidence (code) → route: ready | needs review | reject (code)
-       → wait for the reviewer → approve / correct / override / reject → submit → read back
-```
+
+Blue steps call a model; every other step is code. The exact graph, the agent loop with its limits, and the run states are diagrams in [architecture](docs/architecture.md#as-built).
 
 - **A workflow with one bounded agent.** Three steps use a model: identify, copy, and the resolver that re-reads failed values. Every other step is plain code ([ADR-001](docs/decisions/ADR-001-workflow-with-one-agent.md)).
 - **Strict schemas at every boundary.** Every value carries the exact text it came from, and code checks that text against the OCR; dates and numbers must match exactly.
@@ -102,8 +115,10 @@ Measured numbers only. A target that is missed is reported as missed.
 
 | Document | Content |
 |---|---|
+| [Status](docs/status.md) | What is complete, what is pending and why, and the known limits |
 | [Handbook](docs/handbook/) | One page per concept, each with self-check questions; written to revisit the ideas |
-| [Architecture](docs/architecture.md) | The pipeline, one licence traced from start to finish, schemas, tool calls, trust boundaries |
+| [Glossary](docs/glossary.md) | Every term in these docs, with where it lives in the code |
+| [Architecture](docs/architecture.md) | Diagrams of the graph, the agent loop, the run states and the components; one licence traced from start to finish; schemas, tool calls, trust boundaries |
 | [Constitution](.specify/memory/constitution.md) | The project's rules: workflow first, typed contracts, outcome-based tests, GitFlow |
 | [Feature spec, plan, tasks](specs/001-licence-to-kyb/) | User stories, requirements, contracts, test cases and every task (Spec Kit) |
 | [Decisions](docs/decisions/) | Why a workflow, why the SDK in graph nodes, why evidence-based confidence, why any model by configuration |

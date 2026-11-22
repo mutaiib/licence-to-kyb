@@ -50,5 +50,7 @@ This handbook collects the ideas behind this repository, one topic per page. Eac
 | [Agent design framework](../agent-design-framework.md) | the method: 12 steps to design any agent system |
 | [Design worksheet](../design-worksheet.md) | the method applied to this project, in nine rows |
 | [Architecture](../architecture.md) | how this system works, end to end |
+| [Glossary](../glossary.md) | every term, with where it lives in the code |
+| [Status](../status.md) | what is complete, what is pending and why |
 | [Feature spec, plan, contracts, tasks](../../specs/001-licence-to-kyb/) | the testable requirements and the build plan |
 | This handbook | the reasons behind the design, for learning and revision |
