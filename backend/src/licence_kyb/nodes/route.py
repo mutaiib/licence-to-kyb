@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from licence_kyb.config import StepModel
 from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse, image_block
 from licence_kyb.llm.prompts import load_prompt
 from licence_kyb.profiles import AUTHORITIES, load_profile
@@ -30,10 +31,6 @@ class RouteOutcome:
     reasons: tuple[ReasonCode, ...] = ()
     response: ModelResponse | None = None
 
-    @property
-    def is_licence(self) -> bool:
-        return self.doc_type == "trade_licence"
-
 
 def _all_labels() -> list[str]:
     labels = {
@@ -44,23 +41,42 @@ def _all_labels() -> list[str]:
     return sorted(labels, key=len, reverse=True)
 
 
-def labelled_numbers(text: str) -> list[tuple[str, str]]:
-    """(authority, number) for authority-pattern tokens within 40 characters after a label
-    on the same line. Digits inside other identifiers (e.g. 784-1990-1234567-1) don't count."""
+def _text_after_label(line: str, labels: list[str]) -> str | None:
+    """The ``LABEL_WINDOW`` characters after the first label in ``line``, or None.
+
+    Only one label counts per line. The labels are sorted longest first, so a long label
+    such as "Licence No." is found before a shorter label that it contains.
+    """
+    lowered = line.casefold()
+    for label in labels:
+        start = lowered.find(label.casefold())
+        if start >= 0:
+            end = start + len(label)
+            return line[end : end + LABEL_WINDOW]
+    return None
+
+
+def _numbers_in(window: str) -> list[tuple[str, str]]:
+    """(authority, token) for each whole token that matches an authority's number pattern."""
     found: list[tuple[str, str]] = []
+    for token in re.findall(r"[A-Za-z0-9-]+", window):
+        for code in AUTHORITIES:
+            if load_profile(code).matches_number(token):
+                found.append((code, token))
+    return found
+
+
+def labelled_numbers(text: str) -> list[tuple[str, str]]:
+    """(authority, number) for each licence number printed just after a label, on the same line.
+
+    Tokens are whole, so digits inside other identifiers (e.g. 784-1990-1234567-1) don't count.
+    """
     labels = _all_labels()
+    found: list[tuple[str, str]] = []
     for line in text.splitlines():
-        lowered = line.casefold()
-        for label in labels:
-            start = lowered.find(label.casefold())
-            if start < 0:
-                continue
-            window = line[start + len(label) : start + len(label) + LABEL_WINDOW]
-            for token in re.findall(r"[A-Za-z0-9-]+", window):
-                for code in AUTHORITIES:
-                    if load_profile(code).matches_number(token):
-                        found.append((code, token))
-            break
+        window = _text_after_label(line, labels)
+        if window is not None:
+            found.extend(_numbers_in(window))
     return found
 
 
@@ -73,14 +89,12 @@ def has_licence_title(text: str) -> bool:
     )
 
 
-def build_route_request(
-    page_png: bytes, ocr_text: str, model: str, effort: str, max_tokens: int
-) -> ModelRequest:
+def build_route_request(page_png: bytes, ocr_text: str, cfg: StepModel) -> ModelRequest:
     return ModelRequest(
         step="route",
-        model=model,
-        effort=effort,
-        max_tokens=max_tokens,
+        model=cfg.model,
+        effort=cfg.effort,
+        max_tokens=cfg.max_tokens,
         system=load_prompt("route"),
         messages=[
             {
@@ -102,10 +116,12 @@ def build_route_request(
 def route_document(llm: LLMClient, request: ModelRequest, ocr_text: str) -> RouteOutcome:
     try:
         response = llm.call(request)
+    except LLMError as exc:
+        return RouteOutcome("unclear", "unknown", (exc.reason_code,))
+    try:
         result = response.parsed_as(RouteResult)
-    except (LLMError, ValueError) as exc:
-        code: ReasonCode = getattr(exc, "reason_code", "processing_failed")
-        return RouteOutcome("unclear", "unknown", (code,))
+    except ValueError:  # no parsed output, or output that does not match the schema
+        return RouteOutcome("unclear", "unknown", ("processing_failed",))
     return decide_route(result, ocr_text, response)
 
 
@@ -119,10 +135,8 @@ def decide_route(
         return RouteOutcome(result.doc_type, "unknown", ("out_of_scope",), response)
     if result.doc_type == "unclear":
         return RouteOutcome("unclear", "unknown", ("unclear_document",), response)
-    authority = result.authority
-    number_authorities = {code for code, _ in numbers}
-    if number_authorities and authority not in number_authorities:
+    number_authorities = {code for code, _number in numbers}
+    contradicts_number = bool(number_authorities) and result.authority not in number_authorities
+    if contradicts_number or result.authority not in AUTHORITIES:
         return RouteOutcome("trade_licence", "unknown", ("unknown_authority",), response)
-    if authority not in AUTHORITIES:
-        return RouteOutcome("trade_licence", "unknown", ("unknown_authority",), response)
-    return RouteOutcome("trade_licence", authority, (), response)
+    return RouteOutcome("trade_licence", result.authority, (), response)

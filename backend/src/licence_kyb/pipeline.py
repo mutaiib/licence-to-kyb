@@ -155,10 +155,7 @@ class Pipeline:
 
     def _route(self, state: RunState) -> dict[str, Any]:
         run_id, pages = state["run_id"], self._pages(state)
-        cfg = self.deps.models.route
-        request = build_route_request(
-            self.page_png(run_id, 1), pages.text, cfg.model, cfg.effort, cfg.max_tokens
-        )
+        request = build_route_request(self.page_png(run_id, 1), pages.text, self.deps.models.route)
         with self.tracer.span("step", "route", run_id=run_id) as step:
             outcome = route_document(self.deps.llm, request, pages.text)
             if outcome.response is not None:
@@ -177,28 +174,21 @@ class Pipeline:
         authority = state["route"]["authority"]
         profile = load_profile(authority)
         images = [self.page_png(run_id, n) for n in range(1, pages.page_count + 1)]
-        m = self.deps.models
         primary = build_extract_request(
             step="extract_primary",
-            prompt="extract_primary",
             output=TradeLicenceExtraction,
             pages_png=images,
             ocr_text=pages.text,
             profile=profile,
-            model=m.extract_primary.model,
-            effort=m.extract_primary.effort,
-            max_tokens=m.extract_primary.max_tokens,
+            cfg=self.deps.models.extract_primary,
         )
         secondary = build_extract_request(
             step="extract_secondary",
-            prompt="extract_secondary",
             output=CriticalFields,
             pages_png=images,
             ocr_text=pages.text,
             profile=profile,
-            model=m.extract_secondary.model,
-            effort=m.extract_secondary.effort,
-            max_tokens=m.extract_secondary.max_tokens,
+            cfg=self.deps.models.extract_secondary,
         )
         with self.tracer.span("step", "extract", run_id=run_id) as step:
             out = extract_licence(self.deps.llm, primary, secondary)
