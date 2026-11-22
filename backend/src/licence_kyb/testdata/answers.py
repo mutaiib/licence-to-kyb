@@ -50,6 +50,13 @@ def missing_field(status: str = "not_present") -> dict[str, Any]:
     }
 
 
+def _misread_year(field: dict[str, Any]) -> dict[str, Any]:
+    if field.get("value") is None:
+        return field
+    value = str(field["value"])
+    return {**field, "value": str(int(value[:4]) + 1) + value[4:]}
+
+
 def dmy(iso: str) -> str:
     """An ISO date as the licence prints it: DD/MM/YYYY."""
     return date.fromisoformat(iso).strftime("%d/%m/%Y")
@@ -113,6 +120,10 @@ def extraction_from_labels(v: dict[str, Any], faults: set[str]) -> dict[str, Any
     }
 
 
+READING_FAULTS = frozenset({"expired_uncertain"})
+"""Document faults that make a real model's readings differ (the rest are in the pixels)."""
+
+
 class ScriptedTransport:
     def __init__(
         self,
@@ -153,6 +164,9 @@ class ScriptedTransport:
         full = extraction_from_labels(self.labels, self.faults)
         if req.step.startswith("extract_secondary"):
             critical = {name: full[name] for name in CRITICAL_FIELDS}
+            if "expired_uncertain" in self.faults:
+                # An ink stamp covers the expiry year: the second reading gets the year wrong.
+                critical["expiry_date"] = _misread_year(critical["expiry_date"])
             return self._reply(critical, model)
         return self._reply(full, model)
 
@@ -195,5 +209,8 @@ class LabelDemoTransport:
         case = self._case_for(req)
         if case is None:
             return ScriptedTransport(None, doc_type="unclear", authority="unknown").send(req)
-        faults = {"owners_unclear"} if case["expected_values"].get("people") is None else set()
+        # Faults that change how a model reads the document, as the case file records them.
+        faults = set(case.get("faults", [])) & READING_FAULTS
+        if case["expected_values"].get("people") is None:
+            faults.add("owners_unclear")
         return ScriptedTransport(case["expected_values"], faults=faults).send(req)

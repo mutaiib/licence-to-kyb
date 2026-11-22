@@ -1,0 +1,26 @@
+# Confidence weights and per-field thresholds (US3; research R5; nodes/confidence.py).
+#
+# fitted: false means these are documented defaults, not fitted values. Offline tests use
+# scripted readings that are always right, so a fit on them would mean nothing. Run a
+# live eval (it needs a model API key), then `scripts/calibrate.py` to replace them.
+fitted: false
+
+# How much each signal counts. Never negative, so a better signal never lowers a score.
+# The model's own rating counts least: it is not calibrated.
+weights:
+  agreement: 3.0
+  grounding: 3.0
+  rules: 2.0
+  corroboration: 2.0
+  ocr: 1.0
+  self_rating: 0.5
+
+# Source field → the lowest score that needs no person. The critical fields only:
+# other fields are scored and shown, but not flagged for low confidence.
+thresholds:
+  licence_number: 0.9
+  trade_name_en: 0.85
+  trade_name_ar: 0.85
+  legal_form: 0.85
+  expiry_date: 0.9
+  people: 0.85

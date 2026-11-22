@@ -147,12 +147,14 @@ def _number(authority: str, rng: random.Random) -> str:
 
 
 def _wrong_number(authority: str, rng: random.Random) -> str:
-    # A number that does not match this authority's pattern.
+    # A number that matches no authority's pattern, so the number-format check reports it.
+    # (A number in another authority's format is a different case: the router then sets the
+    # authority to "unknown".) Six digits fit no pattern: DET has 7 and IFZA has 5.
     return {
-        "DET": f"{rng.randint(10_000, 99_999)}",
+        "DET": f"{rng.randint(100_000, 999_999)}",
         "ADDED": f"CN-{rng.randint(100_000, 999_999)}",
         "DMCC": f"DM-{rng.randint(10_000, 99_999)}",
-        "IFZA": f"{rng.randint(1_000_000, 9_999_999)}",
+        "IFZA": f"{rng.randint(100_000, 999_999)}",
     }[authority]
 
 

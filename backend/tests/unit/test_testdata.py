@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import io
 import json
+import random
+import re
 from pathlib import Path
 
 import pdfplumber
 import pytest
 
+from licence_kyb.profiles import AUTHORITIES, load_profile
 from licence_kyb.testdata.catalogue import GROUPS, build
+from licence_kyb.testdata.spec import _wrong_number
 from tests.builders import first_case
 
 SMALL = tuple(
@@ -91,3 +95,14 @@ def test_every_case_has_a_split_and_a_mix_bucket(
     _, cases = built
     assert {c["split"] for c in cases} <= {"calibration", "test"}
     assert {c["mix_bucket"] for c in cases} <= {"clean", "scans_and_photos", "problem"}
+
+
+def test_a_wrong_format_number_matches_no_authority_pattern() -> None:
+    """Otherwise the router reads it as another authority's number (unknown_authority), and
+    the wrong_number_format cases would never reach the number-format check."""
+    patterns = [re.compile(load_profile(a).number_pattern) for a in AUTHORITIES]
+    rng = random.Random(0)  # noqa: S311 - test data, not security
+    for authority in AUTHORITIES:
+        for _ in range(200):
+            number = _wrong_number(authority, rng)
+            assert not any(p.match(number) for p in patterns), (authority, number)
