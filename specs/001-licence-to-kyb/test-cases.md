@@ -248,7 +248,7 @@ The catalogue has about 100 cases.
 | Public real licence (live eval only) | 1 | per hand labels | clean |
 | Approved synthetic twins of reviewer corrections | grows | per twin labels | per fault |
 
-**Precision set (release eval only; split `precision`, folder `evals/cases/precision/`).**
+**Precision set (release eval only; split `precision`, folder `evals/cases/precision/`; added with the release eval, Polish T101).**
 - **What:** generated clean and scan licences across all profiles and layouts. They are never used for calibration.
 - **Size:** the generator adds documents until at least 400 of them route `ready`, up to a cap of 600 documents.
 - **Measure:** the precision of `ready` on critical fields, with the Wilson 95% lower bound. Zero errors in 400 `ready` runs gives a lower bound of about 99.05%.
