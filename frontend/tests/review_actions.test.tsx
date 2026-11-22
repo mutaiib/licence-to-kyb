@@ -204,6 +204,7 @@ describe('review actions', () => {
         'true',
       );
     });
+    expect(screen.getByText(copy['review.allDecided'])).toBeInTheDocument();
   });
 
   it('asks for a reason before it overrides a check that could not run', async () => {

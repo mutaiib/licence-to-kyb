@@ -94,7 +94,7 @@ export function FormActions({
             ? copy['review.remaining.one']
             : undecided > 1
               ? format('review.remaining', { count: String(undecided) })
-              : copy['review.instruction']}
+              : copy['review.allDecided']}
       </Text>
       <HStack gap={2} wrap="wrap">
         {!isApproved && (
