@@ -36,6 +36,7 @@ ReasonCode = Literal[
     "registry_not_found",
     "registry_expiry_mismatch",
     "registry_unavailable",
+    "registry_inactive",
     "applicant_name_mismatch",
     "owners_unclear",
     "ubo_needs_examination",

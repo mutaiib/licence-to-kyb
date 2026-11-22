@@ -233,6 +233,8 @@ export const copy = {
     'The registry has no record of this licence number. Correct the number or reject the case.',
   'reason.registry_expiry_mismatch':
     'The registry shows expiry date {registry}. The licence shows {value}. Examine the expiry date.',
+  'reason.registry_inactive':
+    'The register shows this licence as {status}. Examine the licence number, or reject the case.',
   'reason.registry_unavailable':
     'The system could not do the registry check. Override the check with a reason, or reject the case.',
   'reason.applicant_name_mismatch':

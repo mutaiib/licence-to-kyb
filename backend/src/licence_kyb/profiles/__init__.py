@@ -14,6 +14,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict
 
+from licence_kyb.normalise import normalise_number
 from licence_kyb.schemas.licence import LegalForm
 
 AUTHORITIES: tuple[str, ...] = ("DET", "ADDED", "DMCC", "IFZA")
@@ -39,12 +40,17 @@ class AuthorityProfile(BaseModel):
     )
 
     def matches_number(self, number: str) -> bool:
-        return re.fullmatch(self.number_pattern, number.strip()) is not None
+        return re.fullmatch(self.number_pattern, normalise_number(number)) is not None
 
     @property
     def number_regex(self) -> re.Pattern[str]:
         """The pattern without anchors, for searching inside OCR text."""
         return re.compile(self.number_pattern.removeprefix("^").removesuffix("$"))
+
+    @property
+    def numbers_in(self) -> re.Pattern[str]:
+        """The pattern as a whole token: never part of a longer number or word."""
+        return re.compile(rf"(?<![\w-])(?:{self.number_regex.pattern})(?![\w-])")
 
 
 @cache

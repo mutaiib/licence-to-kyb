@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 
 from licence_kyb.config import DATA_DIR
-from licence_kyb.rules.activity import high_risk_catalogue
+from licence_kyb.rules.activity import has_phrase, high_risk_catalogue, words
 from licence_kyb.rules.base import normalise_text
 from licence_kyb.tools import ToolContext
 from licence_kyb.tools.errors import ToolResult, answer
@@ -22,9 +22,11 @@ def _catalogue() -> tuple[dict[str, Any], ...]:
     return tuple(data["activities"])
 
 
-def _high_risk(code: str, words: str) -> bool:
+def _high_risk(code: str, description: str) -> bool:
+    text = words(description)
     return any(
-        code in codes or any(k in words for k in keys) for _id, codes, keys in high_risk_catalogue()
+        code in codes or any(has_phrase(text, k) for k in keys)
+        for _id, codes, keys in high_risk_catalogue()
     )
 
 

@@ -6,6 +6,7 @@ Grounding proves the document says something; it does not prove the document is 
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
@@ -55,9 +56,17 @@ CHECKED = (
 
 
 def _value_forms(value: Any) -> list[str]:
+    """The ways a value can be printed: a date with or without leading zeros, with /, - or ."""
     if isinstance(value, date):
-        return [value.strftime("%d/%m/%Y"), value.strftime("%d-%m-%Y"), value.isoformat()]
+        padded = (f"{value.day:02d}", f"{value.month:02d}", str(value.year))
+        plain = (str(value.day), str(value.month), str(value.year))
+        return [sep.join(parts) for parts in (padded, plain) for sep in "/-."] + [value.isoformat()]
     return [str(value)]
+
+
+def _has_token(text: str, value: str) -> bool:
+    """``value`` appears as a whole token: "39353" is not in "Chamber No 393530"."""
+    return re.search(rf"(?<![\w-]){re.escape(value)}(?![\w-])", text) is not None
 
 
 def _quote_on_page(quote: str, ocr: str) -> bool:
@@ -95,7 +104,7 @@ def _grounded(name: str, f: Field[Any], ocr: str) -> bool:
     if name in EXACT:
         # Exact in the quote, and exact on the document: a quote that repeats a misread
         # digit still matches the page fuzzily, so the value itself must be found.
-        return any(form in quote and form in ocr for form in forms)
+        return any(_has_token(quote, form) and _has_token(ocr, form) for form in forms)
     return any(fuzz.partial_ratio(form, quote) >= VALUE_THRESHOLD for form in forms)
 
 

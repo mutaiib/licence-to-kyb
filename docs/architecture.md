@@ -422,7 +422,7 @@ When the loop stops at a hard limit, code keeps the best accepted fixes, and the
 
 | Route | When |
 |---|---|
-| `reject` | Only three cases: <br>• the file is invalid <br>• the document is out of scope (MOA, Emirates ID, passport, other) <br>• the licence is expired **and** the expiry is corroborated: both passes agree and the evidence check passes, or the QR code or registry confirms it |
+| `reject` | Only three cases: <br>• the file is invalid <br>• the document is out of scope (MOA, Emirates ID, passport, other) <br>• the licence is expired **and** the expiry is corroborated: both readings agree and the evidence check passes, or the registry confirms it (the QR code carries only the licence number) |
 | `ready` | Every required field is at or above its threshold, every applicable check passed, and no fallback model served an extract call. |
 | `needs_review` | Anything else. This includes an unclear document, an uncorroborated expiry (`expiry_uncertain`), a confidence below the threshold, a warning, a check that could not run, a resolver at its limit, an unknown authority, a processing failure and an exhausted daily budget. |
 

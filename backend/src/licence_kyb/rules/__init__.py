@@ -46,6 +46,8 @@ class RuleContext:
     registry: RegistryLookup
     applicant_name: str
     applicant_threshold: float = APPLICANT_NAME_THRESHOLD
+    secondary_expiry: date | None = None
+    """The expiry date as the second, independent reading read it (None: not read)."""
     extra: dict[str, object] = field(default_factory=dict)
 
     @property

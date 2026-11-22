@@ -27,6 +27,19 @@ def expiry_rule(ctx: RuleContext) -> list[RuleResult]:
                 detail={"date": expiry.isoformat()},
             )
         ]
+    second = ctx.secondary_expiry
+    if second is not None and second <= ctx.today and ctx.extraction.expiry_date.origin == "read":
+        # The second reading says the licence has expired; the first does not. Neither is
+        # proven, so a person (or a re-read) must look: never ready, never rejected.
+        return [
+            failed(
+                "expiry",
+                "expiry_date",
+                severity="block",
+                reason="expiry_uncertain",
+                detail={"date": second.isoformat()},
+            )
+        ]
     days = (expiry - ctx.today).days
     if days < NEAR_EXPIRY_DAYS:
         return [

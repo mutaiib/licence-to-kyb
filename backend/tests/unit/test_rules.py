@@ -317,7 +317,7 @@ def test_a_missing_critical_field_is_flagged_for_examination() -> None:
 # The review page attaches each result to its fields by name, and the gate reads its outcome
 # and reason. Mutation testing showed that a result with a wrong rule ID or field survived.
 RULE_FIELDS: dict[str, set[str]] = {
-    "applicant_name": {"trade_name_en"},
+    "applicant_name": {"trade_name_en", "trade_name_ar"},
     "arabic_name": {"trade_name_ar"},
     "date_order": {"issue_date", "expiry_date"},
     "expiry": {"expiry_date"},
@@ -359,7 +359,11 @@ VARIED_CONTEXTS = [
 def test_every_result_names_its_rule_and_the_fields_it_checks(overrides: dict[str, Any]) -> None:
     for r in run_rules(context(**overrides)):
         if r.rule_id in RULE_FIELDS:
-            assert set(r.fields) == RULE_FIELDS[r.rule_id], r.rule_id
+            # Only fields the rule checks, and at least one: a registry record without a
+            # status problem may confirm only the number; the applicant name is compared
+            # with the English or the Arabic trade name.
+            assert r.fields, r.rule_id
+            assert set(r.fields) <= RULE_FIELDS[r.rule_id], r.rule_id
         else:  # evidence and required report one field per result
             assert r.rule_id in {"evidence", "required"}, r.rule_id
             assert len(r.fields) == 1

@@ -81,7 +81,8 @@ def _merge(people: list[FormPerson]) -> list[FormPerson]:
 
 def _owners_and_controllers(
     ex: TradeLicenceExtraction,
-) -> tuple[tuple[FormPerson, ...], tuple[FormPerson, ...], bool]:
+) -> tuple[tuple[FormPerson, ...], tuple[FormPerson, ...], bool, tuple[FormPerson, ...]]:
+    """Beneficial owners, controllers, whether shares are printed, and every owner."""
     people = present(ex.people) or []
     owners = [p for p in people if (present(p.role) or "") in OWNER_ROLES]
     shares_printed = any(present(p.share_pct) is not None for p in owners)
@@ -92,15 +93,23 @@ def _owners_and_controllers(
     ]
     managers = [_person(p) for p in people if present(p.role) == "manager"]
     controllers = _merge(managers + ubos)
-    return tuple(_merge(ubos)), tuple(controllers), shares_printed
+    every_owner = tuple(_merge([_person(p) for p in owners]))
+    return tuple(_merge(ubos)), tuple(controllers), shares_printed, every_owner
 
 
 def _required_documents(
-    legal_form: str | None, authority: str, people: tuple[FormPerson, ...], shares_printed: bool
+    legal_form: str | None,
+    authority: str,
+    controllers: tuple[FormPerson, ...],
+    shares_printed: bool,
+    owners: tuple[FormPerson, ...],
 ) -> tuple[RequiredDocumentItem, ...]:
     docs: list[RequiredDocumentItem] = []
-    if legal_form in MOA_FORMS or not shares_printed:
+    # An unclear legal form might be one that needs a memorandum: ask for it.
+    if legal_form is None or legal_form in MOA_FORMS or not shares_printed:
         docs.append(RequiredDocumentItem(document="memorandum_of_association"))
+    # Without printed shares, any owner may be a beneficial owner: identify every one.
+    people = controllers if shares_printed else tuple(_merge([*controllers, *owners]))
     docs.extend(
         RequiredDocumentItem(document="identity_document", for_person=p.name) for p in people
     )
@@ -133,7 +142,7 @@ def build_form(
             states[form_field] = "passed" if usable else "needs_examination"
         return value if usable or source in approved else None
 
-    ubos, controllers, shares_printed = _owners_and_controllers(ex)
+    ubos, controllers, shares_printed, owners = _owners_and_controllers(ex)
     activities = _activities(ex)
     form = KYBOnboardingForm(
         version=version,
@@ -150,7 +159,7 @@ def build_form(
         controllers=take("controllers", controllers) or (),
         chamber_number=take("chamber_number", present(ex.chamber_number)),
         required_documents=_required_documents(
-            present(ex.legal_form), authority, controllers, shares_printed
+            present(ex.legal_form), authority, controllers, shares_printed, owners
         ),
         field_states=states,
     )

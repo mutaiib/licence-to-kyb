@@ -1,15 +1,36 @@
 # Activities that need more checks (spec FR-012; CBUAE guidance on trade-based money
-# laundering, docs/research.md). Matched on code or on any keyword, case-insensitive.
+# laundering, docs/research.md). Matched on code, or on a keyword as whole words: a keyword
+# word also matches its plural (diamond, diamonds), and the Arabic article "ال" is ignored.
+# So "gold" matches "Gold Trading" but not "Golden Sands" or "Marigold".
 high_risk:
   - id: general_trading
     codes: ["4690.01"]
-    keywords: ["general trading", "تجارة عامة"]
+    keywords: ["general trading", "gen trading", "تجارة عامة"]
   - id: precious_metals_and_stones
     codes: ["4773.01"]
-    keywords: ["precious metals", "precious stones", "gold", "jewellery", "jewelry", "المعادن الثمينة"]
+    keywords:
+      - "precious metal"
+      - "precious stone"
+      - "gold"
+      - "bullion"
+      - "diamond"
+      - "jewellery"
+      - "jewelry"
+      - "jewel"
+      - "معادن ثمينة"
+      - "ذهب"
+      - "مجوهرات"
   - id: virtual_assets
     codes: ["6619.01"]
-    keywords: ["virtual asset", "crypto", "الأصول الافتراضية"]
+    keywords: ["virtual asset", "crypto", "cryptocurrency", "أصول افتراضية"]
   - id: money_exchange
     codes: ["6612.01"]
-    keywords: ["money exchange", "currency exchange", "remittance", "صرافة"]
+    keywords:
+      - "money exchange"
+      - "currency exchange"
+      - "money changer"
+      - "exchange house"
+      - "remittance"
+      - "hawala"
+      - "صرافة"
+      - "حوالات"

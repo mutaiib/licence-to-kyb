@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "scripted-baseline",
-    "date": "2026-11-22T13:51:41+00:00",
+    "date": "2026-11-22T14:47:19+00:00",
     "profile": "scripted",
     "models": {
       "all steps": "scripted (labels): checks routing and rules, not reading"
@@ -43,11 +43,11 @@
     "missing_mix_buckets": [],
     "cost_per_document_usd": 0.0,
     "p95_ms": {
-      "preprocess": 1851,
-      "route": 5,
-      "extract": 10,
-      "validate": 2,
-      "resolve": 179
+      "preprocess": 2975,
+      "route": 3,
+      "extract": 7,
+      "validate": 3,
+      "resolve": 27
     },
     "safety_violations": 0,
     "processing_failures": 0,

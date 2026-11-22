@@ -289,6 +289,7 @@ The key in `copy.ts` is `reason.<code>`. Each failure states the condition, then
 | `qr_mismatch` | The QR code shows licence number `{qr}`. The licence shows `{value}`. Examine the licence number. |
 | `registry_not_found` | The registry has no record of this licence number. Correct the number or reject the case. |
 | `registry_expiry_mismatch` | The registry shows expiry date `{registry}`. The licence shows `{value}`. Examine the expiry date. |
+| `registry_inactive` | The register shows this licence as `{status}`. Examine the licence number, or reject the case. |
 | `registry_unavailable` | The system could not do the registry check. Override the check with a reason, or reject the case. |
 | `applicant_name_mismatch` | The business name on the application does not match the licence. Examine the trade name. |
 | `owners_unclear` | The system cannot read the owners table. Examine the owners. |
