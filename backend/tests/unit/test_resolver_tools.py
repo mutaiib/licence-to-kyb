@@ -8,14 +8,14 @@ from datetime import date
 from typing import Any
 
 import pytest
-from licence_kyb.tools import ToolContext
-from licence_kyb.tools.errors import ERROR_CODES, MAX_RESULT_CHARS, ToolResult
-from licence_kyb.tools.runner import Budget, ToolRunner
 
 from licence_kyb.config import ResolverBudget
 from licence_kyb.nodes.preprocess import Word
 from licence_kyb.registry import RegistryUnavailableError
 from licence_kyb.rules.base import RegistryResult, failed, passed
+from licence_kyb.tools import ToolContext
+from licence_kyb.tools.errors import ERROR_CODES, MAX_RESULT_CHARS, ToolResult
+from licence_kyb.tools.runner import Budget, ToolRunner
 from tests.builders import extraction, field
 
 LIMITS = ResolverBudget(
