@@ -6,6 +6,7 @@ Read it in this order:
 
 1. [The system in one paragraph](#1-the-system-in-one-paragraph)
 2. [One licence, start to finish](#2-one-licence-start-to-finish)
+   - [As built: the graph, node by node](#as-built)
 3. [Why a workflow with one agent](#3-why-a-workflow-with-one-agent)
 4. [The pipeline](#4-the-pipeline)
 5. [What each step receives and returns](#5-what-each-step-receives-and-returns)
@@ -111,7 +112,7 @@ flowchart TD
 
 **The question that decides it:** can the steps be written down before the document is read?
 
-For a trade licence, yes. The steps are always the same: check, read, classify, extract, validate, decide, fill, review, submit. A **workflow** handles fixed steps best. Code controls the order, every step has a typed output, and each output can be tested on its own.
+For a trade licence, yes. The steps are always the same: check, read, classify, extract, validate, decide, fill the form, review, submit. A **workflow** handles fixed steps best. Code controls the order, every step has a typed output, and each output can be tested on its own.
 
 **Only one step cannot be scripted in advance:** how to repair a value that failed a check. A blurred expiry date, an English name that disagrees with the Arabic one, and a licence number in the wrong format each need a different investigation. That step is the **resolver agent**: a model that chooses its own read-only tool calls inside a hard budget.
 
@@ -158,7 +159,7 @@ flowchart TD
 - **Side effects live in their own nodes.** LangGraph runs a node again from its start when the node resumes. So the review node only collects decisions. Separate nodes write the decisions, audit events, form versions, captured corrections and the submission, and each write has a unique key. A repeated node writes nothing new ([data model](../specs/001-licence-to-kyb/data-model.md#writes-and-resumption)).
 - **Processing never stalls, and a person can always continue.**
   - On startup, every run left in `received` or `processing` resumes from its last checkpoint.
-  - A run past its 120 s deadline goes to review with `processing_failed`.
+  - A run past its deadline (120 s; a model profile can set more, for example 1,800 s for a local CPU model) goes to review with `processing_failed`.
   - When the daily token budget is exhausted, new runs skip the model steps and go to review with `budget_exhausted`.
   - In review, the reviewer can retry processing from the last completed step, or enter the values by hand.
 - **The resolver loop has hard limits.** They are defined once, in the [resolver contract](../specs/001-licence-to-kyb/contracts/resolver-tools.md#budgets-the-only-definition). Code decides when the loop stops, not the model.
@@ -231,7 +232,7 @@ Each layer answers a different question. A value that passes one layer can still
 
 | Layer | Question | Mechanism | Example failure it catches |
 |---|---|---|---|
-| 1 API | Is the reply the right shape? | Structured outputs (`client.messages.parse(output_format=Model)`) for route and extract. `strict: true` tools with `additionalProperties: false` for the resolver. | A missing field, or a string where a list is required. |
+| 1 API | Is the reply the right shape? | Structured outputs (`client.beta.messages.parse(output_format=Model)`; an OpenAI-compatible server gets a `json_schema` response format) for route and extract. `strict: true` tools with `additionalProperties: false` for the resolver. | A missing field, or a string where a list is required. |
 | 2 Pydantic | Are the types and local rules valid? | Enums, DD/MM/YYYY date parsing, `0 ≤ share_pct ≤ 100`. | A share of 120%, or the date 31/02/2026. |
 | 3 Business rules | Are the values correct for this licence? | Plain-code rules (see [test cases](../specs/001-licence-to-kyb/test-cases.md)). | Expired licence, expiry date before issue date, wrong number format for the authority, shares that do not sum to 100. |
 | 4 Grounding | Did the document really say this? | The `evidence_quote` must appear in the OCR text (fuzzy match ≥ 0.85), and the value must appear in its quote. | A value that the model invented or misread. |
@@ -256,7 +257,7 @@ sequenceDiagram
     participant H as Harness (code)
     participant M as Model
     participant T as Tool (code)
-    H->>M: system prompt + failed fields + validation report + 7 tool definitions
+    H->>M: system prompt + failed fields + validation report + tool definitions (7, or 6 for a text-only model)
     M-->>H: stop_reason=tool_use: licence_reread_region(page=1, field=expiry_date, region=top_right)
     H->>H: check budget, check scope (field must have failed), validate arguments
     H->>T: run tool
@@ -283,6 +284,8 @@ flowchart TD
     STOP -- "model error or refusal" --> ENDR[Stop the round.<br/>Keep the proposals so far.]
     STOP -- tool_use --> CHECK{Runner checks the call:<br/>known tool? arguments valid?<br/>field in scope? page exists?<br/>not a duplicate?}
     CHECK -- no --> ERR[tool_result, is_error=true:<br/>what failed, why, what to do next]
+    CHECK -- "duplicate call" --> DUP[The earlier result again,<br/>with a notice not to repeat]
+    DUP --> HARD
     CHECK -- yes --> RUN[Run the read-only tool]
     RUN --> SOFT{Soft limit reached?<br/>5 turns, 32k tokens, 35 s}
     SOFT -- "yes, and not propose_fix/finish" --> WRAP[Add a notice to the result:<br/>propose fixes and finish now]
@@ -313,7 +316,7 @@ Code sends the system prompt, the failed fields, the validation report and the t
     "type": "object",
     "properties": {
       "page": {"type": "integer", "minimum": 1, "maximum": 5},
-      "field": {"type": "string", "enum": ["licence_number", "trade_name_en", "trade_name_ar", "legal_form", "issue_date", "expiry_date", "people", "activities"]},
+      "field": {"type": "string", "enum": ["expiry_date"]},
       "region": {"type": "string", "enum": ["top_left", "top_right", "middle", "bottom_left", "bottom_right", "full_page"]}
     },
     "required": ["page", "field", "region"],
@@ -365,7 +368,8 @@ It never contains a stack trace. A failed call never ends the run. Example (show
 
 ### The resolver's tools
 
-All of these tools are read-only and share the `licence_` prefix:
+The five read tools share the `licence_` prefix; `propose_fix` and `finish` only record the agent's output. The `field` argument lists only the fields that failed in this run (above: only `expiry_date`), so the model cannot ask about a field that passed. A text-only model profile does not get `licence_reread_region`.
+
 
 | Tool | Reads or writes | Purpose |
 |---|---|---|
@@ -409,7 +413,7 @@ When the loop stops at a hard limit, code keeps the best accepted fixes, and the
 | Self-rating | The model's `self_confidence`, with a small weight. |
 
 **Calibration.**
-- `scripts/calibrate.py` fits the weights and a threshold for each field on the **calibration split** of the labelled cases.
+- `scripts/calibrate.py` fits a threshold for each field (the signal weights stay at their documented defaults) on the **calibration split** of the labelled cases.
 - It maximises the share of `ready` runs, subject to at least **99% precision on critical fields**, and writes `config/thresholds.<profile>.yaml` (thresholds are fitted per model profile). Until a live eval provides real readings, `config/thresholds.yaml` holds documented defaults marked `fitted: false`.
 - The critical fields are the licence number, legal names, legal form, expiry date and owners.
 - Metrics are reported on the separate **test split**, with a 95% interval. This avoids grading the thresholds on the data they were fitted to.
@@ -594,7 +598,7 @@ Every step, model call and tool call records a span in SQLite. Each span stores:
 | OCR and rendering | pypdfium2, pdfplumber, Tesseract (`eng+ara`), OpenCV QR | `backend/src/licence_kyb/nodes/preprocess.py` |
 | API | FastAPI | `backend/src/licence_kyb/api/` |
 | UI | React 19, Vite, TypeScript, Astryx (`@astryxdesign/core`, `theme-neutral`) | `frontend/` |
-| Test data | Jinja2 + WeasyPrint templates, Pillow/OpenCV degradations | `scripts/gen_licences.py` |
+| Test data | reportlab rendering, Pillow/OpenCV degradations | `backend/src/licence_kyb/testdata/` (`render.py`, `degrade.py`), run by `scripts/gen_licences.py` |
 | Operations | startup resume, deadline sweep, retention schedule, daily budget, health checks | `backend/src/licence_kyb/ops.py` |
 | Evals | Python harness, state-based graders, held-out split | `evals/` |
 

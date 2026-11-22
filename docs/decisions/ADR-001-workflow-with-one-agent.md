@@ -18,7 +18,7 @@ Use a fixed workflow in LangGraph. It has one agent node, the resolver, that run
 
 ## Reasons
 
-- **The steps are known before the document is read:** check, read, classify, extract, validate, decide, review, fill, submit. A workflow encodes known steps directly, and each step's output can be tested.
+- **The steps are known before the document is read:** check, read, classify, extract, validate, decide, fill the form, review, submit. A workflow encodes known steps directly, and each step's output can be tested.
 - **Reliability multiplies across model steps.** At 95% per step, ten model steps succeed about 60% of the time. Every decision moved into code removes one factor.
 - **The only step that cannot be scripted is how to investigate a failed value.** That step gets the agent.
 - **No condition for several agents applies.** The work fits in one context, it needs one permission set, and it gains nothing from running in parallel.

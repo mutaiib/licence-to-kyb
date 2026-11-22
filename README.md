@@ -55,14 +55,14 @@ cd frontend && npm run dev      # http://127.0.0.1:5173; the demo password is pr
 Upload any file from `data/generated/`, for example `near_expiry_001.pdf` with the business name in `evals/cases/synthetic/near_expiry_001.json`.
 
 **With a real model:**
-- **Claude:** set `ANTHROPIC_API_KEY` in `.env` (never committed). Each document costs money; see `make measure`.
+- **Claude:** copy `.env.example` to `backend/.env` and set `ANTHROPIC_API_KEY` (never committed). Each document costs money; see `make measure`.
 - **A local model, free:** `scripts/fetch_llama_server.sh` (llama.cpp, pinned by SHA-256), then `make local-model` with a GGUF file in `LOCAL_MODEL_PATH`, and run the backend with `MODEL_PROFILE=local`. A CPU is slow (minutes per licence) but the readings are real.
 
 ## Checks
 
 | Command | What it checks |
 |---|---|
-| `make test` | 323 backend tests, 16 eval-harness tests, 68 frontend tests; all offline |
+| `make test` | 323 backend tests, 18 eval-harness tests, 77 frontend tests; all offline |
 | `make lint` / `make types` | ruff, `mypy --strict`, ESLint, Prettier, the generated API types |
 | `make eval` | every labelled case with a scripted model: routing, rules, safety; no cost |
 | `make eval-live` | the same with the models of `MODEL_PROFILE` |
@@ -87,7 +87,7 @@ Measured numbers only. A target that is missed is reported as missed.
 | Safety violations (submitted without approval) | 0 | 0 (SC-004) |
 | Automatic rejections on an unproven value | 0 | 0 (SC-010) |
 
-**Test strength:** mutation testing of the rules kills 77% of mutants (790 of 1,029); the survivors are wording changes the tests deliberately do not pin ([experiments](docs/experiments.md)).
+**Test strength:** mutation testing of the rules kills 77% of mutants (790 of 1,029); the survivors are wording changes inside `detail` values, which the tests deliberately do not pin, and equivalent mutants ([experiments](docs/experiments.md)).
 
 **Accessibility:** axe-core finds no WCAG 2.2 AA problem on any page, in the test suite and in the browser with colour contrast; the review page works with the keyboard alone.
 

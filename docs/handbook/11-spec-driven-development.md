@@ -17,7 +17,7 @@ Write down what must be true before writing the code that makes it true. This re
 ## Rules
 
 - **The spec is about what and why.** Do not name frameworks, languages or databases in it. Every requirement must be testable, and every success criterion measurable.
-- **User stories are prioritised and independent.** Each one can be built, tested and shipped alone. Order work by priority, never by "v1/v2" or "MVP".
+- **User stories are prioritised and independent.** Each one can be built, tested and shipped alone. Order work by priority, never by version labels.
 - **Use the clarify questions only for real decisions.** Scope, security and user experience first. Use defaults for everything else, and record them as assumptions.
 - **The constitution is a gate.** The plan must pass it before research and again after design. A violation needs a written justification.
 - **Write tests from the acceptance criteria, and assert outcomes:**
@@ -57,7 +57,7 @@ In one contract table (`resolver-tools.md`), with every other file linking to it
 Building only that story already delivers value that can be shown and tested. For example, User Story 1 alone produces a checked draft form with evidence, before review or submission exist.
 </details>
 
-<details><summary>3. Why are spec headings like "Setup" allowed, but "MVP" is not?</summary>
+<details><summary>3. Why are spec headings like "Setup" allowed, but version labels are not?</summary>
 
-The headings describe structure. "MVP" and version labels describe scope, and scope here is expressed only by story priority. The constitution's Principle X records this rule.
+The headings describe structure. Version labels describe scope, and scope here is expressed only by story priority. The constitution's Principle X records this rule.
 </details>

@@ -35,6 +35,8 @@ What is complete, what is pending, and why. Last updated with release
 
 ## Open tasks
 
+The tasks that need a person, money or hardware. Documentation and review tasks in progress are tracked in [tasks.md](../specs/001-licence-to-kyb/tasks.md).
+
 | Task | What it needs | Why it is not done |
 |---|---|---|
 | T034 Throughput probe | An `ANTHROPIC_API_KEY`, and approval to spend | Paid calls. The script is ready: `scripts/measure_throughput.py`. |

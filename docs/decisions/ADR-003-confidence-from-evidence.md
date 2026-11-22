@@ -19,7 +19,7 @@ Each field's score is a transparent weighted sum of signals that code can check:
 - QR or registry corroboration
 - the model's self-rating, at a small weight
 
-`scripts/calibrate.py` fits the weights and the per-field thresholds on the labelled eval set. The target is at least 99% precision on critical fields among `ready` runs.
+`scripts/calibrate.py` fits the per-field thresholds on the labelled eval set; the signal weights are documented defaults. The target is at least 99% precision on critical fields among `ready` runs.
 
 ## Reasons
 

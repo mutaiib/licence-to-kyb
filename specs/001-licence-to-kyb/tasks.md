@@ -106,7 +106,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
   - typed errors
   - a span per call
 
-  Implement the replay recorder, which stores the serving model, in `backend/src/licence_kyb/llm/recorder.py`.
+  Implement the replay recorder, which stores the serving model, in `backend/src/licence_kyb/llm/recorder.py` (as built: recorded responses are plain test fixtures and scripted transports; there is no recorder module).
 - [X] T027 [P] Implement spans (step, model call, tool call), with OpenTelemetry GenAI attribute names, requested and serving model, and thinking tokens, in `backend/src/licence_kyb/tracing.py`
 - [X] T028 Implement `backend/src/licence_kyb/ops.py`:
   - startup resume of `received` and `processing` runs
@@ -116,7 +116,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
   Add `/healthz` and `/readyz` in `backend/src/licence_kyb/api/routes_health.py`.
 - [X] T029 Implement `RunState` in `backend/src/licence_kyb/state.py`, and the graph skeleton with the SQLite checkpointer and the rule that side effects run only in their own nodes, in `backend/src/licence_kyb/graph.py`
-- [X] T030 [P] Implement the synthetic licence generator in `scripts/gen_licences.py`, with layouts in `scripts/layouts/` (`reportlab`, per research R9a):
+- [X] T030 [P] Implement the synthetic licence generator in `scripts/gen_licences.py`, with layouts in `backend/src/licence_kyb/testdata/render.py` (`reportlab`, per research R9a):
   - at least two bilingual layouts per authority, with Noto Naskh Arabic
   - QR codes and a SPECIMEN watermark
   - Faker values with a fixed seed
@@ -171,10 +171,10 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T046 [P] [US1] Implement the rule base, with the `passed`, `failed`, `could_not_run` and `not_applicable` outcomes, plus the expiry, number-format and date-order rules, in `backend/src/licence_kyb/rules/{base,expiry,number_format,dates}.py`
 - [X] T047 [P] [US1] Implement the ownership, legal-form and Arabic-name rules in `backend/src/licence_kyb/rules/{ownership,legal_form,arabic_name}.py`
 - [X] T048 [P] [US1] Implement the activity, evidence, QR, registry (mock, `not_applicable` without a register) and applicant-name rules in `backend/src/licence_kyb/rules/{activity,grounding,qr,registry,applicant}.py`
-- [X] T049 [US1] Implement the validate node in `backend/src/licence_kyb/nodes/validate.py`. It runs every rule and never raises.
+- [X] T049 [US1] Implement the validate node in `backend/src/licence_kyb/nodes/validate.py` (as built: `Pipeline._validate` in `pipeline.py`, running `rules/`). It runs every rule and never raises.
 - [X] T050 [US1] Implement the map-form node (the draft form) in `backend/src/licence_kyb/nodes/map_form.py`. It handles required documents, Ejari and Tawtheeq, controller merging on name and nationality, and `ubo_needs_examination`.
 - [X] T051 [US1] Wire intake → preprocess → route → extract → validate → map_form in `backend/src/licence_kyb/graph.py`. In this story, any flagged field routes to `needs_review`, and only file and `out_of_scope` reasons route to `reject`.
-- [X] T052 [US1] Implement the session endpoints (argon2id, rate limit, CSRF, sign-out) in `backend/src/licence_kyb/api/routes_session.py` and `backend/src/licence_kyb/api/csrf.py`. Implement the runs endpoints (`POST /api/runs`, `GET /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/pages/{n}`) in `backend/src/licence_kyb/api/routes_runs.py`.
+- [X] T052 [US1] Implement the session endpoints (argon2id, rate limit, CSRF, sign-out) in `backend/src/licence_kyb/api/routes_session.py` and `backend/src/licence_kyb/api/auth.py` (as built: CSRF lives in `auth.py`). Implement the runs endpoints (`POST /api/runs`, `GET /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/pages/{n}`) in `backend/src/licence_kyb/api/routes_runs.py`.
 - [X] T053 [P] [US1] Add the strings for sign-in, upload, progress, field states, route labels and reason codes to `frontend/src/copy.ts`, following `docs/ui-copy.md`. Implement the copy check in `scripts/lint_copy.py`.
 - [X] T054 [US1] Generate `frontend/src/api/generated.ts` (`make types`). Build these pages, starting from `astryx template`, in `frontend/src/pages/` and `frontend/src/components/`:
   - the Sign-in page
@@ -196,7 +196,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 2 (write first; they must fail)
 
-- [X] T056 [P] [US2] Write graph tests from the "Review, submission and verification" table in `backend/tests/graph/test_review_submit.py`. Include "resumed twice → one audit event per decision, one captured correction, one version increase".
+- [X] T056 [P] [US2] Write graph tests from the "Review, submission and verification" table in `backend/tests/api/test_review_submit.py`. Include "resumed twice → one audit event per decision, one captured correction, one version increase".
 - [X] T057 [P] [US2] Write API tests for review, reopen, retry and submit, covering statuses 200, 202, 401, 403 and 409 and their codes (including `not_retryable`) per `contracts/http-api.md`, in `backend/tests/api/test_review_submit.py`
 - [X] T058 [P] [US2] Write an audit property test (in `backend/tests/api/test_review_submit.py`, to reuse its API harness): for any sequence of decisions, including repeats, the audit log alone identifies the approver and every change before approval, with one event per key
 - [X] T059 [P] [US2] Write Vitest tests in `frontend/tests/review_actions.test.tsx`:
@@ -243,7 +243,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 3 (write first; they must fail)
 
-- [X] T069 [P] [US3] Write gate tests from the "Confidence and routing" table in `backend/tests/unit/test_gate.py`, and Hypothesis properties in `backend/tests/unit/test_gate_properties.py`. The properties include "reject only with a file reason, `out_of_scope` or a corroborated `expired`".
+- [X] T069 [P] [US3] Write gate tests from the "Confidence and routing" table in `backend/tests/unit/test_gate.py`, and Hypothesis properties in the same file (as built: `test_gate.py`). The properties include "reject only with a file reason, `out_of_scope` or a corroborated `expired`".
 - [X] T070 [P] [US3] Write calibration tests in `backend/tests/unit/test_calibrate.py`. On a labelled fixture set of signal rows (one row per field: its signals and whether the value was right), the fitted thresholds reach ≥ 99% critical-field precision among `ready` cases in the calibration split. The tests never use the test split.
 - [X] T071 [P] [US3] Write Vitest tests in `frontend/tests/confidence.test.tsx`: each flagged field shows its score, its threshold and the signal behind a low score
 
