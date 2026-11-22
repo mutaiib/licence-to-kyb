@@ -258,6 +258,7 @@ def main() -> None:
     parser.add_argument("--no-resolver", action="store_true")
     parser.add_argument("--pass3", action="store_true", help="run 30 routing cases 3 times")
     parser.add_argument("--groups", nargs="*", help="only these case groups")
+    parser.add_argument("--limit", type=int, help="at most this many cases (a slow model)")
     parser.add_argument("--name", default=datetime.now(UTC).strftime("%Y%m%d-%H%M%S"))
     args = parser.parse_args()
 
