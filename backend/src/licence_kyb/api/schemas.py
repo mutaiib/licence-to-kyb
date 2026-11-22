@@ -75,8 +75,11 @@ class RuleView(BaseModel):
 
 # Used from User Story 3 (confidence and routing).
 class ConfidenceView(BaseModel):
+    """How sure the system is of a read value, from its evidence (FR-019)."""
+
     score: float
-    threshold: float
+    threshold: float | None
+    """None for a field that is scored but never flagged for low confidence."""
     signals: dict[str, float]
 
 

@@ -6,6 +6,7 @@ import json
 from typing import Any
 
 from licence_kyb.api.schemas import (
+    ConfidenceView,
     EvidenceBox,
     FormFieldView,
     FormView,
@@ -32,8 +33,9 @@ STEP_OUTPUT: dict[str, str] = {
     "route": "route",
     "extract": "extraction",
     "validate": "rule_results",
+    "confidence": "confidence",
     "map_form": "form",
-    "decide": "decision",
+    "gate": "decision",
 }
 
 
@@ -91,6 +93,7 @@ def _form_view(state: dict[str, Any]) -> tuple[FormView | None, list[str]]:
             read_value=read[form_field],
             words=words,
             failing=failing,
+            confidence=state.get("confidence", {}).get(source_name),
         )
     documents: list[str] = [item.document for item in form.required_documents]
     return FormView(version=form.version, fields=fields), documents
@@ -104,6 +107,7 @@ def _field_view(
     read_value: FormValue,
     words: list[Word],
     failing: list[RuleResult],
+    confidence: dict[str, Any] | None,
 ) -> FormFieldView:
     form_value: FormValue = getattr(form, form_field)
     has_form_value = form_value is not None and form_value != ()
@@ -118,6 +122,10 @@ def _field_view(
         evidence_quote=source.evidence_quote,
         evidence_box=_evidence_box(words, source.evidence_quote, source.page),
         rule_results=[_rule_view(r) for r in failing],
+        # A value the reviewer typed has no reading, so the reading's score does not apply.
+        confidence=(
+            ConfidenceView(**confidence) if confidence and source.origin == "read" else None
+        ),
     )
 
 

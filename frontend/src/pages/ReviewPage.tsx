@@ -16,6 +16,7 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { useEffect, useState } from 'react';
 
 import { getRun, type FormFieldView, type ReasonCode, type RunView } from '../api/client';
+import { ConfidenceDetails } from '../components/ConfidenceDetails';
 import { EvidenceViewer } from '../components/EvidenceViewer';
 import { FieldActions, type NewDecision } from '../components/FieldActions';
 import { FormActions } from '../components/FormActions';
@@ -111,17 +112,8 @@ function FieldDetails({
             <Text>{fieldValueText(field)}</Text>
           </MetadataListItem>
         )}
-        {field.confidence != null && (
-          <MetadataListItem label={copy['review.confidence.label']}>
-            <Text hasTabularNumbers>{field.confidence.score.toFixed(2)}</Text>
-          </MetadataListItem>
-        )}
-        {field.confidence != null && (
-          <MetadataListItem label={copy['review.threshold.label']}>
-            <Text hasTabularNumbers>{field.confidence.threshold.toFixed(2)}</Text>
-          </MetadataListItem>
-        )}
       </MetadataList>
+      {field.confidence != null && <ConfidenceDetails confidence={field.confidence} />}
       {acting.canAct && (
         <FieldActions
           name={name}

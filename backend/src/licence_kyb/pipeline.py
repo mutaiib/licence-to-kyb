@@ -1,10 +1,10 @@
 """The processing pipeline for one run (architecture §4; tasks T051).
 
 Graph:
-    preprocess → route → extract → validate → map_form → decide → persist
+    preprocess → route → extract → validate → confidence → map_form → gate → persist
         → wait_for_reviewer → apply_action → (wait_for_reviewer | retry | END)
 
-- ``route`` goes straight to ``decide`` when the file is not a trade licence.
+- ``route`` goes straight to ``gate`` when the file is not a trade licence.
 - When extraction fails, ``map_form`` builds an empty form, so the reviewer can enter values.
 - ``wait_for_reviewer`` only pauses (``interrupt``). LangGraph re-runs a paused node when the
   run resumes, so this node must have no side effects.
@@ -41,7 +41,14 @@ from licence_kyb.graph import thread_config
 from licence_kyb.llm.client import LLMClient, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import prompt_hash
 from licence_kyb.nodes import review
+from licence_kyb.nodes.confidence import (
+    ConfidenceConfig,
+    load_config,
+    low_confidence_results,
+    score_fields,
+)
 from licence_kyb.nodes.extract import build_extract_request, extract_licence
+from licence_kyb.nodes.gate import decide_route, with_expiry_corroboration
 from licence_kyb.nodes.intake import IntakeResult, IntakeService
 from licence_kyb.nodes.map_form import SOURCES, build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
@@ -51,7 +58,7 @@ from licence_kyb.profiles import load_profile
 from licence_kyb.registry import MockRegistry
 from licence_kyb.rules import RuleContext, run_rules
 from licence_kyb.schemas.licence import CriticalFields, TradeLicenceExtraction
-from licence_kyb.schemas.results import FILE_REASONS, RuleResult, reason_entry
+from licence_kyb.schemas.results import RuleResult, reason_entry
 from licence_kyb.security import Cipher
 from licence_kyb.state import RunState
 from licence_kyb.store.db import Database
@@ -89,6 +96,7 @@ class Deps:
     models: ModelsConfig = field(default_factory=models_config)
     applicant_threshold: float = APPLICANT_NAME_THRESHOLD
     deadline_seconds: float = field(default_factory=processing_deadline_seconds)
+    confidence: ConfidenceConfig = field(default_factory=load_config)
 
     @property
     def files_dir(self) -> Path:
@@ -201,19 +209,19 @@ class Pipeline:
         g.add_node("extract", self._extract)
         g.add_node("validate", self._validate)
         g.add_node("map_form", self._map_form)
-        g.add_node("decide", self._decide)
+        g.add_node("confidence", self._confidence)
+        g.add_node("gate", self._gate)
         g.add_node("persist", self._persist)
         g.add_edge(START, "preprocess")
         g.add_edge("preprocess", "route")
-        g.add_conditional_edges(
-            "route", self._after_route, {"extract": "extract", "decide": "decide"}
-        )
+        g.add_conditional_edges("route", self._after_route, {"extract": "extract", "gate": "gate"})
         g.add_conditional_edges(
             "extract", self._after_extract, {"validate": "validate", "map_form": "map_form"}
         )
-        g.add_edge("validate", "map_form")
-        g.add_edge("map_form", "decide")
-        g.add_edge("decide", "persist")
+        g.add_edge("validate", "confidence")
+        g.add_edge("confidence", "map_form")
+        g.add_edge("map_form", "gate")
+        g.add_edge("gate", "persist")
         g.add_node("wait_for_reviewer", self._wait_for_reviewer)
         g.add_node("apply_action", self._apply_action)
         g.add_edge("persist", "wait_for_reviewer")
@@ -270,8 +278,8 @@ class Pipeline:
         }
 
     @staticmethod
-    def _after_route(state: RunState) -> Literal["extract", "decide"]:
-        return "extract" if state["route"]["doc_type"] == "trade_licence" else "decide"
+    def _after_route(state: RunState) -> Literal["extract", "gate"]:
+        return "extract" if state["route"]["doc_type"] == "trade_licence" else "gate"
 
     def _extract(self, state: RunState) -> dict[str, Any]:
         run_id = state["run_id"]
@@ -344,36 +352,31 @@ class Pipeline:
         form = build_form(ex, results, authority=state["route"]["authority"], version=1)
         return {"form": form.model_dump(mode="json")}
 
+    def _confidence(self, state: RunState) -> dict[str, Any]:
+        """Score each read field from its evidence; flag fields below their threshold."""
+        ex = TradeLicenceExtraction.model_validate(state["extraction"])
+        agreement = state.get("agreement", {})
+        results = with_expiry_corroboration(
+            [RuleResult.model_validate(r) for r in state.get("rule_results", [])], agreement
+        )
+        scores = score_fields(
+            ex, agreement, results, self._pages(state).words, self.deps.confidence
+        )
+        flagged = low_confidence_results(scores, results)
+        return {
+            "confidence": scores,
+            "rule_results": [r.model_dump(mode="json") for r in [*results, *flagged]],
+        }
+
     @staticmethod
-    def _decide(state: RunState) -> dict[str, Any]:
-        """User Story 1 routing: file and corroborated out-of-scope reasons reject; any other
-        reason or failed rule goes to review; otherwise ready. US3 adds confidence."""
-        reasons = list(state.get("reasons", []))
-        results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
-        for result in results:
-            if not result.counts_as_failed:
-                continue
-            assert result.reason_code is not None  # noqa: S101 - a failed rule always has a code
-            # One reason per field, so the review page can show it next to each field.
-            # A rule about the whole document (no fields) gives one reason with no field.
-            fields: list[str | None] = list(result.fields) or [None]
-            for field_name in fields:
-                reasons.append(
-                    reason_entry(
-                        result.reason_code,
-                        field=field_name,
-                        rule_id=result.rule_id,
-                        detail=result.detail,
-                    )
-                )
-        codes = {r["code"] for r in reasons}
-        if codes & (FILE_REASONS | {"out_of_scope"}):
-            route = "reject"
-        elif reasons:
-            route = "needs_review"
-        else:
-            route = "ready"
-        return {"decision": {"route": route}, "reasons": reasons}
+    def _gate(state: RunState) -> dict[str, Any]:
+        """One route per run (``nodes/gate.py``)."""
+        decision = decide_route(
+            run_reasons=[r for r in state.get("reasons", []) if r.get("rule_id") is None],
+            rule_results=[RuleResult.model_validate(r) for r in state.get("rule_results", [])],
+            agreement=state.get("agreement", {}),
+        )
+        return {"decision": {"route": decision["route"]}, "reasons": decision["reasons"]}
 
     def _persist(self, state: RunState) -> dict[str, Any]:
         run_id = state["run_id"]
@@ -417,7 +420,22 @@ class Pipeline:
         return "wait"
 
     def _rules_for(self, state: dict[str, Any]) -> review.RunRules:
-        return lambda ex: self._run_rules(state, ex)  # type: ignore[arg-type]
+        """Every rule, plus the low-confidence flags of fields still as the model read them.
+        A value a reviewer typed has no reading to doubt, so its flag goes."""
+
+        def run(ex: TradeLicenceExtraction) -> list[RuleResult]:
+            still_read = {
+                source: s
+                for source, s in state.get("confidence", {}).items()
+                if getattr(ex, source).origin == "read"
+            }
+            results = with_expiry_corroboration(
+                self._run_rules(state, ex),  # type: ignore[arg-type]
+                state.get("agreement", {}),
+            )
+            return results + low_confidence_results(still_read, results)
+
+        return run
 
     def _apply_action(self, state: RunState) -> dict[str, Any]:
         action, run_id = state["action"], state["run_id"]

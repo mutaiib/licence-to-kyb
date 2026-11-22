@@ -48,6 +48,7 @@ The Technical Context has no open questions. This file records each technical de
 
 - **Decision:** a weighted sum of checkable signals. Weights and per-field thresholds are fitted by `scripts/calibrate.py`, which maximises `ready` coverage subject to ≥ 99% critical-field precision ([ADR-003](../../docs/decisions/ADR-003-confidence-from-evidence.md)).
 - **Rationale:** the score is transparent and can be shown on the review page, and it fits a small labelled set.
+- **Until a live eval runs:** offline tests use scripted replies that read perfectly, so a fit on them would be meaningless. `config/thresholds.yaml` therefore starts with documented default weights and thresholds, marked `fitted: false`, and the review page and eval report say so. `scripts/calibrate.py` replaces them when a live eval run (with a model API key) provides real signal rows.
 - **Alternatives considered:**
   - The model's self-rating alone: uncalibrated.
   - A learned classifier: too little data, and opaque.

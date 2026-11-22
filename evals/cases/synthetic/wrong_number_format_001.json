@@ -3,7 +3,7 @@
   "authority": "DET",
   "case_id": "wrong_number_format_001",
   "document": "data/generated/wrong_number_format_001.pdf",
-  "document_sha256": "7d679bf53772282199e6c6ff98ec32a89dc8e8e56e70598ab8ea26f1ae2fff32",
+  "document_sha256": "1f28e73712260835ce24aed3f115b632e370030340ef447baaf23f8bd0b1cb28",
   "expected_reason_codes": [
     "number_format"
   ],
@@ -28,7 +28,7 @@
     "issue_date": "2026-02-20",
     "issuing_authority": "DET",
     "legal_form": "llc_single_owner",
-    "licence_number": "14046",
+    "licence_number": "132372",
     "people": [
       {
         "name": "Kristin Simon",

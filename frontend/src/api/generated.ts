@@ -211,7 +211,10 @@ export interface components {
             /** File */
             file: string;
         };
-        /** ConfidenceView */
+        /**
+         * ConfidenceView
+         * @description How sure the system is of a read value, from its evidence (FR-019).
+         */
         ConfidenceView: {
             /** Score */
             score: number;
@@ -220,7 +223,7 @@ export interface components {
                 [key: string]: number;
             };
             /** Threshold */
-            threshold: number;
+            threshold: number | null;
         };
         /**
          * DecisionIn
