@@ -73,6 +73,7 @@ class RuleView(BaseModel):
     detail: dict[str, str] = {}
 
 
+# Used from User Story 3 (confidence and routing).
 class ConfidenceView(BaseModel):
     score: float
     threshold: float
@@ -88,6 +89,7 @@ class FormFieldView(BaseModel):
     origin: Origin = "read"
     evidence_quote: str | None = None
     evidence_box: EvidenceBox | None = None
+    # Used from User Story 3; model_rationale from User Story 4.
     confidence: ConfidenceView | None = None
     rule_results: list[RuleView] = []
     model_rationale: str | None = None

@@ -21,6 +21,11 @@ PUBLIC = {("POST", "/api/session")}
 def create_app(
     *, data_dir: Path, settings: Settings | None = None, pipeline: Pipeline | None = None
 ) -> FastAPI:
+    """The API app. ``main.py`` always passes a pipeline.
+
+    Without a pipeline, only the health, session and OpenAPI parts work: the health tests and
+    scripts/export_openapi.py use that. The run routes need a pipeline.
+    """
     settings = settings or Settings()
 
     @asynccontextmanager

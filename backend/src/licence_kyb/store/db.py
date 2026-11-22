@@ -187,6 +187,7 @@ class Database:
         return str(row["mime"])
 
     # ------------------------------------------------------------------ keyed writes
+    # Used from User Story 2 (review and submission).
     def record_decision(
         self,
         *,
@@ -209,6 +210,7 @@ class Database:
             )
             return cur.rowcount == 1
 
+    # Used from User Story 2 (review and submission).
     def record_approval(
         self, *, action_id: str, run_id: str, form_version: int, reviewer: str
     ) -> bool:
@@ -220,6 +222,7 @@ class Database:
             )
             return cur.rowcount == 1
 
+    # Used from User Story 2 (review and submission).
     def approval_for(self, run_id: str, form_version: int) -> dict[str, Any] | None:
         with self.connect() as conn:
             row = conn.execute(
@@ -228,6 +231,7 @@ class Database:
             ).fetchone()
         return dict(row) if row else None
 
+    # Used from User Story 2 (review and submission).
     def record_submission(
         self,
         *,
@@ -252,6 +256,7 @@ class Database:
         verified = None if row["verified"] is None else bool(row["verified"])
         return SubmissionRow(row["submission_id"], row["run_id"], row["form_version"], verified)
 
+    # Used from User Story 2 (review and submission).
     def read_submission(self, submission_id: str) -> dict[str, Any] | None:
         with self.connect() as conn:
             row = conn.execute(
@@ -259,6 +264,7 @@ class Database:
             ).fetchone()
         return dict(row) if row else None
 
+    # Used from User Story 2 (review and submission).
     def set_submission_verified(self, submission_id: str, verified: bool) -> None:
         with self.connect() as conn:
             conn.execute(
@@ -295,6 +301,7 @@ class Database:
             ).fetchall()
         return [dict(r) for r in rows]
 
+    # Used from User Story 2: corrections are captured for later evals.
     def record_capture(
         self,
         *,

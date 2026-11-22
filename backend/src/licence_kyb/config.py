@@ -76,10 +76,12 @@ class ModelsConfig(BaseModel):
     route: StepModel
     extract_primary: StepModel
     extract_secondary: StepModel
+    # resolve and reread_vision: used from User Story 4 (the resolver).
     resolve: StepModel
     reread_vision: StepModel
 
 
+# Used from User Story 4 (the resolver).
 class ResolverBudget(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     soft_turns: int
