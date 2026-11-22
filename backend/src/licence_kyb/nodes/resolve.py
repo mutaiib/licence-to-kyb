@@ -14,6 +14,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+from pydantic import ValidationError
+
 from licence_kyb.config import StepModel
 from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import load_prompt
@@ -137,7 +139,12 @@ def apply_proposals(
                 "self_confidence": p.self_confidence,
             },
         }
-        results = run_rules(TradeLicenceExtraction.model_validate(candidate))
+        try:
+            parsed = TradeLicenceExtraction.model_validate(candidate)
+        except ValidationError:  # a value the schema cannot hold is never kept
+            checked.append(p.model_copy(update={"accepted": False}))
+            continue
+        results = run_rules(parsed)
         passes = not any(_reading_problem(r) for r in results if p.field in r.fields)
         if passes:
             current = candidate

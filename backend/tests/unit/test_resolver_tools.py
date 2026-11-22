@@ -11,8 +11,10 @@ import pytest
 
 from licence_kyb.config import ResolverBudget
 from licence_kyb.nodes.preprocess import Word
+from licence_kyb.nodes.resolve import apply_proposals
 from licence_kyb.registry import RegistryUnavailableError
 from licence_kyb.rules.base import RegistryResult, failed, passed
+from licence_kyb.schemas.results import ProposedFix
 from licence_kyb.tools import ToolContext
 from licence_kyb.tools.errors import ERROR_CODES, MAX_RESULT_CHARS, ToolResult
 from licence_kyb.tools.runner import Budget, ToolRunner
@@ -314,3 +316,41 @@ def test_every_result_stays_within_the_size_limit() -> None:
     )
 
     assert len(result.content) <= MAX_RESULT_CHARS
+
+
+def test_a_proposal_outside_a_coded_field_s_codes_is_refused_with_the_codes() -> None:
+    """legal_form takes a code (llc, fze, ...), not the printed words."""
+    r = runner(context(failed_fields=("legal_form",)))
+
+    body = error(
+        r.call(
+            "propose_fix",
+            {
+                "field": "legal_form",
+                "new_value": "Limited Liability Company",
+                "evidence_quote": "Legal Form Limited Liability Company",
+                "self_confidence": "high",
+                "rationale": "re-read",
+            },
+        )
+    )
+
+    assert body["error_code"] == "proposal_refused"
+    assert "llc" in body["allowed"]
+    assert r.proposals == []
+
+
+def test_a_proposal_the_schema_cannot_hold_is_not_accepted_and_never_raises() -> None:
+    proposal = ProposedFix(
+        field="legal_form",
+        new_value="Limited Liability Company",
+        evidence_quote="Legal Form Limited Liability Company",
+        self_confidence="high",
+        rationale="re-read",
+    )
+    start = extraction().model_dump(mode="json")
+
+    kept, checked = apply_proposals(start, [proposal], run_rules=lambda ex: [])
+
+    assert kept == start
+    assert [p.accepted for p in checked] == [False]
