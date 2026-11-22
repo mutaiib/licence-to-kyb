@@ -48,7 +48,7 @@ from licence_kyb.nodes.confidence import (
     score_fields,
 )
 from licence_kyb.nodes.extract import build_extract_request, extract_licence
-from licence_kyb.nodes.gate import decide_route
+from licence_kyb.nodes.gate import decide_route, with_expiry_corroboration
 from licence_kyb.nodes.intake import IntakeResult, IntakeService
 from licence_kyb.nodes.map_form import SOURCES, build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
@@ -355,21 +355,17 @@ class Pipeline:
     def _confidence(self, state: RunState) -> dict[str, Any]:
         """Score each read field from its evidence; flag fields below their threshold."""
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
-        results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
+        agreement = state.get("agreement", {})
+        results = with_expiry_corroboration(
+            [RuleResult.model_validate(r) for r in state.get("rule_results", [])], agreement
+        )
         scores = score_fields(
-            ex,
-            state.get("agreement", {}),
-            results,
-            self._pages(state).words,
-            self.deps.confidence,
+            ex, agreement, results, self._pages(state).words, self.deps.confidence
         )
         flagged = low_confidence_results(scores, results)
         return {
             "confidence": scores,
-            "rule_results": [
-                *state.get("rule_results", []),
-                *(r.model_dump(mode="json") for r in flagged),
-            ],
+            "rule_results": [r.model_dump(mode="json") for r in [*results, *flagged]],
         }
 
     @staticmethod
@@ -433,7 +429,10 @@ class Pipeline:
                 for source, s in state.get("confidence", {}).items()
                 if getattr(ex, source).origin == "read"
             }
-            results = self._run_rules(state, ex)  # type: ignore[arg-type]
+            results = with_expiry_corroboration(
+                self._run_rules(state, ex),  # type: ignore[arg-type]
+                state.get("agreement", {}),
+            )
             return results + low_confidence_results(still_read, results)
 
         return run

@@ -8,8 +8,8 @@ from typing import Any
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from licence_kyb.nodes.gate import decide_route
 
+from licence_kyb.nodes.gate import decide_route, with_expiry_corroboration
 from licence_kyb.rules.base import failed, not_applicable, passed
 from licence_kyb.schemas.results import FILE_REASONS, RuleResult, reason_entry
 
@@ -251,3 +251,13 @@ def test_one_route_and_reasons_unless_ready(
 
     assert decision["route"] in ("ready", "needs_review", "reject")
     assert (decision["route"] == "ready") == (decision["reasons"] == [])
+
+
+def test_an_uncorroborated_expiry_is_reported_as_uncertain_on_the_field_too() -> None:
+    rules = replace(clean_rules(), EXPIRED, NO_REGISTRY)
+
+    checked = with_expiry_corroboration(rules, {"expiry_date": False})
+
+    [expiry] = [r for r in checked if r.rule_id == "expiry"]
+    assert expiry.reason_code == "expiry_uncertain"
+    assert with_expiry_corroboration(rules, AGREE) == rules  # corroborated: unchanged

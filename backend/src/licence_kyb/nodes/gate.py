@@ -32,18 +32,32 @@ def expiry_corroborated(rules: list[RuleResult], agreement: dict[str, bool]) -> 
     return (readings_agree and evidence_matches) or registry_confirms
 
 
-def rule_reasons(rules: list[RuleResult], agreement: dict[str, bool]) -> list[dict[str, Any]]:
+def with_expiry_corroboration(
+    rules: list[RuleResult], agreement: dict[str, bool]
+) -> list[RuleResult]:
+    """The rule results, with an uncorroborated ``expired`` changed to ``expiry_uncertain``.
+
+    The change is made on the rule result itself, so the field, the run reasons and the
+    review page all say the same thing.
+    """
+    if expiry_corroborated(rules, agreement):
+        return rules
+    return [
+        r.model_copy(update={"reason_code": "expiry_uncertain"})
+        if r.reason_code == "expired" and r.counts_as_failed
+        else r
+        for r in rules
+    ]
+
+
+def rule_reasons(rules: list[RuleResult]) -> list[dict[str, Any]]:
     """One reason per failed or could-not-run check and field. ``not_applicable`` never fails."""
-    corroborated = expiry_corroborated(rules, agreement)
     reasons = []
     for r in rules:
         if not r.counts_as_failed or r.reason_code is None:
             continue
-        code = r.reason_code
-        if code == "expired" and not corroborated:
-            code = "expiry_uncertain"
         for f in r.fields or (None,):
-            reasons.append(reason_entry(code, field=f, rule_id=r.rule_id, detail=r.detail))
+            reasons.append(reason_entry(r.reason_code, field=f, rule_id=r.rule_id, detail=r.detail))
     return reasons
 
 
@@ -54,7 +68,8 @@ def decide_route(
     agreement: dict[str, bool],
 ) -> dict[str, Any]:
     """``{"route": ..., "reasons": [...]}``. Reasons are empty only when the route is ready."""
-    reasons = [*run_reasons, *rule_reasons(rule_results, agreement)]
+    checked = with_expiry_corroboration(rule_results, agreement)
+    reasons = [*run_reasons, *rule_reasons(checked)]
     codes = {r["code"] for r in reasons}
     if codes & ALWAYS_REJECT:
         route = "reject"
