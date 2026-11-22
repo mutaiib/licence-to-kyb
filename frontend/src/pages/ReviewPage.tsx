@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { getRun, type FormFieldView, type ReasonCode, type RunView } from '../api/client';
 import { ConfidenceDetails } from '../components/ConfidenceDetails';
 import { EvidenceViewer } from '../components/EvidenceViewer';
+import { ProposalDetails } from '../components/ProposalDetails';
 import { FieldActions, type NewDecision } from '../components/FieldActions';
 import { FormActions } from '../components/FormActions';
 import { StatusLabel } from '../components/StatusLabel';
@@ -114,6 +115,12 @@ function FieldDetails({
         )}
       </MetadataList>
       {field.confidence != null && <ConfidenceDetails confidence={field.confidence} />}
+      {field.model_rationale != null && (
+        <ProposalDetails
+          rationale={field.model_rationale}
+          accepted={field.proposal_accepted === true}
+        />
+      )}
       {acting.canAct && (
         <FieldActions
           name={name}

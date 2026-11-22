@@ -186,6 +186,8 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `progress.confidence` | Confidence scores |
 | `review.rationale.label` | Model explanation |
 | `review.rationale.note` | The model wrote this text. Compare it with the licence. |
+| `proposal.accepted` | The system read this field again and used the new value. |
+| `proposal.refused` | The system read this field again. The new value failed a check, so the system did not use it. |
 | `review.requiredDocuments.title` | Documents to request |
 | `review.approve` | Approve |
 | `review.approve.field` | Approve {field} |
