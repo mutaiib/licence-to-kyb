@@ -304,9 +304,9 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
   - parallel tool results in one message
   - code retries for temporary errors
   - the best accepted fixes kept
-- [ ] T082 [US4] Add the conditional edge validate → resolve → validate, and the `resolver_enabled` setting, in `backend/src/licence_kyb/graph.py`
-- [ ] T083 [US4] Show proposed fixes, labelled as model output, in `frontend/src/components/FieldRow.tsx`, with their strings in `copy.ts`. Add a Vitest case in `frontend/tests/confidence.test.tsx`.
-- [ ] T084 [US4] Record the tool-loop responses for the US4 graph tests. Run the on/off comparison with `evals/runner.py` and record the result in `docs/experiments.md`, then open the US4 pull request into `develop`.
+- [ ] T082 [US4] Add the conditional edge validate → resolve → validate (at most 2 rounds) → confidence, and the `resolver_enabled` setting, in `backend/src/licence_kyb/pipeline.py`. A profile's `resolver_seconds` overrides the time limits.
+- [ ] T083 [US4] Show proposed fixes, labelled as model output, in the field details of `frontend/src/pages/ReviewPage.tsx` (through `model_rationale`), with their strings in `copy.ts`. Add a Vitest case in `frontend/tests/confidence.test.tsx`.
+- [ ] T084 [US4] Record the tool-loop responses for the US4 graph tests (scripted, per research R10a), then open the US4 pull request into `develop`. The resolver on/off comparison needs real readings and the eval report, so it runs in User Story 6 on the local model (T111).
 
 **Checkpoint**: poor scans produce fewer flagged fields, and no proposal bypasses validation.
 
