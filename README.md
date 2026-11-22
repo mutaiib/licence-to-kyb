@@ -16,7 +16,7 @@ Upload a UAE trade licence and get a checked, pre-filled KYB onboarding form. A 
 flowchart LR
     U([Upload]) --> P[Read the pages<br/>OCR, QR]
     P --> R[Identify the<br/>document]
-    R --> E[Copy the fields<br/>twice]
+    R --> E[Read the fields,<br/>and the key fields<br/>again, separately]
     E --> V[Check every value]
     V -- "a value failed a check<br/>a re-read can fix" --> A[Agent: re-read<br/>read-only tools,<br/>hard limits]
     A -- proposals --> V
@@ -31,7 +31,7 @@ flowchart LR
     class R,E,A model
 ```
 
-Blue steps call a model; every other step is code. The exact graph, the agent loop with its limits, and the run states are diagrams in [architecture](docs/architecture.md#as-built).
+Blue steps call a model; every other step is code. The key fields (licence number, names, legal form, expiry date, owners) are read twice, independently: when the two readings agree, that is evidence the value is right; when they differ, the field goes to a person. The exact graph, the agent loop with its limits, and the run states are diagrams in [architecture](docs/architecture.md#as-built).
 
 - **A workflow with one bounded agent.** Three steps use a model: identify, copy, and the resolver that re-reads failed values. Every other step is plain code ([ADR-001](docs/decisions/ADR-001-workflow-with-one-agent.md)).
 - **Strict schemas at every boundary.** Every value carries the exact text it came from, and code checks that text against the OCR; dates and numbers must match exactly.
