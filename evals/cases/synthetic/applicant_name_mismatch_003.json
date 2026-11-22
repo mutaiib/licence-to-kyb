@@ -1,0 +1,53 @@
+{
+  "applicant_name": "Cabrera Foods LLC",
+  "authority": "DMCC",
+  "case_id": "applicant_name_mismatch_003",
+  "document": "data/generated/applicant_name_mismatch_003.pdf",
+  "document_sha256": "edd7d3aaf6d0007267d3cbc065c88d2fe6fb3a2cc935aeb094d7dbd07e57d3f0",
+  "expected_reason_codes": [
+    "applicant_name_mismatch"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      },
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      }
+    ],
+    "address": "Office 565, Raymond Stravenue, JLT, Dubai",
+    "chamber_number": "417162",
+    "establishment_date": "2024-01-25",
+    "expiry_date": "2027-04-18",
+    "issue_date": "2026-04-18",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-45116",
+    "people": [
+      {
+        "name": "Michael Castaneda",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Williams Consultancy FZE"
+  },
+  "faults": [
+    "applicant_name_mismatch"
+  ],
+  "group": "applicant_name_mismatch",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602302,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

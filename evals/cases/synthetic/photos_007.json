@@ -1,0 +1,68 @@
+{
+  "applicant_name": "WALTERS CONSULTANCY FZCO",
+  "authority": "DMCC",
+  "case_id": "photos_007",
+  "document": "data/generated/photos_007.jpg",
+  "document_sha256": "419d12e61310fb9991a846cda2c1b868491fc5c1366ce932e1c17ea71d4cb058",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 431, Sanders Vista, JLT, Dubai",
+    "chamber_number": "423315",
+    "establishment_date": "2024-01-30",
+    "expiry_date": "2026-09-22",
+    "issue_date": "2025-09-22",
+    "issuing_authority": "DMCC",
+    "legal_form": "fzco",
+    "licence_number": "DMCC-74931",
+    "people": [
+      {
+        "name": "Gabrielle Wilson",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Alicia Smith",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Katie Cruz",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 80.0
+      },
+      {
+        "name": "Randall Simpson",
+        "nationality": "Bangladesh",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Walters Consultancy FZCO"
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601206,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

@@ -1,0 +1,53 @@
+{
+  "applicant_name": "SMITH CONSULTANCY LLC",
+  "authority": "ADDED",
+  "case_id": "expired_002",
+  "document": "data/generated/expired_002.pdf",
+  "document_sha256": "5632079341c5142ccc2ddb9ba854762375f98f9e01fedf2c29cf6c900b60541d",
+  "expected_reason_codes": [
+    "expired"
+  ],
+  "expected_route": [
+    "reject"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 396, Hunt Squares, Abu Dhabi",
+    "chamber_number": "856820",
+    "establishment_date": "2023-02-25",
+    "expiry_date": "2026-04-03",
+    "issue_date": "2025-04-03",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc_single_owner",
+    "licence_number": "CN-9587258",
+    "people": [
+      {
+        "name": "Joseph Moore",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Smith Consultancy LLC"
+  },
+  "faults": [
+    "expired"
+  ],
+  "group": "expired",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601301,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

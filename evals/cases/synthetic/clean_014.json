@@ -1,0 +1,55 @@
+{
+  "applicant_name": "HARVEY TRADING EST.",
+  "authority": "ADDED",
+  "case_id": "clean_014",
+  "document": "data/generated/clean_014.pdf",
+  "document_sha256": "b8098a8ed0ee449d41bb44c9620ed4809954ddf3bf25b3551715a5975095acd4",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 135, Lindsay Circle, Abu Dhabi",
+    "chamber_number": "351726",
+    "establishment_date": "2024-09-26",
+    "expiry_date": "2026-12-04",
+    "issue_date": "2025-12-04",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-4329233",
+    "people": [
+      {
+        "name": "Julia Nguyen",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Christina Lewis",
+        "nationality": "Jordan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Harvey Trading Est."
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601013,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

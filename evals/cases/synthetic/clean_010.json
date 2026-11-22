@@ -1,0 +1,61 @@
+{
+  "applicant_name": "CARNEY TRADING LLC",
+  "authority": "ADDED",
+  "case_id": "clean_010",
+  "document": "data/generated/clean_010.pdf",
+  "document_sha256": "073234900666d8b5269f60b366e2548e6f38dc6623c310224540890a0d58645c",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 764, Ortiz Union, Abu Dhabi",
+    "chamber_number": "826716",
+    "establishment_date": "2023-01-29",
+    "expiry_date": "2027-02-13",
+    "issue_date": "2026-02-13",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc",
+    "licence_number": "CN-1693976",
+    "people": [
+      {
+        "name": "Valerie Stanley",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 5.0
+      },
+      {
+        "name": "Ashley Lopez",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 15.0
+      },
+      {
+        "name": "Kevin Love",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 80.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Carney Trading LLC"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601009,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

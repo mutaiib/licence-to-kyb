@@ -1,0 +1,71 @@
+{
+  "applicant_name": "FULLER SERVICES LLC",
+  "authority": "DET",
+  "case_id": "near_expiry_001",
+  "document": "data/generated/near_expiry_001.pdf",
+  "document_sha256": "c669a2b5b2bcab2d23e8d5dbaa94b367bec95c87fd041159176621145549c8f5",
+  "expected_reason_codes": [
+    "near_expiry"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 331, Spencer Fork, Dubai",
+    "chamber_number": "98005",
+    "establishment_date": "2021-08-30",
+    "expiry_date": "2026-06-11",
+    "issue_date": "2025-06-11",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "7828167",
+    "people": [
+      {
+        "name": "John Lang",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Kyle Martinez",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 55.0
+      },
+      {
+        "name": "Natasha Fisher",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 35.0
+      },
+      {
+        "name": "Jennifer Padilla",
+        "nationality": "India",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Fuller Services LLC"
+  },
+  "faults": [
+    "near_expiry"
+  ],
+  "group": "near_expiry",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601500,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

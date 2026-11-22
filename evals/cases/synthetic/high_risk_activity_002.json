@@ -1,0 +1,59 @@
+{
+  "applicant_name": "HARRIS SERVICES LLC",
+  "authority": "ADDED",
+  "case_id": "high_risk_activity_002",
+  "document": "data/generated/high_risk_activity_002.pdf",
+  "document_sha256": "95a67b27ae840f254fe268527228d06a4464ec5c308bd0c7bc4294552e8bf624",
+  "expected_reason_codes": [
+    "high_risk_activity"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4690.01",
+        "description_en": "General Trading"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 290, Kelly Ferry, Abu Dhabi",
+    "chamber_number": "121581",
+    "establishment_date": "2020-06-09",
+    "expiry_date": "2026-10-27",
+    "issue_date": "2025-10-27",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc_single_owner",
+    "licence_number": "CN-4417343",
+    "people": [
+      {
+        "name": "Patricia Morgan DDS",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Kimberly Horne",
+        "nationality": "Bangladesh",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Harris Services LLC"
+  },
+  "faults": [
+    "high_risk_activity"
+  ],
+  "group": "high_risk_activity",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602201,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

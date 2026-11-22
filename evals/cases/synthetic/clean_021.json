@@ -1,0 +1,55 @@
+{
+  "applicant_name": "ROBINSON CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "clean_021",
+  "document": "data/generated/clean_021.pdf",
+  "document_sha256": "f330494f1909d89a7cbcfc7a0e960ab92a0ad3c81b8276a7d8ef07eb985a542f",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 853, Mariah Radial, Dubai",
+    "chamber_number": "596600",
+    "establishment_date": "2021-05-16",
+    "expiry_date": "2027-01-11",
+    "issue_date": "2026-01-11",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "4094039",
+    "people": [
+      {
+        "name": "Jim Juarez",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "David Munoz",
+        "nationality": "Lebanon",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Robinson Consultancy LLC"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601020,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

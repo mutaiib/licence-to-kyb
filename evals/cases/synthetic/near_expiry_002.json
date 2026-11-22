@@ -1,0 +1,53 @@
+{
+  "applicant_name": "HILL CONSULTANCY LLC",
+  "authority": "ADDED",
+  "case_id": "near_expiry_002",
+  "document": "data/generated/near_expiry_002.pdf",
+  "document_sha256": "3680e2a64a9778c1e58df267fe5d39aea398b197def619e90eead1efcf3fd438",
+  "expected_reason_codes": [
+    "near_expiry"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 619, Randall Station, Abu Dhabi",
+    "chamber_number": "521843",
+    "establishment_date": "2020-09-23",
+    "expiry_date": "2026-06-11",
+    "issue_date": "2025-06-11",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc_single_owner",
+    "licence_number": "CN-2351653",
+    "people": [
+      {
+        "name": "Andrea Case",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Hill Consultancy LLC"
+  },
+  "faults": [
+    "near_expiry"
+  ],
+  "group": "near_expiry",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601501,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

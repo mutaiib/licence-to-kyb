@@ -1,0 +1,49 @@
+{
+  "applicant_name": "PHAM TRADING FZE",
+  "authority": "IFZA",
+  "case_id": "clean_024",
+  "document": "data/generated/clean_024.pdf",
+  "document_sha256": "b6a2bde3813248aad85597995e11d5e2f3961e179f1ee662c95611f1cc8dcca9",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 431, Mccarthy Fort, Dubai Silicon Oasis",
+    "chamber_number": "759066",
+    "establishment_date": "2024-01-16",
+    "expiry_date": "2027-04-03",
+    "issue_date": "2026-04-03",
+    "issuing_authority": "IFZA",
+    "legal_form": "fze",
+    "licence_number": "40658",
+    "people": [
+      {
+        "name": "Shawn Gray",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Pham Trading FZE"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601023,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

@@ -1,0 +1,53 @@
+{
+  "applicant_name": "SMITH CONSULTANCY FZE",
+  "authority": "DMCC",
+  "case_id": "high_risk_activity_003",
+  "document": "data/generated/high_risk_activity_003.pdf",
+  "document_sha256": "a2a823feddb47aa345992c4cf93f312e13edc26d13b2218690b76346d50fa8c2",
+  "expected_reason_codes": [
+    "high_risk_activity"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4690.01",
+        "description_en": "General Trading"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 551, Jimmy Shores, JLT, Dubai",
+    "chamber_number": "719418",
+    "establishment_date": "2024-10-23",
+    "expiry_date": "2027-02-15",
+    "issue_date": "2026-02-15",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-37241",
+    "people": [
+      {
+        "name": "Lauren Soto",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Smith Consultancy FZE"
+  },
+  "faults": [
+    "high_risk_activity"
+  ],
+  "group": "high_risk_activity",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602202,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,65 @@
+{
+  "applicant_name": "BEAN SERVICES LLC",
+  "authority": "DET",
+  "case_id": "shares_total_001",
+  "document": "data/generated/shares_total_001.pdf",
+  "document_sha256": "9fae520fba32e74aa185b8d74137fb8d538685715ce60119de73859dd9107aed",
+  "expected_reason_codes": [
+    "shares_total"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 564, Megan Mall, Dubai",
+    "chamber_number": "304411",
+    "establishment_date": "2021-11-27",
+    "expiry_date": "2026-12-20",
+    "issue_date": "2025-12-20",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "4448847",
+    "people": [
+      {
+        "name": "Christopher Liu",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 85.0
+      },
+      {
+        "name": "Jesus Keller",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 5.0
+      },
+      {
+        "name": "Sandra Davis",
+        "nationality": "United Kingdom",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Bean Services LLC"
+  },
+  "faults": [
+    "shares_total"
+  ],
+  "group": "shares_total",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601600,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

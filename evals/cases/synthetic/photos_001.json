@@ -1,0 +1,56 @@
+{
+  "applicant_name": "LARSEN CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "photos_001",
+  "document": "data/generated/photos_001.jpg",
+  "document_sha256": "99caf23b32cf1464bd19a579e06c6b6dc742550fa145f95c0adc3c7e76cb39bd",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 484, Santos Pike, Dubai",
+    "chamber_number": "53588",
+    "establishment_date": "2021-12-30",
+    "expiry_date": "2026-08-21",
+    "issue_date": "2025-08-21",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "2501863",
+    "people": [
+      {
+        "name": "George Stewart",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Jennifer Martin",
+        "nationality": "Lebanon",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Larsen Consultancy LLC"
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601200,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

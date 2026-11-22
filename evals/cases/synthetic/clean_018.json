@@ -1,0 +1,49 @@
+{
+  "applicant_name": "HERNANDEZ SERVICES EST.",
+  "authority": "ADDED",
+  "case_id": "clean_018",
+  "document": "data/generated/clean_018.pdf",
+  "document_sha256": "8925972d32e1f10df0fdf2cd9a3887bc4aa17107028ffb01d988e502b82652b5",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 232, Mark Squares, Abu Dhabi",
+    "chamber_number": "688535",
+    "establishment_date": "2024-05-01",
+    "expiry_date": "2027-03-01",
+    "issue_date": "2026-03-01",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-8338700",
+    "people": [
+      {
+        "name": "Nicole Maldonado",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Hernandez Services Est."
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601017,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

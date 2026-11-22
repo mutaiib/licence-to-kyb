@@ -1,0 +1,61 @@
+{
+  "applicant_name": "SKINNER TECHNOLOGIES LLC",
+  "authority": "ADDED",
+  "case_id": "clean_006",
+  "document": "data/generated/clean_006.pdf",
+  "document_sha256": "47c36ff3cda11cf3a386f57fe3bae1d013a39a2a2367d154276b2cc75a09ee65",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      }
+    ],
+    "address": "Office 316, Smith Hills, Abu Dhabi",
+    "chamber_number": "449401",
+    "establishment_date": "2025-09-18",
+    "expiry_date": "2026-10-14",
+    "issue_date": "2025-10-14",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc",
+    "licence_number": "CN-5995791",
+    "people": [
+      {
+        "name": "Ruben Fitzpatrick",
+        "nationality": "Egypt",
+        "role": "owner",
+        "share_pct": 80.0
+      },
+      {
+        "name": "Julie Roberts",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 20.0
+      },
+      {
+        "name": "Stephanie Burgess",
+        "nationality": "Bangladesh",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Skinner Technologies LLC"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601005,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

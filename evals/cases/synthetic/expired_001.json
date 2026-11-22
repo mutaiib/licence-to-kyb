@@ -1,0 +1,53 @@
+{
+  "applicant_name": "WEST SERVICES EST.",
+  "authority": "DET",
+  "case_id": "expired_001",
+  "document": "data/generated/expired_001.pdf",
+  "document_sha256": "91bf60fdbb10c8b2c3a3d3e455e056d7df0641b8db92d8b95d22cd42272bc522",
+  "expected_reason_codes": [
+    "expired"
+  ],
+  "expected_route": [
+    "reject"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 273, Brett Union, Dubai",
+    "chamber_number": "75450",
+    "establishment_date": "2025-01-31",
+    "expiry_date": "2026-05-16",
+    "issue_date": "2025-05-16",
+    "issuing_authority": "DET",
+    "legal_form": "sole_establishment",
+    "licence_number": "9173085",
+    "people": [
+      {
+        "name": "Susan Daniel",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "West Services Est."
+  },
+  "faults": [
+    "expired"
+  ],
+  "group": "expired",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601300,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

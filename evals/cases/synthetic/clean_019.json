@@ -1,0 +1,61 @@
+{
+  "applicant_name": "KIM TECHNOLOGIES FZCO",
+  "authority": "DMCC",
+  "case_id": "clean_019",
+  "document": "data/generated/clean_019.pdf",
+  "document_sha256": "2e2440086a6335c8e4da514782a36c98d763238cbb01fb54076091555aaae6d7",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 256, Vanessa Vista, JLT, Dubai",
+    "chamber_number": "704949",
+    "establishment_date": "2025-08-27",
+    "expiry_date": "2027-03-03",
+    "issue_date": "2026-03-03",
+    "issuing_authority": "DMCC",
+    "legal_form": "fzco",
+    "licence_number": "DMCC-17579",
+    "people": [
+      {
+        "name": "Ricardo Santos",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 70.0
+      },
+      {
+        "name": "Elaine Hubbard",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 30.0
+      },
+      {
+        "name": "Ashley Acosta",
+        "nationality": "Lebanon",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Kim Technologies FZCO"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601018,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

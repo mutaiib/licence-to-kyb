@@ -1,0 +1,65 @@
+{
+  "applicant_name": "MULLEN TECHNOLOGIES FZCO",
+  "authority": "DMCC",
+  "case_id": "qr_mismatch_003",
+  "document": "data/generated/qr_mismatch_003.pdf",
+  "document_sha256": "15d44afa41cf5fa66dae6ff747a497cd56ef52a63f90f9a4acffd8c9a2145b9c",
+  "expected_reason_codes": [
+    "qr_mismatch"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      }
+    ],
+    "address": "Office 388, Jessica Burg, JLT, Dubai",
+    "chamber_number": "61008",
+    "establishment_date": "2025-02-11",
+    "expiry_date": "2026-09-17",
+    "issue_date": "2025-09-17",
+    "issuing_authority": "DMCC",
+    "legal_form": "fzco",
+    "licence_number": "DMCC-51619",
+    "people": [
+      {
+        "name": "Kenneth Baird",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 85.0
+      },
+      {
+        "name": "Richard Mcfarland",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Sarah Monroe DDS",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 5.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Mullen Technologies FZCO"
+  },
+  "faults": [
+    "qr_mismatch"
+  ],
+  "group": "qr_mismatch",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602002,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

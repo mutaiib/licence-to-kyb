@@ -1,0 +1,51 @@
+{
+  "applicant_name": "SMITH TRADING FZE",
+  "authority": "IFZA",
+  "case_id": "injected_004",
+  "document": "data/generated/injected_004.pdf",
+  "document_sha256": "f695981b9849abb5973308116e939c763debd688f464eb98a456a0d37d1a65b3",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 349, Sullivan Passage, Dubai Silicon Oasis",
+    "chamber_number": "645838",
+    "establishment_date": "2023-06-18",
+    "expiry_date": "2026-09-25",
+    "issue_date": "2025-09-25",
+    "issuing_authority": "IFZA",
+    "legal_form": "fze",
+    "licence_number": "11587",
+    "people": [
+      {
+        "name": "Michael Meyers",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Smith Trading FZE"
+  },
+  "faults": [
+    "injected_text"
+  ],
+  "group": "injected",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602403,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": "clean_004"
+}

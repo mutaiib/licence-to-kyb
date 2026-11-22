@@ -1,0 +1,50 @@
+{
+  "applicant_name": "SMALL SERVICES EST.",
+  "authority": "ADDED",
+  "case_id": "photos_006",
+  "document": "data/generated/photos_006.jpg",
+  "document_sha256": "61ffd6f4fb42d69de5555b7b07afe9c6e6ab83341ff9baa9db840f41197b3e14",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 543, Leslie Lock, Abu Dhabi",
+    "chamber_number": "285626",
+    "establishment_date": "2024-04-29",
+    "expiry_date": "2027-02-04",
+    "issue_date": "2026-02-04",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-4333660",
+    "people": [
+      {
+        "name": "Marissa Butler",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Small Services Est."
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601205,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,53 @@
+{
+  "applicant_name": "MANN SERVICES EST.",
+  "authority": "ADDED",
+  "case_id": "arabic_name_missing_002",
+  "document": "data/generated/arabic_name_missing_002.pdf",
+  "document_sha256": "1b54481a9508a6c2597a78e02411b6027efad2124fc88070f6bd7d28727276bb",
+  "expected_reason_codes": [
+    "arabic_name_missing"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 771, Jones Garden, Abu Dhabi",
+    "chamber_number": "662969",
+    "establishment_date": "2021-09-07",
+    "expiry_date": "2027-03-28",
+    "issue_date": "2026-03-28",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-5038239",
+    "people": [
+      {
+        "name": "Alicia Roy",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": null,
+    "trade_name_en": "Mann Services Est."
+  },
+  "faults": [
+    "arabic_name_missing"
+  ],
+  "group": "arabic_name_missing",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601801,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

@@ -1,0 +1,67 @@
+{
+  "applicant_name": "FOLEY TRADING FZCO",
+  "authority": "IFZA",
+  "case_id": "clean_020",
+  "document": "data/generated/clean_020.pdf",
+  "document_sha256": "8f0cc943c259131f71cec039d6201f7e4e05430240ce0e7ff97f2ba3ff4aa582",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 797, James Pass, Dubai Silicon Oasis",
+    "chamber_number": "827886",
+    "establishment_date": "2024-06-27",
+    "expiry_date": "2027-02-08",
+    "issue_date": "2026-02-08",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "75570",
+    "people": [
+      {
+        "name": "Ryan Soto",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 35.0
+      },
+      {
+        "name": "Donald Morgan",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Matthew Martin",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 55.0
+      },
+      {
+        "name": "Ellen Wilson",
+        "nationality": "United Arab Emirates",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Foley Trading FZCO"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601019,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

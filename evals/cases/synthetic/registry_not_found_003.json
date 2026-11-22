@@ -1,0 +1,59 @@
+{
+  "applicant_name": "BAILEY SERVICES FZE",
+  "authority": "DMCC",
+  "case_id": "registry_not_found_003",
+  "document": "data/generated/registry_not_found_003.pdf",
+  "document_sha256": "4a4be856e805d00caca5490ff9fd910181be95cee2485f3ff7d5ab22c376305e",
+  "expected_reason_codes": [
+    "registry_not_found"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 508, Hamilton Flat, JLT, Dubai",
+    "chamber_number": "215272",
+    "establishment_date": "2025-07-20",
+    "expiry_date": "2026-11-05",
+    "issue_date": "2025-11-05",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-60331",
+    "people": [
+      {
+        "name": "Henry Johnson",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Christine Moyer",
+        "nationality": "Saudi Arabia",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Bailey Services FZE"
+  },
+  "faults": [
+    "registry_not_found"
+  ],
+  "group": "registry_not_found",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602102,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,53 @@
+{
+  "applicant_name": "HENRY TRADING EST.",
+  "authority": "ADDED",
+  "case_id": "wrong_number_format_002",
+  "document": "data/generated/wrong_number_format_002.pdf",
+  "document_sha256": "20ebde41dcb977140007ee89ea022dca1276e367b244844e8ebfbf716b8170ae",
+  "expected_reason_codes": [
+    "number_format"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      }
+    ],
+    "address": "Office 926, Smith Vista, Abu Dhabi",
+    "chamber_number": "874074",
+    "establishment_date": "2024-12-29",
+    "expiry_date": "2026-08-24",
+    "issue_date": "2025-08-24",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-509122",
+    "people": [
+      {
+        "name": "Veronica Thomas",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Henry Trading Est."
+  },
+  "faults": [
+    "wrong_number_format"
+  ],
+  "group": "wrong_number_format",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601901,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}
