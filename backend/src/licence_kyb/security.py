@@ -85,11 +85,16 @@ def _mask_tree(node: Any) -> Any:
     return None if node is None else mask_value(node)
 
 
+LOG_RECORD_ATTRIBUTES = frozenset(logging.makeLogRecord({}).__dict__)
+"""Attributes every log record has, such as ``name`` (the logger's name). ``extra=`` cannot
+overwrite them, so they never hold document data and are not masked."""
+
+
 class PiiMaskingFilter(logging.Filter):
     """Masks PII-tagged attributes passed through ``extra=`` before any handler formats them."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        for name in PII_FIELDS:
+        for name in PII_FIELDS - LOG_RECORD_ATTRIBUTES:
             if name in record.__dict__:
                 record.__dict__[name] = _mask_tree(record.__dict__[name])
         return True

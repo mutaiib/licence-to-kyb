@@ -848,6 +848,7 @@ dependencies = [
     { name = "argon2-cffi" },
     { name = "cryptography" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "langgraph" },
     { name = "langgraph-checkpoint-sqlite" },
     { name = "opencv-python-headless" },
@@ -875,7 +876,6 @@ data = [
     { name = "types-reportlab" },
 ]
 dev = [
-    { name = "httpx" },
     { name = "hypothesis" },
     { name = "mypy" },
     { name = "pip-audit" },
@@ -893,6 +893,7 @@ requires-dist = [
     { name = "argon2-cffi" },
     { name = "cryptography" },
     { name = "fastapi" },
+    { name = "httpx", specifier = ">=0.28" },
     { name = "langgraph" },
     { name = "langgraph-checkpoint-sqlite" },
     { name = "opencv-python-headless" },
@@ -920,7 +921,6 @@ data = [
     { name = "types-reportlab" },
 ]
 dev = [
-    { name = "httpx" },
     { name = "hypothesis" },
     { name = "mypy" },
     { name = "pip-audit" },
