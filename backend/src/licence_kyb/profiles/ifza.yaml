@@ -1,0 +1,17 @@
+# International Free Zone Authority (Dubai free zone).
+# No public number format was found. Demo assumption: exactly 5 digits, used only for synthetic data.
+# Demo scope: the mock register has no IFZA entries, so the registry check is "not applicable".
+# In production, the Dubai Unified Licence lookup covers Dubai free zones, IFZA included.
+code: IFZA
+name_en: International Free Zone Authority
+number_pattern: '^\d{5}$'
+number_pattern_source: demo_assumption
+date_format: DD/MM/YYYY
+licence_number_labels: ["Licence No", "License No", "رقم الرخصة"]
+licence_titles: ["Commercial Licence", "Trade Licence", "رخصة تجارية"]
+allowed_legal_forms: [fze, fzco, fz_llc, branch]
+arabic_name_required: false
+has_qr: true
+has_register: false
+free_zone: true
+tenancy_document: free_zone_lease
