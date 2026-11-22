@@ -392,6 +392,13 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T117 [P] Upload page: one sentence on what happens after upload, and a description for the business-name field.
 - [X] T118 Review page on narrow screens: the licence page comes right after the fields to examine, before the passed fields.
 
+### Round 2 (owner feedback)
+
+- [ ] T119 Review page: one "next step" card replaces the status banner, the counter and the three buttons. It says what to do now, shows progress, and has at most one primary button (Approve form, or Submit, or Retry, or Reopen).
+- [ ] T120 Review page: in a field, the reason, the value and the evidence come first, then Approve and Correct; reading confidence and weak evidence move into a closed "Details" section.
+- [ ] T121 Review page: "Documents to request" moves after the fields.
+- [ ] T122 Review page: "Reject case" moves to the end of the panel, as a quiet button with its confirmation.
+
 ## Polish & Cross-Cutting Concerns
 
 **Branch**: `feature/001-licence-to-kyb-polish`, then `release/0.1.0`
