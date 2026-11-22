@@ -35,11 +35,9 @@ function SpanItem({ span, spans }: { span: SpanView; spans: readonly SpanView[] 
       label={<Text weight={span.kind === 'step' ? 'semibold' : 'normal'}>{name}</Text>}
       description={
         <>
-          {details(span).map((part) => (
-            <Text key={part} color="secondary" hasTabularNumbers>
-              {part}
-            </Text>
-          ))}
+          <Text color="secondary" hasTabularNumbers>
+            {details(span).join(' · ')}
+          </Text>
           {span.summary !== 'ok' && <Text color="secondary">{span.summary}</Text>}
           {nested.length > 0 && <SpanList spans={spans} parentId={span.span_id} />}
         </>

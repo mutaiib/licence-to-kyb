@@ -159,10 +159,10 @@ describe('trace page', () => {
   it('shows the tokens, the cost and the outcome of a call', async () => {
     openAt('/runs/run-1/trace');
 
-    expect(
-      await screen.findByText(format('trace.tokens.value', { input: '1200', output: '300' })),
-    ).toBeInTheDocument();
-    expect(screen.getByText('$0.0123')).toBeInTheDocument();
+    const tokens = format('trace.tokens.value', { input: '1200', output: '300' });
+    const call = await screen.findByText((text) => text.includes(tokens));
+    expect(call.textContent).toContain('$0.0123');
+    expect(call.textContent).toContain(' · '); // the parts are separated, not run together
     expect(screen.getByText('registry_unavailable')).toBeInTheDocument();
     expect(screen.getByText(copy['trace.masked'])).toBeInTheDocument();
   });
