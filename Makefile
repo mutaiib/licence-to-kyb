@@ -50,8 +50,10 @@ demo:
 dev:               ## local demo backend (label answers, no model key); run `npm run dev` in frontend/
 	scripts/dev_demo.sh
 
-backup:
-	mkdir -p var/backups && cp var/*.sqlite3 var/backups/ 2>/dev/null || true
+# The databases live in DATA_DIR: var/demo/data for `make dev`; set it for another stack.
+DATA_DIR ?= var/demo/data
+backup:            ## consistent copies of the databases in DATA_DIR; fails when there are none
+	python3 scripts/backup.py "$(DATA_DIR)" var/backups
 
 # An open-weight model on this machine (ADR-004). Run scripts/fetch_llama_server.sh once,
 # then `make local-model` in one terminal and `MODEL_PROFILE=local make dev` in another.
@@ -63,5 +65,5 @@ local-model:
 # Mutation testing of the rules (T100). Slow, so not in CI. The copy of the code in
 # backend/mutants/ reads data from this checkout.
 mutation:
-	cd backend && LICENCE_KYB_REPO_ROOT=$(CURDIR) uv run mutmut run --max-children 8; \
-	uv run mutmut results
+	cd backend && { LICENCE_KYB_REPO_ROOT=$(CURDIR) uv run mutmut run --max-children 8; \
+	status=$$?; uv run mutmut results; exit $$status; }

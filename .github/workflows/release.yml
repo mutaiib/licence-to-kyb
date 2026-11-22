@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The job can write releases; npm ci runs package install scripts. Do not leave the
+          # token in .git/config for them. The publish step passes its own GH_TOKEN.
+          persist-credentials: false
       - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -35,7 +39,8 @@ jobs:
       - name: SBOM for the backend (CycloneDX, runtime dependencies from the lock file)
         working-directory: backend
         run: |
-          uv export --frozen --no-dev --no-emit-project --format requirements-txt > /tmp/requirements.txt
+          # The image installs neither the dev nor the data (test-data generator) group.
+          uv export --frozen --no-dev --no-group data --no-emit-project --format requirements-txt > /tmp/requirements.txt
           uvx --from cyclonedx-bom==8.0.1 cyclonedx-py requirements /tmp/requirements.txt \
             --output-format JSON --output-file ../sbom-backend.cdx.json
 
@@ -55,10 +60,12 @@ jobs:
       - name: Release notes from CHANGELOG.md
         run: |
           version="${GITHUB_REF_NAME#v}"
-          # The section for this version: from its heading to the next "## [" heading.
+          # The section for this version: from its heading to the next "## [" heading, or to
+          # the link definitions ("[0.1.0]: https://...") at the end of the file.
           awk -v v="$version" '
             $0 ~ "^## \\[" v "\\]" { found = 1; next }
             found && /^## \[/ { exit }
+            found && /^\[[^]]+\]: / { exit }
             found { print }
           ' CHANGELOG.md > notes.md
           test -s notes.md || { echo "CHANGELOG.md has no section for $version" >&2; exit 1; }

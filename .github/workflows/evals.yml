@@ -34,8 +34,12 @@ jobs:
     environment: evals
     timeout-minutes: 120
     env:
-      MODEL: ${{ inputs.model || 'profile' }}
-      RESOLVER_FLAG: ${{ (inputs.resolver == false) && '--no-resolver' || '' }}
+      # A push to a release branch has no inputs: it runs the scripted model (free), with the
+      # resolver on. Only a manual run can choose the paid profile or turn the resolver off.
+      # (On a push, inputs.resolver is null, and null == false is true in an expression, so
+      # the event name must be checked too.)
+      MODEL: ${{ inputs.model || 'scripted' }}
+      RESOLVER_FLAG: ${{ (github.event_name == 'workflow_dispatch' && inputs.resolver == false) && '--no-resolver' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
@@ -57,7 +61,17 @@ jobs:
         run: |
           uv --project backend run python -m evals.run --model "$MODEL" $RESOLVER_FLAG --name "ci-${{ github.run_id }}"
           uv --project backend run python -m evals.compare evals/reports/baseline.json "evals/reports/ci-${{ github.run_id }}/report.json"
+      - name: Fail when cases errored or none ran
+        # A case that raised, or a run with no cases (missing documents), must not pass.
+        run: |
+          report="evals/reports/ci-${{ github.run_id }}/report.json"
+          errors=$(jq '.summary.errors' "$report")
+          cases=$(jq '.summary.cases' "$report")
+          echo "cases: $cases, errors: $errors"
+          test "$cases" -gt 0 || { echo "no case ran" >&2; exit 1; }
+          test "$errors" -eq 0 || { echo "$errors cases errored" >&2; exit 1; }
       - name: Upload the report
+        if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: eval-report-${{ github.run_id }}
