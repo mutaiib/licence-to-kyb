@@ -11,6 +11,7 @@ responses, used by every offline test) and ``RecordingTransport`` (records live 
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import threading
@@ -43,11 +44,11 @@ class BudgetExhaustedError(LLMError):
 
 
 class ModelRefusedError(LLMError):
-    reason_code: ReasonCode = "processing_failed"
+    """The model declined the request."""
 
 
 class OutputTruncatedError(LLMError):
-    reason_code: ReasonCode = "processing_failed"
+    """The reply was cut off at the token limit, also after the retry with a higher limit."""
 
 
 class MissingRecordingError(LLMError):
@@ -103,6 +104,18 @@ class ModelResponse:
             + self.usage.output_tokens * price_out
             + self.usage.cache_read_tokens * price_cache
         ) / 1_000_000
+
+
+def image_block(png: bytes) -> dict[str, Any]:
+    """A PNG page image as a message content block."""
+    return {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": "image/png",
+            "data": base64.b64encode(png).decode(),
+        },
+    }
 
 
 def is_fallback(req: ModelRequest, resp: ModelResponse) -> bool:
@@ -175,7 +188,7 @@ class LLMClient:
         started = time.monotonic()
         result = self.transport.send(req)
         self.budget.charge(result.usage.billed_tokens)
-        if not result.latency_ms:
+        if not result.latency_ms:  # a replayed response keeps its recorded latency
             result = replace(result, latency_ms=int((time.monotonic() - started) * 1000))
         return result
 
@@ -252,7 +265,6 @@ class AnthropicTransport:
             "betas": [FALLBACK_BETA],
             "fallbacks": "default",
         }
-        started = time.monotonic()
         if req.output_model is not None:
             msg = self._client.beta.messages.parse(output_format=req.output_model, **kwargs)
             parsed_obj = getattr(msg, "parsed_output", None)
@@ -263,7 +275,6 @@ class AnthropicTransport:
                 kwargs["tool_choice"] = {"type": "auto"}
             msg = self._client.beta.messages.create(**kwargs)
             parsed = None
-        latency = int((time.monotonic() - started) * 1000)
         usage = msg.usage
         details = getattr(usage, "output_tokens_details", None)
         return ModelResponse(
@@ -277,5 +288,4 @@ class AnthropicTransport:
                 thinking_tokens=getattr(details, "thinking_tokens", 0) or 0,
                 cache_read_tokens=usage.cache_read_input_tokens or 0,
             ),
-            latency_ms=latency,
         )

@@ -10,7 +10,6 @@
 
 from __future__ import annotations
 
-import base64
 import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
@@ -18,7 +17,14 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse, is_fallback
+from licence_kyb.llm.client import (
+    LLMClient,
+    LLMError,
+    ModelRequest,
+    ModelResponse,
+    image_block,
+    is_fallback,
+)
 from licence_kyb.llm.prompts import load_prompt
 from licence_kyb.profiles import AuthorityProfile
 from licence_kyb.rules.base import normalise_text
@@ -61,17 +67,7 @@ def build_extract_request(
     effort: str,
     max_tokens: int,
 ) -> ModelRequest:
-    content: list[dict[str, Any]] = [
-        {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": "image/png",
-                "data": base64.b64encode(png).decode(),
-            },
-        }
-        for png in pages_png
-    ]
+    content = [image_block(png) for png in pages_png]
     content.append({"type": "text", "text": f"OCR text of the document:\n{ocr_text}"})
     return ModelRequest(
         step=step,

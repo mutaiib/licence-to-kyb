@@ -9,11 +9,10 @@ Code checks after the call (data-model.md, RouteResult):
 
 from __future__ import annotations
 
-import base64
 import re
 from dataclasses import dataclass
 
-from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse
+from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse, image_block
 from licence_kyb.llm.prompts import load_prompt
 from licence_kyb.profiles import AUTHORITIES, load_profile
 from licence_kyb.schemas.licence import RouteResult
@@ -87,14 +86,7 @@ def build_route_request(
             {
                 "role": "user",
                 "content": [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": "image/png",
-                            "data": base64.b64encode(page_png).decode(),
-                        },
-                    },
+                    image_block(page_png),
                     {
                         "type": "text",
                         "text": f"OCR text of page 1 (first {ROUTE_OCR_CHARS} characters):\n"
