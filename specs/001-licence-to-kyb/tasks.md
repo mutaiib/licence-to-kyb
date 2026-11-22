@@ -404,7 +404,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T123 Diagrams in Mermaid (rendered by GitHub) in `docs/architecture.md`: the graph as built, the resolver tool loop, the run states, and the trust boundaries. The README shows the graph.
 - [X] T124 `docs/status.md`: what is complete, what is pending and why (tasks, unmeasured success criteria, known limits). Linked from the README.
 - [X] T125 `docs/glossary.md`: the domain and engineering terms used in the docs, each with where it lives in the code.
-- [ ] T126 Fix every finding of an independent review of the docs against the code (stale names, broken links, numbers that disagree).
+- [X] T126 Fix every finding of an independent review of the docs against the code (stale names, broken links, numbers that disagree).
 - [ ] T127 Fix the confirmed findings of an independent code review, tests first; record the ones not fixed, with the reason.
 - [X] T128 GitHub repository description, topics and website link.
 

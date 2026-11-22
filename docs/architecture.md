@@ -617,6 +617,7 @@ flowchart LR
 ```
 
 **Related documents:**
+- [Reference: API, configuration, rules, reason codes](reference.md)
 - [Problem statement](problem-statement.md)
 - [Design worksheet](design-worksheet.md)
 - [Feature spec, plan and tasks](../specs/001-licence-to-kyb/)

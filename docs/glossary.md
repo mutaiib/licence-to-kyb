@@ -1,7 +1,8 @@
 # Glossary
 
 The terms used in these docs, each with where it lives in the code. Paths are relative to
-`backend/src/licence_kyb/` unless they start with a top-level folder.
+`backend/src/licence_kyb/` unless they start with a top-level folder. The rules, reason codes,
+API routes and settings are listed in [reference.md](reference.md).
 
 ## The domain
 

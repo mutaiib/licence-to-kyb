@@ -118,6 +118,7 @@ Measured numbers only. A target that is missed is reported as missed.
 | [Status](docs/status.md) | What is complete, what is pending and why, and the known limits |
 | [Handbook](docs/handbook/) | One page per concept, each with self-check questions; written to revisit the ideas |
 | [Glossary](docs/glossary.md) | Every term in these docs, with where it lives in the code |
+| [Reference](docs/reference.md) | The HTTP API, configuration, rules catalogue, reason codes, and how a reviewer's click reaches the graph |
 | [Architecture](docs/architecture.md) | Diagrams of the graph, the agent loop, the run states and the components; one licence traced from start to finish; schemas, tool calls, trust boundaries |
 | [Constitution](.specify/memory/constitution.md) | The project's rules: workflow first, typed contracts, outcome-based tests, GitFlow |
 | [Feature spec, plan, tasks](specs/001-licence-to-kyb/) | User stories, requirements, contracts, test cases and every task (Spec Kit) |
