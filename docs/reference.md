@@ -75,9 +75,14 @@ also needs the CSRF token.
 | `DAILY_TOKEN_BUDGET` | Tokens per day; when used up, new runs go straight to review |
 | `RETENTION_DAYS` | How long runs and their files are kept |
 | `APPLICANT_NAME_THRESHOLD` | Similarity below which the applicant's name is flagged |
-| `DATA_DIR` | Where the databases and encrypted files live |
+| `DATA_DIR` | Where the databases and encrypted files live. Docker Compose sets `/data` (a volume), whatever `backend/.env` says |
 | `COOKIE_SECURE` | Send the cookie over HTTPS only (true in production) |
-| `TESSDATA_PREFIX` | Where Tesseract finds its pinned language data |
+| `TESSDATA_PREFIX` | Where Tesseract finds its pinned language data. Docker Compose sets the image's own path |
+| `FORWARDED_ALLOW_IPS` | Read by uvicorn: which peers may set `X-Forwarded-For`. Docker Compose sets `*`, because only the frontend's nginx can reach the backend; the sign-in rate limit then counts each reviewer's own address |
+
+**Docker Compose** (`docker-compose.yml`): the backend runs on a read-only filesystem with its data in the `appdata` volume, and is healthy only when `/readyz` passes. The frontend's nginx serves the app, forwards `/api/` with the client's address, and sends `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff` and a Content Security Policy with `frame-ancestors 'none'`.
+
+**Backups:** `make backup` (or `make backup DATA_DIR=...`) copies every database in `DATA_DIR` with SQLite's online backup API into `var/backups/<time>/`, and fails when there is none.
 
 **Files** in `backend/config/`:
 

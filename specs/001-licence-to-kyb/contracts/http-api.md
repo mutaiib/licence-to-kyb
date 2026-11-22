@@ -17,11 +17,19 @@ Request: `{ "username": str, "password": str }`
 |---|---|
 | 200 | Session cookie set. Body: `{ "reviewer": str }` |
 | 401 | `{ "code": "invalid_credentials" }` |
-| 429 | `{ "code": "rate_limited" }`. Returned after more than 5 failed attempts in 1 minute for the account or the IP. |
+| 429 | `{ "code": "rate_limited" }`. Returned after more than 5 failed attempts in 1 minute for the account or the IP. Behind the frontend's nginx, the IP is the client's address (`X-Forwarded-For`), not the proxy's. |
 
 ## DELETE /api/session
 
-Signs the reviewer out and clears the session and CSRF cookies. Response `204`.
+Signs the reviewer out and clears the session and CSRF cookies. Like every state-changing request, it needs the session and the CSRF header.
+
+| Status | Body |
+|---|---|
+| 204 | none |
+| 401 | `{ "code": "session_expired" }` (no session, or it ended) |
+| 403 | `{ "code": "forbidden" }` (no or wrong CSRF header) |
+
+The session cookie is stateless: sign-out clears it in the browser, but a copy of the cookie stays valid until it expires.
 
 ## GET /healthz, GET /readyz
 
@@ -38,7 +46,8 @@ Request: `multipart/form-data` with these parts:
 |---|---|
 | 202 | `{ "run_id": uuid, "status": "processing" }`. Processing starts in the background. |
 | 200 | `{ "run_id": uuid, "status": <current>, "duplicate": true }`. An identical file was uploaded before. |
-| 422 | `{ "reason_code": "invalid_type" \| "too_large" \| "too_many_pages" \| "image_too_large", "run_id": uuid }`. Also recorded as a run with the route `reject`. |
+| 422 | `{ "reason_code": "invalid_type" \| "too_large" \| "too_many_pages" \| "image_too_large" \| "unreadable_file", "run_id": uuid }`. Also recorded as a run with the route `reject`. |
+| 422 | `{ "code": "invalid_request" }`: a part is missing or out of range (for example `applicant_name` longer than 200 characters). |
 
 ## GET /api/runs
 
@@ -53,15 +62,23 @@ Response `RunView`:
 ```json
 {
   "run_id": "uuid",
-  "status": "received | processing | rejected | awaiting_review | awaiting_submit | submitted | done",
-  "steps": [{ "name": "intake", "state": "done | running | pending | skipped", "duration_ms": 120 }],
+  "applicant_name": "Fuller Services LLC",
+  "created_at": "2026-11-22T08:00:00.000Z",
+  "status": "received | processing | rejected | awaiting_review | awaiting_submit | done",
+  "steps": [{ "name": "preprocess", "state": "done | running | pending | skipped", "duration_ms": 120 }],
   "route": "ready | needs_review | reject | null",
-  "reasons": [{ "code": "near_expiry", "field": "expiry_date" }],
+  "reasons": [{ "code": "near_expiry", "field": "expiry_date", "rule_id": "expiry", "detail": { "days": "10" } }],
   "form": { "version": 2, "fields": { "<form_field>": FormFieldView } },
-  "required_documents": ["Memorandum of association", "..."],
+  "form_approved": false,
+  "required_documents": ["memorandum_of_association", "..."],
   "pages": 1
 }
 ```
+
+- `form` is `null` when processing stopped before a form existed; the reviewer can then retry or reject.
+- `form_approved` is `true` only when an approval exists for the current form version. Submit needs it.
+- `detail` holds the values a reason or rule result needs for its sentence (for example `days`). It never holds personal data.
+- `required_documents` holds document codes; the UI maps each one to a name.
 
 `FormFieldView`:
 
@@ -69,21 +86,22 @@ Response `RunView`:
 {
   "value": "2026-12-25",
   "state": "passed | flagged | approved | corrected | overridden | needs_examination",
+  "status": "present | not_present | unclear (what the licence shows for this field)",
   "origin": "read | entered_by_reviewer",
   "evidence_quote": "Expiry Date 25/12/2026",
   "evidence_box": { "page": 1, "x": 0.62, "y": 0.11, "w": 0.2, "h": 0.03 },
   "confidence": { "score": 0.81, "threshold": 0.9, "signals": { "agreement": 0, "grounding": 0.97 } },
-  "rule_results": [{ "rule_id": "expiry", "severity": "warn", "outcome": "passed | failed | could_not_run | not_applicable", "reason_code": "near_expiry", "overridable": false }],
+  "rule_results": [{ "rule_id": "expiry", "severity": "warn", "outcome": "passed | failed | could_not_run | not_applicable", "reason_code": "near_expiry", "overridable": false, "detail": { "days": "10" } }],
   "model_rationale": "string or null (the resolver's explanation: model output)",
   "proposal_accepted": "bool or null (whether the resolver's proposal replaced the value)"
 }
 ```
 
-`404` if the run does not exist.
+`404` with `{ "code": "not_found" }` if the run does not exist.
 
 ## GET /api/runs/{run_id}/pages/{n}
 
-Response: `image/png`. `404` if the page does not exist.
+Response: `image/png`. `404` with `{ "code": "not_found" }` if the run or the page does not exist.
 
 ## POST /api/runs/{run_id}/review
 
@@ -116,7 +134,7 @@ Request:
 | Status | Meaning |
 |---|---|
 | 200 | Updated `RunView`. The form version increases whenever the form's content changes: any value, or any field state. |
-| 409 | `{ "code": "blocking_rule_failed" \| "not_overridable" \| "undecided_fields" \| "stale_version" \| "reason_required", "field": str \| null, "rule_id": str \| null }` |
+| 409 | `{ "code": "blocking_rule_failed" \| "not_overridable" \| "undecided_fields" \| "stale_version" \| "reason_required" \| "no_form", "field": str \| null, "rule_id": str \| null }`. `no_form`: processing stopped before a form existed; only `reject_case` is allowed. |
 
 ## POST /api/runs/{run_id}/reopen
 
@@ -134,7 +152,7 @@ Request: `{ "action_id": uuid, "form_version": int }`
 | Status | Body |
 |---|---|
 | 200 | `{ "submission_id": uuid, "verified": bool }`. A repeated call with the same `action_id`, or for the same approved `form_version`, returns the same `submission_id`. |
-| 409 | `{ "code": "not_approved" \| "stale_version" \| "not_awaiting_submit" }` |
+| 409 | `{ "code": "not_approved" \| "stale_version" \| "not_awaiting_submit" \| "no_form" }` |
 
 When `verified` is `false`, the run returns to `awaiting_review`, with reason code `verification_failed`. The verification failure raises the form version as a `system` change. The reviewer examines the form, approves the new version and submits it with a new `action_id`. This works even when no value changes. The run is `done` when its latest submission is verified.
 

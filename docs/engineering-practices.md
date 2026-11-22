@@ -153,9 +153,11 @@ Checks follow the [OpenSSF Scorecard](https://securityscorecards.dev):
 - **Containers:**
   - Multi-stage builds, base images pinned by digest, a non-root user and a read-only filesystem where possible.
   - A health check on each service.
+  - The web server hides its version and sends `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `nosniff` and `Referrer-Policy: no-referrer`. It passes the client's address to the backend, so rate limits count each client, not the proxy.
 - **Releases:**
   - Annotated signed tags.
-  - An SBOM (CycloneDX) attached to each GitHub release.
+  - An SBOM (CycloneDX) attached to each GitHub release, listing only what the image installs (no dev or test-data libraries).
+  - The release job checks out without keeping its write token, because `npm ci` runs package install scripts.
   - Build provenance through GitHub artifact attestations.
 - **Policy files:**
   - `SECURITY.md` describes how to report a vulnerability.
@@ -214,8 +216,8 @@ Checks follow the [OpenSSF Scorecard](https://securityscorecards.dev):
 
 ## 9. Operations
 
-- **Health:** `/healthz` (process up) and `/readyz` (database and checkpointer reachable).
+- **Health:** `/healthz` (process up) and `/readyz` (database and checkpointer reachable). The container health check uses `/readyz`, so a backend that cannot reach its data is not healthy.
 - **Logs:** structured JSON logs, with the run ID on every line and personal data masked.
 - **Retention:** a daily job deletes runs, files and personal data older than the retention period. It writes a count to the log.
-- **Backups:** the SQLite databases are copied on release and before each migration.
+- **Backups:** `make backup` copies the SQLite databases with the online backup API (safe while the app writes), on release and before each migration. It fails when it finds no database, so a wrong path never passes as a backup.
 - **Schema migrations:** they are versioned, forward-only, and tested on a copy of the previous release's database.

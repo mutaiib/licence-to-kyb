@@ -90,9 +90,12 @@ Date order (`issue_date < expiry_date`, `establishment_date <= issue_date`) is n
 |---|---|
 | 401 | `invalid_credentials` (sign-in), `session_expired` |
 | 403 | `forbidden` (CSRF) |
-| 409 | `blocking_rule_failed`, `not_overridable`, `undecided_fields`, `stale_version`, `reason_required`, `not_approved`, `not_awaiting_submit`, `not_rejected`, `not_retryable` |
-| 422 | the file reason codes: `invalid_type`, `too_large`, `too_many_pages`, `image_too_large` |
+| 404 | `not_found` (no such run or page) |
+| 409 | `blocking_rule_failed`, `not_overridable`, `undecided_fields`, `stale_version`, `reason_required`, `not_approved`, `not_awaiting_submit`, `not_rejected`, `not_retryable`, `no_form` |
+| 422 | the file reason codes (`reason_code`): `invalid_type`, `too_large`, `too_many_pages`, `image_too_large`, `unreadable_file`; or `invalid_request` (`code`) when a request field is missing or out of range |
 | 429 | `rate_limited` |
+
+`network` is client-side only: the UI uses it when the server cannot be reached or answers with something that is not data.
 
 ## Reason codes
 
