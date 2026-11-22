@@ -322,3 +322,48 @@ def test_an_uncertain_expiry_is_re_read_but_an_expired_date_is_never_accepted(
     assert [(p["field"], p["accepted"]) for p in state["proposals"]] == [("expiry_date", False)]
     assert state["decision"]["route"] == "needs_review"
     assert "expiry_uncertain" in {r["code"] for r in state["reasons"]}
+
+
+def test_the_resolver_is_told_the_licence_number_and_authority(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    """The model needs both to call licence_lookup_registry."""
+    holder: dict[str, Any] = {}
+
+    class Recording(ToolLoopTransport):
+        def send(self, req: ModelRequest) -> ModelResponse:
+            if req.step == "resolve":
+                holder["brief"] = req.messages[0]["content"][0]["text"]
+            return super().send(req)
+
+    def transport(labels: dict[str, Any], case: dict[str, Any]) -> ToolLoopTransport:
+        holder["case"] = case
+        return Recording(labels, [[finish()]])
+
+    truth = first_case(catalogue[1], "near_expiry")["expected_values"]["expiry_date"]
+    run(tmp_path, catalogue, "near_expiry", transport, misread={"expiry_date": wrong_year(truth)})
+
+    assert holder["case"]["expected_values"]["licence_number"] in holder["brief"]
+    assert holder["case"]["authority"] in holder["brief"]
+
+
+def test_an_unexpected_error_in_the_resolver_does_not_end_the_run(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    class Broken(ToolLoopTransport):
+        def send(self, req: ModelRequest) -> ModelResponse:
+            if req.step == "resolve":
+                raise ValueError("a bug in a model client")
+            return super().send(req)
+
+    truth = first_case(catalogue[1], "near_expiry")["expected_values"]["expiry_date"]
+    state, _ = run(
+        tmp_path,
+        catalogue,
+        "near_expiry",
+        lambda labels, case: Broken(labels, []),
+        misread={"expiry_date": wrong_year(truth)},
+    )
+
+    assert state["decision"]["route"] == "needs_review"
+    assert "processing_failed" not in {r["code"] for r in state["reasons"]}

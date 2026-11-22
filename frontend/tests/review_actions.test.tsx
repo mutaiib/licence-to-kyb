@@ -148,6 +148,19 @@ describe('review actions', () => {
     });
   });
 
+  it('offers no form approval or submit when there is no form to approve', async () => {
+    openRun({
+      ...runView({}),
+      form: null,
+      reasons: [{ code: 'processing_failed', field: null, rule_id: null, detail: {} }],
+    });
+
+    await button(copy['review.retry']);
+    expect(screen.queryByRole('button', { name: copy['review.approveForm'] })).toBeNull();
+    expect(screen.queryByRole('button', { name: copy['review.submit'] })).toBeNull();
+    expect(screen.getByRole('button', { name: copy['review.reject'] })).toBeInTheDocument();
+  });
+
   it('does not offer retry processing when processing did not fail', async () => {
     openRun(runView({ expiry_date: nearExpiry }));
 

@@ -79,46 +79,65 @@ export function FormActions({
 
   const canRetry = view.reasons.some((reason) => RETRYABLE.has(reason.code));
   const isApproved = view.status === 'awaiting_submit';
+  // No form (processing stopped before one was made): nothing to approve or submit yet.
+  const hasForm = view.form !== null;
   return (
     <VStack gap={3}>
       {canRetry && (
-        <HStack gap={3} vAlign="center">
+        <VStack gap={2}>
           <Text>{copy['review.retry.help']}</Text>
-          <Button label={copy['review.retry']} onClick={handlers.onRetry} />
+          <HStack>
+            <Button label={copy['review.retry']} onClick={handlers.onRetry} />
+          </HStack>
+        </VStack>
+      )}
+      {!hasForm && (
+        <HStack>
+          <Button
+            label={copy['review.reject']}
+            variant="destructive"
+            onClick={() => {
+              setWriting('reject');
+            }}
+          />
         </HStack>
       )}
-      <Text>
-        {isApproved
-          ? copy['review.ready']
-          : undecided === 1
-            ? copy['review.remaining.one']
-            : undecided > 1
-              ? format('review.remaining', { count: String(undecided) })
-              : copy['review.allDecided']}
-      </Text>
-      <HStack gap={2} wrap="wrap">
-        {!isApproved && (
+      {hasForm && (
+        <Text>
+          {isApproved
+            ? copy['review.ready']
+            : undecided === 1
+              ? copy['review.remaining.one']
+              : undecided > 1
+                ? format('review.remaining', { count: String(undecided) })
+                : copy['review.allDecided']}
+        </Text>
+      )}
+      {hasForm && (
+        <HStack gap={2} wrap="wrap">
+          {!isApproved && (
+            <Button
+              label={copy['review.approveForm']}
+              variant="primary"
+              isDisabled={undecided > 0}
+              onClick={handlers.onApproveForm}
+            />
+          )}
           <Button
-            label={copy['review.approveForm']}
-            variant="primary"
-            isDisabled={undecided > 0}
-            onClick={handlers.onApproveForm}
+            label={copy['review.submit']}
+            variant={isApproved ? 'primary' : 'secondary'}
+            isDisabled={!isApproved}
+            onClick={handlers.onSubmit}
           />
-        )}
-        <Button
-          label={copy['review.submit']}
-          variant={isApproved ? 'primary' : 'secondary'}
-          isDisabled={!isApproved}
-          onClick={handlers.onSubmit}
-        />
-        <Button
-          label={copy['review.reject']}
-          variant="destructive"
-          onClick={() => {
-            setWriting('reject');
-          }}
-        />
-      </HStack>
+          <Button
+            label={copy['review.reject']}
+            variant="destructive"
+            onClick={() => {
+              setWriting('reject');
+            }}
+          />
+        </HStack>
+      )}
       <AlertDialog
         isOpen={rejectReason !== null}
         onOpenChange={(isOpen) => {

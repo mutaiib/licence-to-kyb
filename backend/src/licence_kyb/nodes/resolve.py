@@ -9,6 +9,7 @@ passes (FR-016). The model can only read and propose; it can never write (FR-018
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -36,6 +37,7 @@ RE_READABLE = frozenset(
 )
 
 RunRules = Callable[[TradeLicenceExtraction], list[RuleResult]]
+log = logging.getLogger(__name__)
 
 
 def re_readable_fields(rules: list[RuleResult]) -> tuple[str, ...]:
@@ -85,6 +87,11 @@ def run_resolver(
             response = llm.call(request)
         except LLMError:
             break  # the run continues with what was accepted so far
+        except Exception:
+            # Re-reading is an extra: an unexpected failure must not end the run (contract
+            # "A failed call never ends the run"). Logged for us; the run goes on.
+            log.exception("resolver model call failed")
+            break
         budget.charge_turn(response.usage.billed_tokens)
         calls = [b for b in response.content if b.get("type") == "tool_use"]
         if response.stop_reason != "tool_use" or not calls:
@@ -134,7 +141,11 @@ def _reading_problem(r: RuleResult) -> bool:
 
 def _brief(ctx: ToolContext) -> str:
     """The first message: the failed fields, their values and quotes, and why they failed."""
-    lines = [f"The licence has {ctx.page_count} page(s). These fields failed a check:"]
+    number = ctx.extraction.licence_number.value
+    lines = [
+        f"Licence number '{number}', issuing authority {ctx.authority}, {ctx.page_count} page(s).",
+        "These fields failed a check:",
+    ]
     for name in ctx.failed_fields:
         f = getattr(ctx.extraction, name)
         reasons = ", ".join(
