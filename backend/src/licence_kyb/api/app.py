@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
 
-from licence_kyb.api import routes_health, routes_runs, routes_session
+from licence_kyb.api import routes_health, routes_review, routes_runs, routes_session
 from licence_kyb.api.auth import SAFE_METHODS, Auth, error_response
 from licence_kyb.config import Settings
 from licence_kyb.graph import open_checkpointer
@@ -69,4 +69,5 @@ def create_app(
     app.include_router(routes_health.router)
     app.include_router(routes_session.router)
     app.include_router(routes_runs.router)
+    app.include_router(routes_review.router)
     return app

@@ -151,10 +151,13 @@ def start(
     *,
     faults: set[str] | None = None,
     registry_down: bool = False,
+    misread: dict[str, str] | None = None,
 ) -> Reviewer:
-    """Upload the group's licence and return a signed-in reviewer for its run."""
+    """Upload the group's licence and return a signed-in reviewer for its run.
+    ``misread`` makes the scripted model read these values wrong."""
     root, case = catalogue[0], case_of(catalogue, group)
-    transport = ScriptedTransport(case["expected_values"], faults=faults)
+    labels = {**case["expected_values"], **(misread or {})}
+    transport = ScriptedTransport(labels, faults=faults)
     client = make_client(tmp_path / "var", root, transport, registry_down=registry_down)
     csrf = sign_in(client)
     created = client.post(
@@ -166,43 +169,62 @@ def start(
     return Reviewer(client, csrf, created.json()["run_id"], transport)
 
 
-def approve_flagged(r: Reviewer) -> None:
-    flagged = [
-        n
-        for n, f in r.view()["form"]["fields"].items()
-        if f["state"] in ("flagged", "needs_examination")
-    ]
-    assert r.review(*(decision(n, "approve") for n in flagged)).status_code == 200
+def misread_expiry(catalogue: Any) -> tuple[dict[str, str], str]:
+    """The model reads the expiry year wrong, while the licence, its QR code and the
+    registry agree on the true date (the "corrects expiry_date" row of the US2 table).
+    Returns the misread label and the true date."""
+    truth: str = case_of(catalogue, "near_expiry")["expected_values"]["expiry_date"]
+    wrong = str(int(truth[:4]) + 2) + truth[4:]
+    return {"expiry_date": wrong}, truth
+
+
+def approve_flagged(r: Reviewer, *, true_expiry: str | None = None) -> None:
+    """Decide every flagged field: correct a misread expiry date, approve the rest."""
+    decisions = []
+    for name, f in r.view()["form"]["fields"].items():
+        if f["state"] not in ("flagged", "needs_examination"):
+            continue
+        if name == "expiry_date" and true_expiry and f["value"] != true_expiry:
+            decisions.append(decision(name, "correct", true_expiry))
+        else:
+            decisions.append(decision(name, "approve"))
+    assert r.review(*decisions).status_code == 200
 
 
 # ------------------------------------------------------------------ correcting a field
 def test_a_correction_replaces_the_value_and_is_audited_and_captured(
     tmp_path: Path, catalogue: Any
 ) -> None:
-    r = start(tmp_path, catalogue, "near_expiry")
-    read_value = r.view()["form"]["fields"]["expiry_date"]["value"]
+    misread, truth = misread_expiry(catalogue)
+    r = start(tmp_path, catalogue, "near_expiry", misread=misread)
 
-    response = r.review(decision("expiry_date", "correct", "2026-12-25", "Phone check"))
+    response = r.review(decision("expiry_date", "correct", truth, "QR code shows it"))
 
     assert response.status_code == 200
     expiry = r.view()["form"]["fields"]["expiry_date"]
-    assert expiry["value"] == "2026-12-25"
+    assert expiry["value"] == truth
     assert expiry["origin"] == "entered_by_reviewer"
     assert expiry["state"] == "corrected"
-    assert expiry["rule_results"] == []  # re-checked: the new date passes every rule
+    # Re-checked with every rule: only the true near-expiry warning can remain.
+    assert {x["reason_code"] for x in expiry["rule_results"]} <= {"near_expiry"}
     [event] = r.audit("correct")
-    assert (event["old"], event["new"], event["actor"]) == (read_value, "2026-12-25", "reviewer1")
+    assert (event["old"], event["new"], event["actor"]) == (
+        misread["expiry_date"],
+        truth,
+        "reviewer1",
+    )
     assert r.count("captured_corrections") == 1
     with r.pipeline.db.connect() as conn:
         capture = conn.execute("SELECT * FROM captured_corrections").fetchone()
     assert capture["status"] == "pending"
-    assert "2026-12-25" not in capture["corrected_value_enc"]  # stored encrypted
+    assert truth not in capture["corrected_value_enc"]  # stored encrypted
 
 
 def test_the_same_review_call_twice_changes_the_run_once(tmp_path: Path, catalogue: Any) -> None:
-    r = start(tmp_path, catalogue, "near_expiry")
+    misread, truth = misread_expiry(catalogue)
+    r = start(tmp_path, catalogue, "near_expiry", misread=misread)
     version = r.view()["form"]["version"]
-    same = decision("expiry_date", "correct", "2026-12-25")
+    same = decision("expiry_date", "correct", truth)
 
     first = r.review(same, version=version, action_id="a1")
     second = r.review(same, version=version, action_id="a1")
@@ -457,8 +479,9 @@ def test_after_a_failure_the_reviewer_can_enter_values_by_hand(
 def test_a_run_in_review_survives_a_restart_with_its_decisions(
     tmp_path: Path, catalogue: Any
 ) -> None:
-    r = start(tmp_path, catalogue, "near_expiry")
-    r.review(decision("expiry_date", "correct", "2026-12-25"))
+    misread, truth = misread_expiry(catalogue)
+    r = start(tmp_path, catalogue, "near_expiry", misread=misread)
+    r.review(decision("expiry_date", "correct", truth))
     before = r.view()
 
     restarted = make_client(tmp_path / "var", catalogue[0], r.transport)
@@ -486,21 +509,20 @@ def test_the_audit_alone_names_the_approver_and_every_change(
     catalogue: Any, steps: list[tuple[str, str, bool]]
 ) -> None:
     with tempfile.TemporaryDirectory() as tmp:
-        r = start(Path(tmp), catalogue, "near_expiry")
+        misread, truth = misread_expiry(catalogue)
+        r = start(Path(tmp), catalogue, "near_expiry", misread=misread)
         accepted: set[str] = set()
         previous: dict[str, Any] | None = None
         for i, (field, action, repeat) in enumerate(steps):
             d = (
                 previous
                 if repeat and previous
-                else decision(
-                    field, action, "2026-12-25" if field == "expiry_date" else f"Value {i}"
-                )
+                else decision(field, action, truth if field == "expiry_date" else f"Value {i}")
             )
             if r.review(d).status_code == 200:
                 accepted.add(d["decision_id"])
             previous = d
-        approve_flagged(r)
+        approve_flagged(r, true_expiry=truth)
         assert r.review(approve_form=True).status_code == 200
         submitted_version = r.view()["form"]["version"]
         assert r.submit().json()["verified"] is True

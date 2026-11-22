@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from licence_kyb.schemas.kyb_form import FieldState, FormValue
 from licence_kyb.schemas.licence import Origin, Status
@@ -123,3 +123,66 @@ class RunSummary(BaseModel):
 
 class RunList(BaseModel):
     runs: list[RunSummary]
+
+
+# ------------------------------------------------------------------ reviewer actions (US2)
+ActionId = Annotated[str, Field(min_length=1, max_length=64)]
+"""A client-made ID. Sending the same ID again changes nothing (idempotency)."""
+Reason = Annotated[str, Field(min_length=1, max_length=500)]
+
+
+class DecisionIn(BaseModel):
+    """One decision on one field (``approve`` or ``correct``) or on one check (``override``)."""
+
+    decision_id: ActionId
+    action: Literal["approve", "correct", "override"]
+    field: str | None = None
+    rule_id: str | None = None
+    value: Annotated[str, Field(max_length=500)] | None = None
+    reason: Reason | None = None
+
+
+class ReviewIn(BaseModel):
+    form_version: int
+    decisions: Annotated[list[DecisionIn], Field(max_length=50)] = []
+    approve_form: bool = False
+    reject_case: bool = False
+    reject_reason: Reason | None = None
+    action_id: ActionId
+
+
+class SubmitIn(BaseModel):
+    action_id: ActionId
+    form_version: int
+
+
+class SubmitOut(BaseModel):
+    submission_id: str
+    verified: bool
+
+
+class ReopenIn(BaseModel):
+    action_id: ActionId
+    reason: Reason
+
+
+class RetryIn(BaseModel):
+    action_id: ActionId
+
+
+class ActionErrorOut(BaseModel):
+    """409: the action is not possible now. ``code`` names the reason (contracts/http-api.md)."""
+
+    code: Literal[
+        "blocking_rule_failed",
+        "not_overridable",
+        "undecided_fields",
+        "stale_version",
+        "reason_required",
+        "not_approved",
+        "not_awaiting_submit",
+        "not_rejected",
+        "not_retryable",
+    ]
+    field: str | None = None
+    rule_id: str | None = None
