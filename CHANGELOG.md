@@ -21,12 +21,19 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   gate routes each run to ready, needs review or reject. An expired licence is rejected
   only when the expiry is corroborated. `scripts/calibrate.py` fits thresholds on real
   readings; until then they are documented defaults (`fitted: false`).
+- Model providers: any model step can run on an OpenAI-compatible server (llama.cpp,
+  Ollama, vLLM, LM Studio, LiteLLM proxy) through model profiles; Claude stays the default.
+- User Story 4: a bounded resolver agent re-reads values that failed a check, with five
+  read-only tools and one structured error format; a proposal is kept only when no check
+  that doubts the value fails.
 
 ### Changed
 - Readability pass: one source for shared constants and types, all SQL in `Database`,
   shorter pipeline nodes, one typed shape for form field values.
 
 ### Fixed
+- The evidence check: a date or identifier must appear exactly on the document, not
+  only in the model's own quote.
 - Dates in the wrong order reach the reviewer as `date_order`, not `processing_failed`.
 - A run whose processing crashes goes to review and can be retried; an interrupted run
   continues after its last completed step.

@@ -23,9 +23,13 @@ class RunState(TypedDict, total=False):
     agreement: dict[str, bool]
     serving_models: list[str]
     rule_results: list[dict[str, Any]]
-    # proposals and resolver_rounds: used from User Story 4 (the resolver).
     proposals: list[dict[str, Any]]
+    """Every resolver proposal, each marked accepted or not (US4)."""
     resolver_rounds: int
+    resolver_usage: dict[str, float]
+    """Tokens, tool calls and seconds the resolver used so far: its budget is per run."""
+    resolver_done: bool
+    """No further round: a limit was reached, or the last round accepted nothing."""
     # confidence / gate / form
     # Used from User Story 3 (confidence and routing).
     confidence: dict[str, dict[str, Any]]

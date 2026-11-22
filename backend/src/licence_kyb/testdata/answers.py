@@ -149,16 +149,11 @@ class ScriptedTransport:
                 {"doc_type": self.doc_type, "authority": self.authority, "has_arabic": "true"},
                 req.model,
             )
-        if "refusal" in self.faults and req.step.startswith("extract_primary"):
-            return ModelResponse(
-                content=[], parsed=None, stop_reason="refusal", serving_model=model, usage=USAGE
-            )
-        # "malformed" matches the retry step too ("extract_primary_retry"), so both replies fail.
-        if "malformed" in self.faults and req.step.startswith("extract_primary"):
-            return self._reply({"licence_number": "not a field"}, model)
-        # "malformed_once" matches the first step only, so the retry succeeds.
-        if "malformed_once" in self.faults and req.step == "extract_primary":
-            return self._reply({"licence_number": "not a field"}, model)
+        if req.step == "resolve" and self.labels is not None:
+            return self._resolve(req)
+        faulty = self._fault_reply(req.step, model)
+        if faulty is not None:
+            return faulty
         if self.labels is None:
             raise ValueError("extraction requested for a document without labels")
         full = extraction_from_labels(self.labels, self.faults)
@@ -169,6 +164,63 @@ class ScriptedTransport:
                 critical["expiry_date"] = _misread_year(critical["expiry_date"])
             return self._reply(critical, model)
         return self._reply(full, model)
+
+    def _fault_reply(self, step: str, model: str) -> ModelResponse | None:
+        """The reply a fault asks for, or None to read the document normally."""
+        if "refusal" in self.faults and step.startswith("extract_primary"):
+            return ModelResponse(
+                content=[], parsed=None, stop_reason="refusal", serving_model=model, usage=USAGE
+            )
+        # "malformed" matches the retry step too ("extract_primary_retry"), so both replies fail.
+        if "malformed" in self.faults and step.startswith("extract_primary"):
+            return self._reply({"licence_number": "not a field"}, model)
+        # "malformed_once" matches the first step only, so the retry succeeds.
+        if "malformed_once" in self.faults and step == "extract_primary":
+            return self._reply({"licence_number": "not a field"}, model)
+        return None
+
+    def _resolve(self, req: ModelRequest) -> ModelResponse:
+        """A resolver that reads perfectly: it proposes the labelled value of each failed
+        field it may investigate, then finishes. The checks still decide what is kept."""
+        assert self.labels is not None  # noqa: S101 - checked by the caller
+        propose = next(t for t in req.tools if t["name"] == "propose_fix")
+        fields = propose["input_schema"]["properties"]["field"]["enum"]
+        full = extraction_from_labels(self.labels, set())
+        blocks: list[dict[str, Any]] = []
+        for i, name in enumerate(fields):
+            read = full.get(name, {})
+            if read.get("status") != "present" or isinstance(read.get("value"), list):
+                continue
+            value = str(read["value"])
+            blocks.append(
+                {
+                    "type": "tool_use",
+                    "id": f"fix{i}",
+                    "name": "propose_fix",
+                    "input": {
+                        "field": name,
+                        "new_value": dmy(value) if name.endswith("_date") else value,
+                        "evidence_quote": read["evidence_quote"],
+                        "self_confidence": "high",
+                        "rationale": "Read again from the licence text.",
+                    },
+                }
+            )
+        blocks.append(
+            {
+                "type": "tool_use",
+                "id": "finish",
+                "name": "finish",
+                "input": {"summary": "Proposed the values the licence shows."},
+            }
+        )
+        return ModelResponse(
+            content=blocks,
+            parsed=None,
+            stop_reason="tool_use",
+            serving_model=req.model,
+            usage=USAGE,
+        )
 
     @staticmethod
     def _reply(parsed: dict[str, Any], model: str) -> ModelResponse:

@@ -199,6 +199,24 @@ def test_value_not_in_its_own_quote_fails_the_evidence_check() -> None:
     assert [(r.outcome, r.reason_code) for r in evidence] == [("failed", "evidence_mismatch")]
 
 
+@pytest.mark.parametrize(
+    ("name", "value", "quote", "printed"),
+    [
+        ("expiry_date", "2028-12-25", "Expiry Date 25/12/2028", "Expiry Date 25/12/2026"),
+        ("licence_number", "1234561", "Licence No 1234561", "Licence No 1234567"),
+    ],
+)
+def test_a_misread_date_or_number_fails_even_when_its_quote_repeats_the_misreading(
+    name: str, value: str, quote: str, printed: str
+) -> None:
+    """One wrong digit makes a fuzzy quote match look good; dates and identifiers must
+    appear exactly in the document text (found by the US4 resolver tests)."""
+    ex = extraction(**{name: field(value, quote=quote)})
+    ctx = context(extraction=ex, ocr_text=printed)
+    evidence = [r for r in run_rules(ctx) if r.rule_id == "evidence" and name in r.fields]
+    assert [(r.outcome, r.reason_code) for r in evidence] == [("failed", "evidence_mismatch")]
+
+
 def test_value_entered_by_a_reviewer_skips_the_evidence_check() -> None:
     ex = extraction(licence_number=field("1234567", origin="entered_by_reviewer"))
     ctx = context(extraction=ex, ocr_text="nothing relevant here")

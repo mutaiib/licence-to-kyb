@@ -291,22 +291,22 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 4 (write first; they must fail)
 
-- [ ] T077 [P] [US4] Write graph tests from the "Re-reading failed values" table, using recorded tool loops, in `backend/tests/graph/test_resolver.py`
-- [ ] T078 [P] [US4] Write tool tests from the "Tool error responses" table and its properties in `backend/tests/unit/test_resolver_tools.py`. Check `is_error`, `error_code`, `next_action`, `allowed`, the size limit, and the absence of stack traces. Assert structure only, never wording.
+- [X] T077 [P] [US4] Write graph tests from the "Re-reading failed values" table, using recorded tool loops, in `backend/tests/graph/test_resolver.py`
+- [X] T078 [P] [US4] Write tool tests from the "Tool error responses" table and its properties in `backend/tests/unit/test_resolver_tools.py`. Check `is_error`, `error_code`, `next_action`, `allowed`, the size limit, and the absence of stack traces. Assert structure only, never wording.
 
 ### Implementation for User Story 4
 
-- [ ] T079 [P] [US4] Implement the read-only tools per `contracts/resolver-tools.md` in `backend/src/licence_kyb/tools/{reread_region,ocr_region,registry_mock,activity_lookup,validation_report}.py`. The vision call in `reread_region` goes through `LLMClient`, with its own span. Every failure returns the structured error response from the contract\'s "Error responses" section, through one shared `tools/errors.py`.
-- [ ] T080 [P] [US4] Write the resolver prompt and the tool definitions in `backend/src/licence_kyb/llm/prompts/resolve.md` and `backend/src/licence_kyb/tools/definitions.py`
-- [ ] T081 [US4] Implement the resolver loop in `backend/src/licence_kyb/nodes/resolve.py`:
+- [X] T079 [P] [US4] Implement the read-only tools per `contracts/resolver-tools.md` in `backend/src/licence_kyb/tools/{reread_region,ocr_region,registry_mock,activity_lookup,validation_report}.py`. The vision call in `reread_region` goes through `LLMClient`, with its own span. Every failure returns the structured error response from the contract\'s "Error responses" section, through one shared `tools/errors.py`.
+- [X] T080 [P] [US4] Write the resolver prompt and the tool definitions in `backend/src/licence_kyb/llm/prompts/resolve.md` and `backend/src/licence_kyb/tools/definitions.py`
+- [X] T081 [US4] Implement the resolver loop in `backend/src/licence_kyb/nodes/resolve.py`:
   - the budgets from the contract table (turns, rounds, tokens including vision re-reads, wall time, tool calls)
   - scope and argument checks before each call
   - parallel tool results in one message
   - code retries for temporary errors
   - the best accepted fixes kept
-- [ ] T082 [US4] Add the conditional edge validate → resolve → validate, and the `resolver_enabled` setting, in `backend/src/licence_kyb/graph.py`
-- [ ] T083 [US4] Show proposed fixes, labelled as model output, in `frontend/src/components/FieldRow.tsx`, with their strings in `copy.ts`. Add a Vitest case in `frontend/tests/confidence.test.tsx`.
-- [ ] T084 [US4] Record the tool-loop responses for the US4 graph tests. Run the on/off comparison with `evals/runner.py` and record the result in `docs/experiments.md`, then open the US4 pull request into `develop`.
+- [X] T082 [US4] Add the conditional edge validate → resolve → validate (at most 2 rounds) → confidence, and the `resolver_enabled` setting, in `backend/src/licence_kyb/pipeline.py`. A profile's `resolver_seconds` overrides the time limits.
+- [X] T083 [US4] Show proposed fixes, labelled as model output, in the field details of `frontend/src/pages/ReviewPage.tsx` (through `model_rationale`), with their strings in `copy.ts`. Add a Vitest case in `frontend/tests/confidence.test.tsx`.
+- [X] T084 [US4] Record the tool-loop responses for the US4 graph tests (scripted, per research R10a), then open the US4 pull request into `develop`. The resolver on/off comparison needs real readings and the eval report, so it runs in User Story 6 on the local model (T111).
 
 **Checkpoint**: poor scans produce fewer flagged fields, and no proposal bypasses validation.
 

@@ -93,7 +93,9 @@ def _grounded(name: str, f: Field[Any], ocr: str) -> bool:
         return True
     forms = [normalise_text(form) for form in _value_forms(f.value)]
     if name in EXACT:
-        return any(form in quote for form in forms)
+        # Exact in the quote, and exact on the document: a quote that repeats a misread
+        # digit still matches the page fuzzily, so the value itself must be found.
+        return any(form in quote and form in ocr for form in forms)
     return any(fuzz.partial_ratio(form, quote) >= VALUE_THRESHOLD for form in forms)
 
 

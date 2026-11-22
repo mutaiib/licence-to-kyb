@@ -21,7 +21,29 @@ Every other document links here rather than restating these numbers.
 
 **Processing deadline.** Each processing attempt has a deadline of 120 s, reset on retry (FR-039). The p95 targets are 60 s without the resolver and 90 s with it (SC-006). The latency budget for each stage is in [plan.md](../plan.md#latency-budget).
 
+**Per model profile.** A model profile may set `resolver_seconds: {soft, hard}` for a slower model (ADR-004); a model on a CPU needs minutes per call. The turn, round, token and tool-call limits are the same for every profile.
+
 **These numbers are provisional.** The Foundation throughput measurement (task T034) records output tokens per second and the latency of each call on synthetic documents. The limits are then set from those figures, and this table is updated in the same pull request.
+
+## When the resolver runs
+
+The graph is `validate → resolve → validate` (at most 2 rounds) `→ confidence`. The resolver runs only when a check that a second reading can fix has failed:
+
+| Reason code | Why a re-read can help |
+|---|---|
+| `evidence_mismatch` | the value is not in its quote: likely a misread |
+| `number_format` | a misread character breaks the format |
+| `date_order` | a misread date |
+| `qr_mismatch` | the printed number may be misread |
+| `expiry_uncertain` | the two readings disagree |
+| `registry_not_found` | the number looked up may be misread |
+| `low_confidence` from the `required` check | the value was not readable |
+
+**Applying proposals:** the resolve node applies each proposal to a copy of the extraction, re-runs every rule, and keeps the proposal only if no blocking check and no re-readable check (the table above) fails on its field (FR-016). A business warning that is true of the corrected value, such as `near_expiry`, does not block it: it is not a doubt about the reading, and it stays flagged for the reviewer. A kept value has origin `read` and the proposal's evidence quote, so the evidence check applies to it as to any read value.
+
+**Text-only models:** a profile with `vision: false` does not get `licence_reread_region`; `licence_ocr_region` reads the same regions from the OCR words.
+
+**Unknown tool names:** a call to a tool that is not in the list (for example `submit_form`, written on a document) returns `invalid_arguments`, with `allowed` listing the tool names. Nothing runs.
 
 ## Loop contract
 

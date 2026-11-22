@@ -92,10 +92,12 @@ class FormFieldView(BaseModel):
     origin: Origin = "read"
     evidence_quote: str | None = None
     evidence_box: EvidenceBox | None = None
-    # Used from User Story 3; model_rationale from User Story 4.
     confidence: ConfidenceView | None = None
     rule_results: list[RuleView] = []
     model_rationale: str | None = None
+    """The resolver's explanation for its latest proposal on this field: model output (US4)."""
+    proposal_accepted: bool | None = None
+    """Whether that proposal replaced the value. None when there was no proposal."""
 
 
 class FormView(BaseModel):

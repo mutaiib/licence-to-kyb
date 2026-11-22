@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FormFieldView } from '../src/api/client';
 import { ConfidenceDetails } from '../src/components/ConfidenceDetails';
+import { ProposalDetails } from '../src/components/ProposalDetails';
 import { copy } from '../src/copy';
 
 const lowScore: NonNullable<FormFieldView['confidence']> = {
@@ -43,5 +44,23 @@ describe('confidence details', () => {
 
     expect(screen.getByText('0.95')).toBeInTheDocument();
     expect(screen.queryByText(copy['review.threshold.label'])).toBeNull();
+  });
+});
+
+describe('resolver proposal', () => {
+  it('labels the explanation as model output and says the new value was used', () => {
+    render(<ProposalDetails rationale="The OCR text shows 2026." accepted={true} />);
+
+    expect(screen.getByText(copy['review.rationale.label'])).toBeInTheDocument();
+    expect(screen.getByText(copy['review.rationale.note'])).toBeInTheDocument();
+    expect(screen.getByText('The OCR text shows 2026.')).toBeInTheDocument();
+    expect(screen.getByText(copy['proposal.accepted'])).toBeInTheDocument();
+  });
+
+  it('says when the new value failed a check and was not used', () => {
+    render(<ProposalDetails rationale="Re-read." accepted={false} />);
+
+    expect(screen.getByText(copy['proposal.refused'])).toBeInTheDocument();
+    expect(screen.queryByText(copy['proposal.accepted'])).toBeNull();
   });
 });
