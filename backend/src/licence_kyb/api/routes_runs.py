@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, File, Form, Request, UploadFile
@@ -31,11 +32,30 @@ def _pipeline(request: Request) -> Pipeline:
     return pipeline
 
 
-def _process(pipeline: Pipeline, run_id: str) -> None:
+def process_in_background(pipeline: Pipeline, run_id: str) -> None:
+    """Process a run. An error sends the run to review, so it never stays stuck (FR-039)."""
     try:
         pipeline.process(run_id)
-    except Exception:  # the deadline sweep moves the run to review (FR-039)
+    except Exception:  # any error: the reviewer takes over
         log.exception("processing failed", extra={"run_id": run_id})
+        pipeline.mark_failed(run_id)
+
+
+def resume_unfinished_runs(pipeline: Pipeline) -> threading.Thread:
+    """After a restart, process again every run left in received or processing (FR-030).
+
+    A background thread does the work, so the API answers requests at once.
+    """
+
+    def resume(run_id: str) -> None:
+        process_in_background(pipeline, run_id)
+
+    def resume_all() -> None:
+        pipeline.ops.resume_on_startup(resume)
+
+    thread = threading.Thread(target=resume_all, name="resume-runs", daemon=True)
+    thread.start()
+    return thread
 
 
 @router.post(
@@ -64,7 +84,7 @@ async def create_run(
         return JSONResponse(
             {"run_id": result.run_id, "status": status, "duplicate": True}, status_code=200
         )
-    background.add_task(_process, pipeline, result.run_id)
+    background.add_task(process_in_background, pipeline, result.run_id)
     return RunCreated(run_id=result.run_id, status="processing")
 
 

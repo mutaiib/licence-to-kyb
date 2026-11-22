@@ -14,6 +14,7 @@ import shutil
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from licence_kyb.clock import Clock
 from licence_kyb.schemas.results import reason_entry
@@ -49,22 +50,29 @@ class Operations:
             deadline = run["deadline_at"]
             if deadline is None or datetime.fromisoformat(deadline) > now:
                 continue
-            reasons = json.loads(run["reasons_json"])
-            if not any(r.get("code") == "processing_failed" for r in reasons):
-                reasons.append(reason_entry("processing_failed"))
-            self.db.update_run(
-                run["run_id"], status="awaiting_review", reasons_json=json.dumps(reasons)
-            )
-            self.db.record_audit(
-                event_key=f"{run['run_id']}:deadline_sweep:{deadline}",
-                run_id=run["run_id"],
-                action="status_change",
-                actor="system",
-                new="awaiting_review",
-                reason="processing deadline passed",
-            )
+            self.send_to_review(run, event="deadline_sweep", note="processing deadline passed")
             moved.append(run["run_id"])
         return moved
+
+    def send_to_review(self, run: dict[str, Any], *, event: str, note: str) -> None:
+        """Move ``run`` to review with ``processing_failed``. Repeating it writes nothing new.
+
+        ``event`` names the cause in the audit key; ``note`` is the audit reason text.
+        """
+        reasons = json.loads(run["reasons_json"])
+        if not any(r.get("code") == "processing_failed" for r in reasons):
+            reasons.append(reason_entry("processing_failed"))
+        self.db.update_run(
+            run["run_id"], status="awaiting_review", reasons_json=json.dumps(reasons)
+        )
+        self.db.record_audit(
+            event_key=f"{run['run_id']}:{event}:{run['deadline_at']}",
+            run_id=run["run_id"],
+            action="status_change",
+            actor="system",
+            new="awaiting_review",
+            reason=note,
+        )
 
     def apply_retention(self, *, days: int) -> int:
         cutoff = (self.clock.now() - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%S.000Z")

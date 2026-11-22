@@ -23,7 +23,12 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from licence_kyb.clock import Clock, SystemClock
-from licence_kyb.config import APPLICANT_NAME_THRESHOLD, ModelsConfig, models_config
+from licence_kyb.config import (
+    APPLICANT_NAME_THRESHOLD,
+    ModelsConfig,
+    models_config,
+    processing_deadline_seconds,
+)
 from licence_kyb.graph import thread_config
 from licence_kyb.llm.client import LLMClient, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import prompt_hash
@@ -32,6 +37,7 @@ from licence_kyb.nodes.intake import IntakeResult, IntakeService
 from licence_kyb.nodes.map_form import build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
 from licence_kyb.nodes.route import build_route_request, route_document
+from licence_kyb.ops import Operations
 from licence_kyb.profiles import load_profile
 from licence_kyb.registry import MockRegistry
 from licence_kyb.rules import RuleContext, run_rules
@@ -73,6 +79,7 @@ class Deps:
     registry: MockRegistry = field(default_factory=MockRegistry)
     models: ModelsConfig = field(default_factory=models_config)
     applicant_threshold: float = APPLICANT_NAME_THRESHOLD
+    deadline_seconds: float = field(default_factory=processing_deadline_seconds)
 
     @property
     def files_dir(self) -> Path:
@@ -87,6 +94,9 @@ class Pipeline:
         self.db.migrate()
         self.tracer = Tracer(self.db, deps.cipher)
         self.intake = IntakeService(self.db, deps.cipher, deps.files_dir)
+        self.ops = Operations(
+            self.db, deps.clock, deadline_seconds=deps.deadline_seconds, files_dir=deps.files_dir
+        )
         conn = sqlite3.connect(deps.data_dir / "checkpoints.sqlite3", check_same_thread=False)
         self.checkpointer = SqliteSaver(
             conn, serde=EncryptedSerializer(FernetCheckpointCipher(deps.cipher))
@@ -102,11 +112,19 @@ class Pipeline:
         if run is None:
             raise KeyError(run_id)
         applicant = self.deps.cipher.decrypt_text(run["applicant_name"])
-        self.db.update_run(run_id, status="processing")
+        self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
         state: dict[str, Any] = self.graph.invoke(
             {"run_id": run_id, "applicant_name": applicant}, thread_config(run_id)
         )
         return state
+
+    def mark_failed(self, run_id: str) -> None:
+        """Send a run whose processing raised an error to review (FR-039)."""
+        run = self.db.get_run(run_id)
+        if run is not None:
+            self.ops.send_to_review(
+                run, event="processing_error", note="processing raised an error"
+            )
 
     def page_png(self, run_id: str, page: int) -> bytes:
         return self.deps.cipher.decrypt(

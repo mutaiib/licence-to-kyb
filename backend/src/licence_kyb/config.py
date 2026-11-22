@@ -112,3 +112,7 @@ def models_config() -> ModelsConfig:
 
 def budgets_config() -> BudgetsConfig:
     return BudgetsConfig.model_validate(load_yaml("budgets.yaml"))
+
+
+def processing_deadline_seconds() -> float:
+    return budgets_config().processing_deadline_seconds
