@@ -1,6 +1,6 @@
 # Eval report: scripted-baseline
 
-- Date: 2026-11-22T14:47:19+00:00
+- Date: 2026-11-22T14:48:35+00:00
 - Model profile: scripted
 - Model, all steps: scripted (labels): checks routing and rules, not reading
 - Resolver: on
@@ -13,6 +13,7 @@
 | `ready` precision (critical fields) | 14/14, Wilson 95% [0.7847, 1.0] |
 | Review rate, realistic mix | 27.7% |
 | Cost per document | $0.0000 |
+| Processing time per document, p95 | 2639 ms |
 | `max_tokens` stops | 0 of 300 calls |
 | Bad documents routed `ready` (SC-004) | 0 |
 | Submits without approval (none happen before the first pause) | 0 |
@@ -35,8 +36,8 @@
 
 | Stage | p95 | Budget |
 |---|---|---|
-| preprocess | 2975 ms | 8000 ms |
-| route | 3 ms | 4000 ms |
+| preprocess | 2616 ms | 8000 ms |
+| route | 2 ms | 4000 ms |
 | extract | 7 ms | 18000 ms |
-| validate | 3 ms | 1000 ms |
-| resolve | 27 ms | 45000 ms |
+| validate | 1 ms | 1000 ms |
+| resolve | 28 ms | 45000 ms |
