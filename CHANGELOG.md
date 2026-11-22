@@ -33,10 +33,14 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   report comparison, synthetic twins of approved corrections, and an eval workflow.
 
 ### Changed
+- UI and UX: the review page leads with the business name, the status and the form
+  actions, and lists the fields to examine first; the runs page reads well on a phone;
+  the trace shows totals; automatic WCAG 2.2 AA checks on every page.
 - Readability pass: one source for shared constants and types, all SQL in `Database`,
   shorter pipeline nodes, one typed shape for form field values.
 
 ### Fixed
+- A `ready` run asked for submit before anyone approved the form.
 - The evidence check: a date or identifier must appear exactly on the document, not
   only in the model's own quote.
 - Dates in the wrong order reach the reviewer as `date_order`, not `processing_failed`.

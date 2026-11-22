@@ -16,3 +16,16 @@ a test, and is checked again in the browser after the fix.
 | 8 | Trace | No run header and no totals | A trace is read to answer "how long, how much, which models" | T116 |
 | 9 | Upload | No sentence about what happens after upload; the business-name field has no hint | First use is guesswork | T117 |
 | 10 | All | No automatic accessibility check | WCAG 2.2 AA (FR-042) is not checked on each change | T098 |
+
+## Result
+
+All ten findings are fixed, each with a test, and checked again in the browser
+(`docs/images/ui/`). The browser checks also found two more defects, now fixed:
+
+- The trace showed only the steps that call a model; FR-032 asks for every step.
+- A `ready` run offered Submit before anyone approved the form, so Submit failed. The run
+  view now says whether the current form version is approved (`form_approved`).
+
+Accessibility (T098): axe-core finds no WCAG 2.2 AA problem on any page, both in the test
+suite (jsdom) and in the browser with colour contrast. A keyboard-only pass of the review
+page reaches every control in working order, with a visible focus outline.

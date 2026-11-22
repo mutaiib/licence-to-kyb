@@ -384,20 +384,20 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 **Goal**: the reviewer sees the run, the flagged fields and the actions first, on any screen.
 
-- [ ] T112 [P] Review page: put the form actions (status, remaining flagged fields, Approve form, Submit, Reject) at the top of the form panel, before the fields.
-- [ ] T113 [P] Review page: list flagged fields first under "Fields to examine (N)", then passed fields under "Fields that passed (N)", closed by default.
-- [ ] T114 [P] Review page: a header with the business name, the upload time and a link to the trace (the run view gains `applicant_name` and `created_at`); run-level reasons show only reasons that have no field.
-- [ ] T115 [P] Runs page: one status column; on narrow screens a list instead of the table; an empty list links to the upload page.
-- [ ] T116 [P] Trace page: a header with the business name, and totals for time, cost and model calls.
-- [ ] T117 [P] Upload page: one sentence on what happens after upload, and a description for the business-name field.
-- [ ] T118 Review page on narrow screens: the licence page comes right after the fields to examine, before the passed fields.
+- [X] T112 [P] Review page: put the form actions (status, remaining flagged fields, Approve form, Submit, Reject) at the top of the form panel, before the fields.
+- [X] T113 [P] Review page: list flagged fields first under "Fields to examine (N)", then passed fields under "Fields that passed (N)", closed by default.
+- [X] T114 [P] Review page: a header with the business name, the upload time and a link to the trace (the run view gains `applicant_name` and `created_at`); run-level reasons show only reasons that have no field.
+- [X] T115 [P] Runs page: one status column; on narrow screens a list instead of the table; an empty list links to the upload page.
+- [X] T116 [P] Trace page: a header with the business name, and totals for time, cost and model calls.
+- [X] T117 [P] Upload page: one sentence on what happens after upload, and a description for the business-name field.
+- [X] T118 Review page on narrow screens: the licence page comes right after the fields to examine, before the passed fields.
 
 ## Polish & Cross-Cutting Concerns
 
 **Branch**: `feature/001-licence-to-kyb-polish`, then `release/0.1.0`
 
-- [ ] T097 [P] Add browser checks for every quickstart row with chrome-devtools-axi, and save screenshots to `docs/images/`
-- [ ] T098 [P] Run a WCAG 2.2 AA pass on all pages (FR-042): an automatic `axe-core` check of every page in the Vitest suite, plus a keyboard-only pass in the browser (flow, visible focus, status by text and icon). Fixes go in `frontend/src/`.
+- [X] T097 [P] Add browser checks for every quickstart row with chrome-devtools-axi, and save screenshots to `docs/images/` (`scripts/browser_check.sh`)
+- [X] T098 [P] Run a WCAG 2.2 AA pass on all pages (FR-042): an automatic `axe-core` check of every page in the Vitest suite, plus a keyboard-only pass in the browser (flow, visible focus, status by text and icon). Fixes go in `frontend/src/`.
 - [ ] T099 [P] Run timed walkthroughs (5 clean, 5 flagged) and compute the reviewer time from audit timestamps for SC-005. Record the result in `docs/experiments.md`.
 - [ ] T100 [P] Run mutation testing on `backend/src/licence_kyb/rules/` with `mutmut`, and record the score in `docs/experiments.md`
 - [ ] T101 Run the full eval suite. Fill `docs/experiments.md`, and replace the README Results section with the measured numbers and intervals, including any target that was missed.
