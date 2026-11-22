@@ -35,9 +35,9 @@ class Settings(BaseSettings):
     data_dir: Path = Path("var")
     session_hours: int = Field(default=8, ge=1)
     demo_answers_dir: Path | None = None
+    """Local demo only: answer from synthetic case labels instead of a model."""
     demo_today: date | None = None
     """Local demo only: the fixed date the synthetic catalogue was generated for."""
-    """Local demo only: answer from synthetic case labels instead of a model."""
     session_secret: SecretStr | None = None
     """HMAC key for session cookies. Required in production; set it in the environment."""
     cookie_secure: bool = True
