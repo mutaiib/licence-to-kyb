@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup local-model
+.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup local-model mutation
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -59,3 +59,9 @@ LOCAL_MODEL_PATH ?= $(HOME)/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
 local-model:
 	var/llama.cpp/llama-server -m "$(LOCAL_MODEL_PATH)" --alias local-model --jinja \
 		--host 127.0.0.1 --port 8080 --ctx-size 8192 --threads $$(nproc)
+
+# Mutation testing of the rules (T100). Slow, so not in CI. The copy of the code in
+# backend/mutants/ reads data from this checkout.
+mutation:
+	cd backend && LICENCE_KYB_REPO_ROOT=$(CURDIR) uv run mutmut run --max-children 8; \
+	uv run mutmut results

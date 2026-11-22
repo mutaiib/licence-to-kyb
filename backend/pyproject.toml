@@ -37,6 +37,7 @@ dev = [
   "types-PyYAML",
   "pip-audit",
   "pre-commit",
+  "mutmut==3.8.1",
 ]
 data = [
   "reportlab",
@@ -83,3 +84,10 @@ markers = [
 [tool.coverage.run]
 source = ["licence_kyb"]
 branch = true
+
+[tool.mutmut]
+# Mutation testing of the deterministic rules (T100): each mutant is a small change to the
+# rule code; a good test suite fails on it. `make mutation` runs it; not part of CI (slow).
+paths_to_mutate = ["src/licence_kyb/rules/"]
+tests_dir = ["tests/unit/test_rules.py"]
+also_copy = ["src/licence_kyb/", "config/"]

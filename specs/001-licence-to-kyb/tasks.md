@@ -399,7 +399,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T097 [P] Add browser checks for every quickstart row with chrome-devtools-axi, and save screenshots to `docs/images/` (`scripts/browser_check.sh`)
 - [X] T098 [P] Run a WCAG 2.2 AA pass on all pages (FR-042): an automatic `axe-core` check of every page in the Vitest suite, plus a keyboard-only pass in the browser (flow, visible focus, status by text and icon). Fixes go in `frontend/src/`.
 - [ ] T099 [P] Run timed walkthroughs (5 clean, 5 flagged) and compute the reviewer time from audit timestamps for SC-005. Record the result in `docs/experiments.md`.
-- [ ] T100 [P] Run mutation testing on `backend/src/licence_kyb/rules/` with `mutmut`, and record the score in `docs/experiments.md`
+- [X] T100 [P] Run mutation testing on `backend/src/licence_kyb/rules/` with `mutmut`, and record the score in `docs/experiments.md`
 - [ ] T101 Run the full eval suite. Fill `docs/experiments.md`, and replace the README Results section with the measured numbers and intervals, including any target that was missed.
 - [ ] T102 [P] Add the release workflow in `.github/workflows/release.yml`: a CycloneDX SBOM, a GitHub artifact attestation, and release notes from `CHANGELOG.md`
 - [ ] T103 Cut `release/0.1.0` from `develop`. Update `CHANGELOG.md` and link the eval report. Open a pull request into `main`; after it merges, tag `v0.1.0` (annotated, signed) and open the back-merge pull request into `develop`.

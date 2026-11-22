@@ -298,3 +298,87 @@ def test_a_missing_critical_field_is_flagged_for_examination() -> None:
         r for r in run_rules(ctx) if r.rule_id == "required" and "licence_number" in r.fields
     ]
     assert [(r.outcome, r.reason_code) for r in required] == [("failed", "low_confidence")]
+
+
+# ---------------------------------------------------------------- the result contract (T100)
+# The review page attaches each result to its fields by name, and the gate reads its outcome
+# and reason. Mutation testing showed that a result with a wrong rule ID or field survived.
+RULE_FIELDS: dict[str, set[str]] = {
+    "applicant_name": {"trade_name_en"},
+    "arabic_name": {"trade_name_ar"},
+    "date_order": {"issue_date", "expiry_date"},
+    "expiry": {"expiry_date"},
+    "high_risk_activity": {"activities"},
+    "legal_form": {"legal_form"},
+    "number_format": {"licence_number"},
+    "owners": {"people"},
+    "qr": {"licence_number"},
+    "registry": {"licence_number", "expiry_date"},
+    "shares_total": {"people"},
+    "sole_owner_count": {"legal_form", "people"},
+    "ubo": {"people"},
+}
+VARIED_CONTEXTS = [
+    {},
+    {"qr_payload": None},
+    {"extraction": extraction(expiry_date=field("2026-05-01"))},
+    {"extraction": extraction(licence_number=field("12A4567"))},
+    {"extraction": extraction(licence_number=field(None))},
+    {"registry": registry(status="cancelled")},
+    # Owner branches: one owner of a sole establishment, no owners table, no shares printed.
+    {
+        "extraction": extraction(
+            legal_form=field("sole_establishment"), people=field([person("Sara Ali", share=100.0)])
+        )
+    },
+    {"extraction": extraction(people=field(None))},
+    {
+        "extraction": extraction(
+            people=field([person("Sara Ali", share=None), person("Omar Ali", share=None)])
+        )
+    },
+    {"extraction": extraction(trade_name_ar=field(None))},
+    {"extraction": extraction(activities=[{"code": "4690.01", "en": "General Trading"}])},
+]
+
+
+@pytest.mark.parametrize("overrides", VARIED_CONTEXTS, ids=range(len(VARIED_CONTEXTS)))
+def test_every_result_names_its_rule_and_the_fields_it_checks(overrides: dict[str, Any]) -> None:
+    for r in run_rules(context(**overrides)):
+        if r.rule_id in RULE_FIELDS:
+            assert set(r.fields) == RULE_FIELDS[r.rule_id], r.rule_id
+        else:  # evidence and required report one field per result
+            assert r.rule_id in {"evidence", "required"}, r.rule_id
+            assert len(r.fields) == 1
+        if r.outcome in ("failed", "could_not_run"):
+            assert r.reason_code is not None, r.rule_id
+        else:
+            assert r.reason_code is None, r.rule_id
+
+
+@pytest.mark.parametrize(
+    ("qr_payload", "number"),
+    [(None, "1234567"), ("1234567", None)],
+    ids=["no QR code", "no licence number"],
+)
+def test_the_qr_check_does_not_apply_without_both_a_qr_code_and_a_number(
+    qr_payload: str | None, number: str | None
+) -> None:
+    ctx = context(qr_payload=qr_payload, extraction=extraction(licence_number=field(number)))
+
+    assert outcome(run_rules(ctx), "qr") == ("not_applicable", "block", None)
+
+
+@pytest.mark.parametrize(
+    ("days_left", "expected"),
+    [(31, "passed"), (30, "passed"), (29, "near_expiry"), (1, "near_expiry"), (0, "expired")],
+)
+def test_the_expiry_boundaries(days_left: int, expected: str) -> None:
+    expiry = date.fromordinal(TODAY.toordinal() + days_left).isoformat()
+    ctx = context(
+        extraction=extraction(expiry_date=field(expiry)), registry=registry(expiry=expiry)
+    )
+
+    r = result(run_rules(ctx), "expiry")
+
+    assert (r.reason_code or r.outcome) == expected
