@@ -1,0 +1,237 @@
+# UI copy
+
+All interface text follows **ASD-STE100 Simplified Technical English**.
+
+- Every string lives in `frontend/src/copy.ts`. No component contains literal UI text.
+- Every reason code and error code from the API maps to exactly one string here.
+- `scripts/lint_copy.py` checks every string in CI: sentence length, banned words, the term list and a passive-voice heuristic. A person checks voice in review, because a lint heuristic cannot catch every case.
+
+## Rules
+
+| Rule | Limit or requirement |
+|---|---|
+| Instruction length | At most 20 words per sentence. |
+| Description length | At most 25 words per sentence. |
+| Instructions | One instruction per sentence, in the imperative ("Upload the licence."). Steps in a sequence are separate sentences. A choice between two actions ("Correct the value or reject the case.") counts as one instruction. |
+| Voice | Active voice. The subject does the action: "You submitted the form", not "The form is submitted". |
+| Terms | One word for one meaning, used everywhere (see the term list). |
+| Abbreviations | Write terms in full. The exceptions are **KYB**, **UBO**, **MOA**, **QR** and **PDF/JPG/PNG**, each defined once in a tooltip where it first appears. |
+| Filler | Do not use: please, just, simply, easily, quickly, oops, great, awesome, let's, sorry, unfortunately. |
+| Punctuation | No exclamation marks. No ellipses. |
+| Numbers | Use digits and units: "10 MB", "5 pages", "10 days". |
+| Warnings and errors | Give the condition first, then the action: "The licence is expired. You cannot submit this form." |
+| Labels and statuses | Use nouns or adjectives for labels and statuses ("Flagged", "Approved"). Use imperatives only for actions. |
+
+## Term list
+
+| Use | Do not use |
+|---|---|
+| licence | license, permit, document (when it is a licence) |
+| field | item, entry, attribute |
+| value | data, info |
+| examine, examination | review (as a verb or an action), look at, inspect. The noun "reviewer" is allowed: it names the person. |
+| correct (verb) | fix, edit, update, change |
+| approve | accept, confirm, OK |
+| reject | decline, deny |
+| reopen | restore, undo |
+| submit | send, finish, complete |
+| upload | add, attach, drop |
+| flagged | issue, problem, error (for a field status) |
+| owner | shareholder, partner (in UI labels; the schema keeps the role) |
+| expiry date | expiration, valid until |
+| override | bypass, skip, ignore |
+| sign in, sign out | log in, log out, login |
+
+## Strings
+
+### Sign-in
+
+| Key | Text |
+|---|---|
+| `signin.title` | Sign in |
+| `signin.username.label` | User name |
+| `signin.password.label` | Password |
+| `signin.button` | Sign in |
+| `signout.button` | Sign out |
+
+### Upload page
+
+| Key | Text |
+|---|---|
+| `upload.title` | Upload a trade licence |
+| `upload.instruction` | Upload the trade licence. Use a PDF, JPG or PNG file of 10 MB or less, with 5 pages or less. |
+| `upload.applicantName.label` | Business name on the application |
+| `upload.button` | Upload |
+| `reason.invalid_type` | The system cannot read this file type. Use a PDF, JPG or PNG file. |
+| `reason.too_large` | The file is larger than 10 MB. Use a smaller file. |
+| `reason.too_many_pages` | The file has more than 5 pages. Upload only the licence pages. |
+| `reason.image_too_large` | The image is larger than 50 megapixels. Use a smaller image. |
+| `reason.unreadable_file` | The system cannot open this file. Upload a new copy of the licence. |
+| `upload.duplicate` | You uploaded this file before. Open the existing run. |
+
+### Progress
+
+Labels are nouns. Each step also shows a status: Waiting, In progress, Done or Skipped.
+
+| Key | Text |
+|---|---|
+| `progress.intake` | File check |
+| `progress.preprocess` | Page reading |
+| `progress.route` | Document type |
+| `progress.extract` | Field reading |
+| `progress.validate` | Value checks |
+| `progress.resolve` | Second reading of flagged fields |
+| `progress.gate` | Route |
+| `progress.form` | Draft form |
+| `progress.status.waiting` | Waiting |
+| `progress.status.running` | In progress |
+| `progress.status.done` | Done |
+| `progress.status.skipped` | Skipped |
+
+### Routes
+
+| Key | Text |
+|---|---|
+| `route.ready` | Ready |
+| `route.ready.detail` | All fields passed the checks. Examine the form. Approve the form. Submit it. |
+| `route.needs_review` | Needs examination |
+| `route.needs_review.detail` | The system flagged some fields. Examine each flagged field. |
+| `route.reject` | Rejected |
+| `route.reject.detail` | The system cannot continue with this case. The reasons are below. |
+
+### Field states
+
+| Key | Text |
+|---|---|
+| `state.passed` | Passed |
+| `state.flagged` | Flagged |
+| `state.approved` | Approved |
+| `state.corrected` | Corrected |
+| `state.overridden` | Check overridden |
+| `state.needs_examination` | Needs examination |
+| `state.entered_by_reviewer` | Value from reviewer |
+| `state.not_present` | Not on the licence |
+| `state.unclear` | Not readable |
+
+### Review page
+
+| Key | Text |
+|---|---|
+| `review.title` | Examine the form |
+| `review.instruction` | Examine each flagged field. Approve or correct the value. |
+| `review.evidence.label` | Text on the licence |
+| `review.confidence.label` | Confidence |
+| `review.threshold.label` | Required confidence |
+| `review.rationale.label` | Model explanation |
+| `review.rationale.note` | The model wrote this text. Compare it with the licence. |
+| `review.requiredDocuments.title` | Documents to request |
+| `review.approve` | Approve |
+| `review.correct` | Correct |
+| `review.correct.label` | New value |
+| `review.override` | Override check |
+| `review.override.reason.label` | Reason for the override |
+| `review.override.help` | You can override a check only when the system could not do the check. |
+| `review.reject` | Reject case |
+| `review.reject.reason.label` | Reason for the rejection |
+| `review.reject.confirm` | Reject this case? The system will not submit the form. |
+| `review.reopen` | Reopen case |
+| `review.reopen.reason.label` | Reason to reopen |
+| `review.retry` | Retry processing |
+| `review.enterValue` | Enter value |
+| `review.approveForm` | Approve form |
+| `review.approveForm.disabled` | Approve or correct each flagged field first. |
+| `review.remaining` | `{count}` flagged fields remain. |
+| `review.ready` | You approved all fields. Submit the form. |
+| `review.submit` | Submit |
+| `review.submitted` | You submitted the form. The stored record matches the approved form. |
+| `review.formChanged` | The form changed after your approval. Approve the form again. |
+
+### API error codes
+
+| Code | Text |
+|---|---|
+| `blocking_rule_failed` | This value does not pass a required check. Correct the value or reject the case. |
+| `not_overridable` | You cannot override this check. Correct the value or reject the case. |
+| `undecided_fields` | Some flagged fields have no decision. Approve or correct each flagged field. |
+| `stale_version` | The form changed. Examine the latest form. |
+| `reason_required` | Write a reason. |
+| `not_approved` | Approve the form before you submit it. |
+| `not_awaiting_submit` | This form is not ready to submit. |
+| `not_rejected` | You can reopen only a rejected case. |
+| `session_expired` | Your session ended. Sign in again. |
+| `invalid_credentials` | The user name or password is incorrect. Try again. |
+| `forbidden` | The system stopped this request. Load the page again. Try the action again. |
+| `rate_limited` | You tried too many times. Wait 1 minute. Try again after that. |
+| `not_retryable` | Retry is possible only after a processing failure, or when the system used all of the daily reading limit. Examine the fields. |
+
+### Reason codes
+
+Each failure states the condition, then the action. `{…}` marks a value that the system inserts.
+
+| Code | Text |
+|---|---|
+| `out_of_scope` | This document is not a trade licence. Upload the trade licence. |
+| `unclear_document` | The system cannot identify this document. Examine the pages. |
+| `unknown_authority` | The system does not know the issuing authority. Examine all fields. |
+| `expired` | The licence expired on `{date}`. You cannot submit this form. |
+| `expiry_uncertain` | The expiry date `{date}` is before today in only one reading. Examine the expiry date. |
+| `near_expiry` | The licence expires in `{days}` days. Examine the expiry date. |
+| `number_format` | The licence number does not match the `{authority}` format. Examine the value. |
+| `date_order` | The dates are not in the right order. Examine the issue and expiry dates. |
+| `shares_total` | The owner shares total `{total}%`. The total must be between 99.5% and 100.5%. Examine the owner shares. |
+| `sole_owner_count` | A sole establishment must have 1 owner. The licence shows `{count}`. Examine the owners. |
+| `legal_form_not_allowed` | `{authority}` does not issue the legal form `{form}`. Examine the legal form. |
+| `arabic_name_missing` | The Arabic trade name is missing. `{authority}` licences show it. Examine the licence. |
+| `high_risk_activity` | The activity "`{activity}`" needs more checks. Examine the activity. |
+| `evidence_mismatch` | The system cannot find this value in the text on the licence. Examine the value. |
+| `qr_mismatch` | The QR code shows licence number `{qr}`. The licence shows `{value}`. Examine the licence number. |
+| `registry_not_found` | The registry has no record of this licence number. Correct the number or reject the case. |
+| `registry_expiry_mismatch` | The registry shows expiry date `{registry}`. The licence shows `{value}`. Examine the expiry date. |
+| `registry_unavailable` | The system could not do the registry check. Override the check with a reason, or reject the case. |
+| `applicant_name_mismatch` | The business name on the application does not match the licence. Examine the trade name. |
+| `owners_unclear` | The system cannot read the owners table. Examine the owners. |
+| `ubo_needs_examination` | The licence shows no owner shares. Find the beneficial owners in the MOA. |
+| `low_confidence` | The system is not sure of this value. Examine the value. |
+| `processing_failed` | The system could not read the licence. Retry the processing, or enter the values. |
+| `budget_exhausted` | The system used all of today's reading limit. Retry the processing tomorrow, or enter the values. |
+| `fallback_model` | A backup model read this licence. Examine all fields. |
+| `resolver_budget` | The second reading stopped at its limit. Examine the flagged fields. |
+| `verification_failed` | The stored record does not match the approved form. Examine the form. Approve it again. Submit it again. |
+| `reviewer_rejected` | A reviewer rejected this case. |
+| `other` | The system flagged this case. Examine all fields. |
+
+### Runs and trace pages
+
+| Key | Text |
+|---|---|
+| `runs.title` | Runs |
+| `runs.column.date` | Date |
+| `runs.column.business` | Business name |
+| `runs.column.route` | Route |
+| `runs.column.status` | Status |
+| `runs.column.cost` | Cost |
+| `runs.column.duration` | Duration |
+| `runs.summary.title` | Today |
+| `runs.summary.refusals` | Refusal rate |
+| `runs.summary.fallbacks` | Backup model rate |
+| `runs.summary.review` | Examination rate |
+| `runs.summary.cost` | Cost |
+| `runs.summary.budget` | Remaining daily limit |
+| `trace.title` | Run trace |
+| `trace.column.step` | Step |
+| `trace.column.model` | Model |
+| `trace.column.tokens` | Tokens |
+| `trace.column.cache` | Cached tokens |
+| `trace.column.latency` | Duration |
+| `trace.column.cost` | Cost |
+| `trace.masked` | The system hides personal data on this page. |
+
+### Glossary tooltips
+
+| Key | Text |
+|---|---|
+| `glossary.kyb` | KYB: Know Your Business. These are the checks a provider does before it approves a business. |
+| `glossary.ubo` | UBO: ultimate beneficial owner. This is a person who owns 25% or more of the business. |
+| `glossary.moa` | MOA: memorandum of association. This document shows the owners and their shares. |
+| `glossary.qr` | QR: a printed code that the system reads as text. |
+| `glossary.fileTypes` | PDF, JPG and PNG: the file types that the system can read. PDF is a document file. JPG and PNG are image files. |
