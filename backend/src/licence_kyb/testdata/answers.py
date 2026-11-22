@@ -1,4 +1,8 @@
-"""ScriptedTransport: model responses written from a case's labels (research R10a).
+"""Model responses written from a case's labels (research R10a).
+
+Used by offline graph tests (``ScriptedTransport``) and by the local demo mode
+(``LabelDemoTransport``), which lets the app run end to end without a model API key.
+Neither is a model: they return the labelled answer for a synthetic document.
 
 It answers like a model that reads the document correctly, unless a fault asks otherwise.
 Faults: ``malformed`` (invalid twice), ``malformed_once`` (invalid, then valid),
@@ -7,6 +11,8 @@ Faults: ``malformed`` (invalid twice), ``malformed_once`` (invalid, then valid),
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from licence_kyb.llm.client import ModelRequest, ModelResponse, Usage
@@ -136,7 +142,8 @@ class ScriptedTransport:
             return self._reply({"licence_number": "not a field"}, model)
         if "malformed_once" in self.faults and req.step == "extract_primary":
             return self._reply({"licence_number": "not a field"}, model)
-        assert self.labels is not None
+        if self.labels is None:
+            raise ValueError("extraction requested for a document without labels")
         full = extraction_from_labels(self.labels, self.faults)
         if req.step.startswith("extract_secondary"):
             keys = (
@@ -159,3 +166,34 @@ class ScriptedTransport:
             serving_model=model,
             usage=USAGE,
         )
+
+
+class LabelDemoTransport:
+    """Demo mode: finds the synthetic case whose licence number appears in the document's
+    OCR text and answers from its labels. Documents with no matching case read as
+    ``unclear``. Never used in production; ``main.py`` logs a warning when it is on."""
+
+    def __init__(self, cases_dir: Path) -> None:
+        self.cases = [json.loads(p.read_text("utf-8")) for p in sorted(cases_dir.glob("*.json"))]
+
+    def _case_for(self, req: ModelRequest) -> dict[str, Any] | None:
+        text = " ".join(
+            part.get("text", "")
+            for m in req.messages
+            for part in m["content"]
+            if isinstance(part, dict)
+        )
+        for case in self.cases:
+            values = case.get("expected_values") or {}
+            number = values.get("licence_number")
+            if number and number in text:
+                found: dict[str, Any] = case
+                return found
+        return None
+
+    def send(self, req: ModelRequest) -> ModelResponse:
+        case = self._case_for(req)
+        if case is None:
+            return ScriptedTransport(None, doc_type="unclear", authority="unknown").send(req)
+        faults = {"people_unclear"} if case["expected_values"].get("people") is None else set()
+        return ScriptedTransport(case["expected_values"], faults=faults).send(req)

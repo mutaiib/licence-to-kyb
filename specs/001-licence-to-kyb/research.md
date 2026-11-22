@@ -139,6 +139,7 @@ The Technical Context has no open questions. This file records each technical de
 - **Rationale:**
   - Graph tests check the pipeline's logic: routing, validation, corroboration, form mapping and writes. Model quality is measured by the live eval, not by unit tests.
   - Scripted responses make every fault path testable on purpose, and keep CI free and deterministic.
+- **Demo mode:** the same answers power a local demo mode (`DEMO_ANSWERS_DIR`), so the app can be run and checked visually without a model key. It is opt-in, logs a warning at startup, and is never used in production or in evals.
 - **Alternatives considered:**
   - Recording every response live: it needs a paid key in CI, and it cannot produce a refusal or a fallback on demand.
 

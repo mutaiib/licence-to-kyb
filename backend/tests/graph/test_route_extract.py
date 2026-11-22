@@ -16,8 +16,8 @@ from licence_kyb.llm.client import DailyBudget, LLMClient
 from licence_kyb.pipeline import Deps, Pipeline
 from licence_kyb.registry import MockRegistry
 from licence_kyb.security import Cipher
+from licence_kyb.testdata.answers import ScriptedTransport
 from licence_kyb.testdata.catalogue import GROUPS, build
-from tests.scripted import ScriptedTransport
 
 WANTED = {
     "clean",
