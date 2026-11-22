@@ -412,7 +412,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 - [X] T129 Evals: fix every confirmed finding of an independent eval review (calibration, graders, splits, error handling, twins, compare), tests first; regenerate the baseline.
 - [X] T130 Security: fix every confirmed finding of an independent security review (hostile files, sign-in limit and timing, personal data at rest, invalid corrections), tests first.
-- [ ] T131 Frontend: fix the confirmed findings of an independent frontend review (sign-out, action races, crash-proofing, focus, editor, errors, accessible names), tests first.
+- [X] T131 Frontend: fix the confirmed findings of an independent frontend review (sign-out, action races, crash-proofing, focus, editor, errors, accessible names), tests first.
 - [X] T132 Infrastructure: compose defaults, client address for rate limits, web server headers, workflow fixes, backup, contract docs.
 
 ## Polish & Cross-Cutting Concerns

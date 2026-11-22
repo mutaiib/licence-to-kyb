@@ -23,6 +23,11 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   the baseline was regenerated (50 test cases).
 - A value the resolver changed kept the two readings' agreement as evidence.
 - Demo-mode traces showed a Claude model and token counts although no model ran.
+- Frontend: sign-out that failed still showed the sign-in page; two quick approvals sent a
+  stale form version; unknown codes or a malformed address blanked the app; focus was lost
+  after the last decision; a refused correction lost the typed value. All fixed.
+- Infrastructure: compose broke with the example `.env`; every sign-in shared the proxy's
+  address for the rate limit; release SBOMs listed test-data libraries. All fixed.
 - A reopened case kept its earlier approval; a reopen now needs a new approval.
 - A retry dropped the reasons found while routing.
 - A run that crashed before its form existed answered review and submit with a 500.
