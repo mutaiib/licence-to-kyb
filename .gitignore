@@ -1,0 +1,36 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Runtime data (never commit documents or personal data)
+data/generated/
+var/
+*.sqlite
+*.sqlite3
+*.db
+
+# Eval inputs that must not be committed
+evals/cases/public/*.pdf
+evals/cases/precision/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
