@@ -57,7 +57,6 @@ def _profile_text(profile: AuthorityProfile) -> str:
             "licence_number_labels": profile.licence_number_labels,
             "licence_number_format": profile.number_pattern,
             "date_format": profile.date_format,
-            "allowed_legal_forms": profile.allowed_legal_forms,
         },
         ensure_ascii=False,
     )
