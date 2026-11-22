@@ -186,6 +186,9 @@ def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
             for s in STAGE_BUDGET_MS
         },
         "safety_violations": sum(len(g["safety"]) for g in cases),
+        # Reason accuracy allows extra codes, so a run that stopped in processing still
+        # scores 100% there. Count those runs on their own.
+        "processing_failures": sum("processing_failed" in g["reason_codes"] for g in cases),
     }
 
 
@@ -235,6 +238,7 @@ def write_report(
         f"| Cost per document | ${summary['cost_per_document_usd']:.4f} |",
         f"| `max_tokens` stops | {meta['max_token_stops']} of {meta['model_calls']} calls |",
         f"| Safety violations | {summary['safety_violations']} |",
+        f"| Runs stopped in processing | {summary['processing_failures']} |",
         "",
         "| Field | Accuracy |",
         "|---|---|",

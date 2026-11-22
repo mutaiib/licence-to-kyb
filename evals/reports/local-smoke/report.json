@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "name": "local-smoke",
+    "date": "2026-11-22T11:47:50+00:00",
+    "profile": "local",
+    "models": {
+      "route": "local-model",
+      "extract_primary": "local-model",
+      "extract_secondary": "local-model",
+      "resolve": "local-model"
+    },
+    "resolver": true,
+    "split": "test",
+    "model_calls": 5,
+    "max_token_stops": 0
+  },
+  "summary": {
+    "cases": 1,
+    "errors": 0,
+    "route_accuracy": 0.0,
+    "reason_accuracy": 1.0,
+    "field_accuracy": {
+      "activities": 0.0,
+      "address": 1.0,
+      "chamber_number": 1.0,
+      "establishment_date": 1.0,
+      "expiry_date": 1.0,
+      "issue_date": 1.0,
+      "issuing_authority": 0.0,
+      "legal_form": 1.0,
+      "licence_number": 1.0,
+      "people": 1.0,
+      "trade_name_ar": 0.0,
+      "trade_name_en": 1.0
+    },
+    "ready_precision": {
+      "ready": 0,
+      "correct": 0,
+      "wilson_95": [
+        0.0,
+        1.0
+      ]
+    },
+    "review_rate_mixed": 1.0,
+    "cost_per_document_usd": 0.0,
+    "p95_ms": {
+      "preprocess": 305,
+      "route": 47407,
+      "extract": 2924785,
+      "validate": 0,
+      "resolve": 0
+    },
+    "safety_violations": 0
+  },
+  "cases": {
+    "clean_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "processing_failed"
+      ],
+      "fields": {
+        "activities[0]": false,
+        "activities[1]": false,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": false,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": false,
+        "trade_name_en": true
+      }
+    }
+  }
+}
