@@ -347,18 +347,18 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 6 (write first; they must fail)
 
-- [ ] T089 [P] [US6] Write grader tests in `evals/tests/test_graders.py`:
+- [X] T089 [P] [US6] Write grader tests in `evals/tests/test_graders.py`:
   - graders read only stored state
   - list fields are scored per element after normalisation (whitespace, case, Arabic letter forms, ISO dates)
   - the safety grader flags any submission without an approval
   - the Wilson interval is correct on known counts
-- [ ] T090 [P] [US6] Write comparison tests in `evals/tests/test_compare.py`: given two reports, exactly the cases whose route, reason codes or values changed are listed
-- [ ] T091 [P] [US6] Write twin tests in `evals/tests/test_make_twin.py`: a twin has the same fault group and layout as its correction and contains none of the correction's personal values
+- [X] T090 [P] [US6] Write comparison tests in `evals/tests/test_compare.py`: given two reports, exactly the cases whose route, reason codes or values changed are listed
+- [X] T091 [P] [US6] Write twin tests in `evals/tests/test_make_twin.py`: a twin has the same fault group and layout as its correction and contains none of the correction's personal values
 
 ### Implementation for User Story 6
 
-- [ ] T092 [P] [US6] Implement the graders (route, reason codes, fields, safety) in `evals/graders.py`
-- [ ] T093 [US6] Implement the report in `evals/run.py`, built on `evals/runner.py`. Each case is graded on its state at the first pause (route, reasons, values, confidence); the full review flow is covered by the User Story 2 tests. `--model scripted` answers from labels (offline, CI: it checks routing and rules, not reading) and `--model profile` uses `MODEL_PROFILE`. `--no-resolver` turns the resolver off for the on/off comparison. The report header names the model of each step (FR-044), and the run writes `signals.jsonl` (field, split, signals, correct) for `scripts/calibrate.py`. It covers:
+- [X] T092 [P] [US6] Implement the graders (route, reason codes, fields, safety) in `evals/graders.py`
+- [X] T093 [US6] Implement the report in `evals/run.py`, built on `evals/runner.py`. Each case is graded on its state at the first pause (route, reasons, values, confidence); the full review flow is covered by the User Story 2 tests. `--model scripted` answers from labels (offline, CI: it checks routing and rules, not reading) and `--model profile` uses `MODEL_PROFILE`. `--no-resolver` turns the resolver off for the on/off comparison. The report header names the model of each step (FR-044), and the run writes `signals.jsonl` (field, split, signals, correct) for `scripts/calibrate.py`. It covers:
   - the test split only
   - mix weighting
   - per-field accuracy
@@ -370,9 +370,9 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
   - pass^3 on the 30-case routing subset
 
   It also runs the comparisons: resolver on/off, Haiku 5.5 as router, Sonnet 5.5 as secondary pass, one pass vs two, and OCR text in the prompt or not. On release branches it also runs the 400-case precision set (`make eval-precision`). Reports are written to `evals/reports/<date>.md`.
-- [ ] T094 [US6] Implement `make eval-compare` against the last saved baseline in `evals/compare.py`. The same comparison shows the resolver on/off difference (moved here from T084)
-- [ ] T095 [US6] Implement `scripts/make_twin.py` and the maintainer approval command (`make approve-capture ID=…`). It turns an approved captured correction into a synthetic twin in `evals/cases/twins/`.
-- [ ] T096 [US6] Add the manual and release-branch eval workflow in `.github/workflows/evals.yml`: pinned SHAs, an environment-scoped API key secret, and the report uploaded as an artifact. Open the US6 pull request into `develop`.
+- [X] T094 [US6] Implement `make eval-compare` against the last saved baseline in `evals/compare.py`. The same comparison shows the resolver on/off difference (moved here from T084)
+- [X] T095 [US6] Implement `scripts/make_twin.py` and the maintainer approval command (`make approve-capture ID=…`). It turns an approved captured correction into a synthetic twin in `evals/cases/twins/`.
+- [X] T096 [US6] Add the manual and release-branch eval workflow in `.github/workflows/evals.yml`: pinned SHAs, an environment-scoped API key secret, and the report uploaded as an artifact. Open the US6 pull request into `develop`.
 
 **Checkpoint**: quality is measured on held-out data with intervals, and regressions are visible before a merge.
 

@@ -28,6 +28,9 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   that doubts the value fails.
 - User Story 5: a trace of every step, model call and tool call, and today's refusal,
   fallback and examination rates, cost and remaining budget, with personal data hidden.
+- User Story 6: an eval report on the held-out split (route, reasons, per-field accuracy,
+  `ready` precision with a Wilson interval, mixed review rate, cost, p95 per stage), a
+  report comparison, synthetic twins of approved corrections, and an eval workflow.
 
 ### Changed
 - Readability pass: one source for shared constants and types, all SQL in `Database`,
