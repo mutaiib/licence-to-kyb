@@ -123,7 +123,9 @@ Date order (`issue_date < expiry_date`, `establishment_date <= issue_date`) is n
 | Attribute | Type |
 |---|---|
 | `score` | `float`, 0 to 1 |
-| `signals` | `{agreement?, grounding, rules, ocr, corroboration?, self_rating}`. Each is 0 to 1, or absent. |
+| `signals` | `{agreement?, grounding, rules, ocr, corroboration?, self_rating}`. Each is 0 to 1, or absent. `self_rating` is the model's own rating, with a small fitted weight (plan A7); the other five are the FR-019 signals. |
+| (score rule) | Weighted average of the signals that are present: a missing signal is left out, not counted as 0. Weights are non-negative, so raising a signal never lowers the score. |
+| (which fields) | Every required form field has a threshold in `config/thresholds.yaml`. |
 | `threshold` | `float`, from `config/thresholds.yaml` |
 
 ## Decision (routing)

@@ -154,7 +154,7 @@ Today is 2026-06-01 (fixed clock).
 | Authority `unknown` | `needs_review` | `unknown_authority` |
 | Clean IFZA licence | `ready` | — |
 | No shares printed | `needs_review` | `ubo_needs_examination` |
-| Resolver reached its turn limit | `needs_review` | `resolver_budget` |
+| Resolver reached its turn limit (tested with User Story 4) | `needs_review` | `resolver_budget` |
 
 **Properties (Hypothesis):**
 
