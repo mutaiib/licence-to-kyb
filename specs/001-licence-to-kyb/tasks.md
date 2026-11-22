@@ -322,16 +322,16 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 5 (write first; they must fail)
 
-- [ ] T085 [P] [US5] Write API tests for `GET /api/runs/{id}/trace`, `GET /api/runs` and `GET /api/metrics/summary` in `backend/tests/api/test_trace_metrics.py`:
+- [X] T085 [P] [US5] Write API tests for `GET /api/runs/{id}/trace`, `GET /api/runs` and `GET /api/metrics/summary` in `backend/tests/api/test_trace_metrics.py`:
   - every step appears in order, with duration, cost and serving model
   - the rates are correct for a seeded day
   - no response body contains unmasked personal data
-- [ ] T086 [P] [US5] Write Vitest tests in `frontend/tests/runs_trace.test.tsx`: the span tree shows nesting, tokens and cost, and the summary shows each rate with its label
+- [X] T086 [P] [US5] Write Vitest tests in `frontend/tests/runs_trace.test.tsx`: the span tree shows nesting, tokens and cost, and the summary shows each rate with its label
 
 ### Implementation for User Story 5
 
-- [ ] T087 [US5] Implement the trace and summary endpoints, with the masking serializer, in `backend/src/licence_kyb/api/routes_trace.py`, and the summary query in `backend/src/licence_kyb/store/db.py`. Record one `model_call` span per resolver turn and vision re-read, and one `tool_call` span per tool call (its error code, and the result the model saw, encrypted). `persist` writes each run's cost and processing duration for the run list.
-- [ ] T088 [US5] Build the Runs page (with the daily summary) and the Trace page in `frontend/src/pages/RunsPage.tsx`, `frontend/src/pages/TracePage.tsx` and `frontend/src/components/SpanTree.tsx`, with the routes `/runs` and `/runs/:id/trace`, with their strings in `copy.ts`. Open the US5 pull request into `develop`.
+- [X] T087 [US5] Implement the trace and summary endpoints, with the masking serializer, in `backend/src/licence_kyb/api/routes_trace.py`, and the summary query in `backend/src/licence_kyb/store/db.py`. Record one `model_call` span per resolver turn and vision re-read, and one `tool_call` span per tool call (its error code, and the result the model saw, encrypted). `persist` writes each run's cost and processing duration for the run list.
+- [X] T088 [US5] Build the Runs page (with the daily summary) and the Trace page in `frontend/src/pages/RunsPage.tsx`, `frontend/src/pages/TracePage.tsx` and `frontend/src/components/SpanTree.tsx`, with the routes `/runs` and `/runs/:id/trace`, with their strings in `copy.ts`. Open the US5 pull request into `develop`.
 
 **Checkpoint**: any run's path, duration and cost can be inspected safely. Drift in refusals, fallbacks and review rate is visible.
 
