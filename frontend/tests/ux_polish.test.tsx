@@ -268,7 +268,7 @@ describe('runs page', () => {
   it('links an empty list to the upload page (T115)', async () => {
     openAt('/runs');
 
-    expect(await screen.findByRole('link', { name: copy['nav.upload'] })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: copy['runs.empty.action'] })).toHaveAttribute(
       'href',
       '/',
     );
