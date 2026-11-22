@@ -74,24 +74,14 @@ class Operations:
             reason=f"{note}; moved to awaiting_review",
         )
 
-    def apply_retention(self, *, days: int) -> int:
+    def apply_retention(self, *, days: int) -> list[str]:
+        """Delete runs older than ``days``, with their files. Returns the deleted run IDs, so
+        the caller can delete what it keeps elsewhere (the graph checkpoints)."""
         cutoff = (self.clock.now() - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-        expired = [
-            r["run_id"]
-            for r in self.db.runs_with_status(
-                "received",
-                "processing",
-                "rejected",
-                "awaiting_review",
-                "awaiting_submit",
-                "submitted",
-                "done",
-            )
-            if r["created_at"] < cutoff
-        ]
-        deleted = self.db.delete_runs_created_before(cutoff)
+        expired = self.db.run_ids_created_before(cutoff)
+        self.db.delete_runs_created_before(cutoff)
         if self.files_dir is not None:
             for run_id in expired:
                 shutil.rmtree(self.files_dir / run_id, ignore_errors=True)
-        log.info("retention applied", extra={"deleted_runs": deleted})
-        return deleted
+        log.info("retention applied", extra={"deleted_runs": len(expired)})
+        return expired

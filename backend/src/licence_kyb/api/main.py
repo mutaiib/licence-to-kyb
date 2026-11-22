@@ -45,13 +45,17 @@ def build() -> object:
         raise SystemExit("FERNET_KEYS is required (see .env.example)")
     if settings.session_secret is None:
         raise SystemExit("SESSION_SECRET is required (see .env.example)")
+    clock = (
+        FixedClock(datetime.combine(settings.demo_today, time(9), tzinfo=UTC))
+        if settings.demo_today
+        else SystemClock()
+    )
+    budget = DailyBudget(settings.daily_token_budget, today=clock.today)
     deps = Deps(
         data_dir=settings.data_dir,
         cipher=Cipher([k.get_secret_value() for k in settings.fernet_keys]),
-        llm=LLMClient(model_transport(settings), DailyBudget(settings.daily_token_budget)),
-        clock=FixedClock(datetime.combine(settings.demo_today, time(9), tzinfo=UTC))
-        if settings.demo_today
-        else SystemClock(),
+        llm=LLMClient(model_transport(settings), budget),
+        clock=clock,
         applicant_threshold=settings.applicant_name_threshold,
     )
     return create_app(data_dir=settings.data_dir, settings=settings, pipeline=Pipeline(deps))

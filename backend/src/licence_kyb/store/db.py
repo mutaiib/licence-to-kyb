@@ -164,6 +164,13 @@ class Database:
             ).fetchall()
         return [dict(r) for r in rows]
 
+    def run_ids_created_before(self, iso_timestamp: str) -> list[str]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT run_id FROM runs WHERE created_at < ?", (iso_timestamp,)
+            ).fetchall()
+            return [row["run_id"] for row in rows]
+
     def delete_runs_created_before(self, iso_timestamp: str) -> int:
         with self.connect() as conn:
             cur = conn.execute("DELETE FROM runs WHERE created_at < ?", (iso_timestamp,))

@@ -16,7 +16,9 @@ import hashlib
 import json
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
+from datetime import date
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -157,15 +159,27 @@ class Transport(Protocol):
 
 
 class DailyBudget:
-    """Counts billed tokens for the current day. Thread-safe."""
+    """Counts billed tokens for the current day, and starts again when ``today`` changes.
+    Thread-safe. Without ``today`` it never starts again (tests that need a fixed budget)."""
 
-    def __init__(self, limit_tokens: int) -> None:
+    def __init__(self, limit_tokens: int, *, today: Callable[[], date] | None = None) -> None:
         self.limit_tokens = limit_tokens
         self.used_tokens = 0
+        self._today = today
+        self._day = today() if today else None
         self._lock = threading.Lock()
+
+    def _start_new_day_if_needed(self) -> None:
+        if self._today is None:
+            return
+        with self._lock:
+            day = self._today()
+            if day != self._day:
+                self._day, self.used_tokens = day, 0
 
     @property
     def remaining(self) -> int:
+        self._start_new_day_if_needed()
         return max(self.limit_tokens - self.used_tokens, 0)
 
     def check(self, needed: int) -> None:
@@ -173,6 +187,7 @@ class DailyBudget:
             raise BudgetExhaustedError("the daily token budget is used")
 
     def charge(self, tokens: int) -> None:
+        self._start_new_day_if_needed()
         with self._lock:
             self.used_tokens += tokens
 

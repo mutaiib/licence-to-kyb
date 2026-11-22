@@ -164,14 +164,29 @@ class Pipeline:
         if run is None:
             return
         self.ops.send_to_review(run, event="processing_error", note="processing raised an error")
-        updated = self.db.get_run(run_id) or run
+        self._pause_for_review(run_id)
+
+    def maintenance(self, *, retention_days: int) -> None:
+        """The scheduled work (api/app.py runs it every minute): late runs go to review, and
+        runs past retention are deleted with their files and their graph checkpoints."""
+        for run_id in self.ops.sweep_deadlines():
+            self._pause_for_review(run_id)
+        for run_id in self.ops.apply_retention(days=retention_days):
+            self.checkpointer.delete_thread(run_id)
+
+    def _pause_for_review(self, run_id: str) -> None:
+        """Move the run's graph to the review pause, matching the database, so the reviewer
+        can retry it (FR-039)."""
+        run = self.db.get_run(run_id)
+        if run is None:
+            return
         self.graph.update_state(
             thread_config(run_id),
             {
                 "run_id": run_id,
                 "applicant_name": self.deps.cipher.decrypt_text(run["applicant_name"]),
                 "status": "awaiting_review",
-                "reasons": json.loads(updated["reasons_json"]),
+                "reasons": json.loads(run["reasons_json"]),
             },
             as_node="persist",  # the next node is wait_for_reviewer
         )
