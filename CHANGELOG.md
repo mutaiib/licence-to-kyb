@@ -6,6 +6,21 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 
 ## [Unreleased]
 
+### Added
+- Diagrams of the graph, the agent loop, the run states, the components and a reviewer
+  action; `docs/status.md`, `docs/glossary.md` and `docs/reference.md`.
+- Scheduled maintenance: late runs go to review, old runs are deleted with their files and
+  checkpoints, and the daily token budget starts again each day.
+
+### Fixed
+- A reopened case kept its earlier approval; a reopen now needs a new approval.
+- A retry dropped the reasons found while routing.
+- A run that crashed before its form existed answered review and submit with a 500.
+- Vision re-reads and `max_tokens` retries were not fully counted in budgets and costs.
+- A registry record without an expiry date counted as confirming an expired date.
+- The UI crashed on a reply that was not data, and showed the sign-in page when the server
+  could not be reached; one failed poll stopped the review page checking.
+
 ## [0.1.0] - 2026-11-22
 
 Eval reports: offline baseline [`evals/reports/scripted-baseline/`](evals/reports/scripted-baseline/);

@@ -37,8 +37,12 @@ def registry_rule(ctx: RuleContext) -> list[RuleResult]:
         ]
     if not record.found:
         return [failed("registry", *FIELDS, severity="block", reason="registry_not_found")]
+    if record.expiry_date is None:
+        # The record confirms the number but says nothing about the expiry date, so it must
+        # not count as corroborating an expired date (nodes/gate.py).
+        return [passed("registry", "licence_number")]
     expiry = present(ctx.extraction.expiry_date)
-    if record.expiry_date and expiry and record.expiry_date != expiry:
+    if expiry and record.expiry_date != expiry:
         return [
             failed(
                 "registry",

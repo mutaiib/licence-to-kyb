@@ -38,7 +38,8 @@ READ_TOOLS: dict[str, Any] = {
     "licence_lookup_activity": activity_lookup,
     "licence_get_validation_report": validation_report,
 }
-DATE_FIELDS = frozenset({"issue_date", "expiry_date", "establishment_date"})
+# The date fields as printed on the licence (written DD/MM/YYYY in a proposal).
+SOURCE_DATE_FIELDS = frozenset({"issue_date", "expiry_date", "establishment_date"})
 LIST_FIELDS = frozenset({"activities", "people"})
 
 
@@ -164,7 +165,11 @@ class ToolRunner:
     def _propose(self, v: dict[str, Any]) -> ToolResult:
         value = normalised_value(v["field"], v["new_value"])
         if value is None:
-            kind = "a date written DD/MM/YYYY" if v["field"] in DATE_FIELDS else "a single value"
+            kind = (
+                "a date written DD/MM/YYYY"
+                if v["field"] in SOURCE_DATE_FIELDS
+                else "a single value"
+            )
             return tool_error(
                 "proposal_refused",
                 what_failed=f"propose_fix for field {v['field']}",
@@ -190,7 +195,7 @@ def normalised_value(field_name: str, value: str) -> str | None:
     """The value in the extraction's format, or None when it cannot be used."""
     if field_name in LIST_FIELDS:
         return None
-    if field_name not in DATE_FIELDS:
+    if field_name not in SOURCE_DATE_FIELDS:
         return value.strip()
     for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
         try:

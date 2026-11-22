@@ -1,8 +1,9 @@
 """The processing pipeline for one run (architecture §4; tasks T051).
 
-Graph:
-    preprocess → route → extract → validate → confidence → map_form → gate → persist
-        → wait_for_reviewer → apply_action → (wait_for_reviewer | retry | END)
+Graph (diagram in docs/architecture.md, "As built"):
+    preprocess → route → extract → validate ⇄ resolve (at most 2 rounds) → confidence
+        → map_form → gate → persist → wait_for_reviewer → apply_action
+        → (wait_for_reviewer | retry from preprocess, route or extract | END)
 
 - ``route`` goes straight to ``gate`` when the file is not a trade licence.
 - When extraction fails, ``map_form`` builds an empty form, so the reviewer can enter values.
@@ -164,14 +165,29 @@ class Pipeline:
         if run is None:
             return
         self.ops.send_to_review(run, event="processing_error", note="processing raised an error")
-        updated = self.db.get_run(run_id) or run
+        self._pause_for_review(run_id)
+
+    def maintenance(self, *, retention_days: int) -> None:
+        """The scheduled work (api/app.py runs it every minute): late runs go to review, and
+        runs past retention are deleted with their files and their graph checkpoints."""
+        for run_id in self.ops.sweep_deadlines():
+            self._pause_for_review(run_id)
+        for run_id in self.ops.apply_retention(days=retention_days):
+            self.checkpointer.delete_thread(run_id)
+
+    def _pause_for_review(self, run_id: str) -> None:
+        """Move the run's graph to the review pause, matching the database, so the reviewer
+        can retry it (FR-039)."""
+        run = self.db.get_run(run_id)
+        if run is None:
+            return
         self.graph.update_state(
             thread_config(run_id),
             {
                 "run_id": run_id,
                 "applicant_name": self.deps.cipher.decrypt_text(run["applicant_name"]),
                 "status": "awaiting_review",
-                "reasons": json.loads(updated["reasons_json"]),
+                "reasons": json.loads(run["reasons_json"]),
             },
             as_node="persist",  # the next node is wait_for_reviewer
         )
@@ -186,11 +202,12 @@ class Pipeline:
         snapshot = self.graph.get_state(thread_config(run_id))
         return dict(snapshot.values) if snapshot and snapshot.values else {}
 
-    def check(self, run_id: str, action: dict[str, Any]) -> None:
-        """Refuse an invalid action with ``review.ActionRefused``. Changes nothing."""
+    def check(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
+        """Refuse an invalid action with ``review.ActionRefused``. Changes nothing. Returns the
+        run state that was checked."""
         state = self.state(run_id)
         if action["action_id"] in state.get("applied_ids", []):
-            return  # a repeated action is answered, not refused
+            return state  # a repeated action is answered, not refused
         kind = action["kind"]
         if kind == "review":
             review.apply_review(state, action, self._rules_for(state))
@@ -201,12 +218,13 @@ class Pipeline:
             review.check_reopen(state)
         elif kind == "retry":
             review.check_retry(state)
+        return state
 
     def act(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
         """Check one reviewer action, then resume the paused run with it."""
-        self.check(run_id, action)
-        if action["action_id"] in self.state(run_id).get("applied_ids", []):
-            return self.state(run_id)
+        state = self.check(run_id, action)
+        if action["action_id"] in state.get("applied_ids", []):
+            return state  # a repeated click: nothing new to do
         if action["kind"] == "retry":
             self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
         result: dict[str, Any] = self.graph.invoke(Command(resume=action), thread_config(run_id))
@@ -294,7 +312,13 @@ class Pipeline:
             if outcome.refused:
                 step.error_code = "refusal"
         return {
-            "route": {"doc_type": outcome.doc_type, "authority": outcome.authority},
+            # The route keeps its own reasons, so a retry that starts again at extract
+            # does not lose them.
+            "route": {
+                "doc_type": outcome.doc_type,
+                "authority": outcome.authority,
+                "reasons": list(outcome.reasons),
+            },
             "reasons": [reason_entry(code) for code in outcome.reasons],
         }
 
@@ -383,7 +407,7 @@ class Pipeline:
                 failed_fields=re_readable_fields(results),
                 authority=state["route"]["authority"],
                 registry=self.deps.registry.lookup,
-                reread=self._reread(run_id, step) if self.deps.vision else None,
+                reread=self._reread(run_id, step, budget) if self.deps.vision else None,
             )
             outcome = run_resolver(
                 llm=self.deps.llm,
@@ -427,8 +451,9 @@ class Pipeline:
             span.raw_result = args
             span.model_view = result.content
 
-    def _reread(self, run_id: str, parent: Span) -> Callable[[int, str], str]:
-        """Re-read one page region with the vision model (licence_reread_region)."""
+    def _reread(self, run_id: str, parent: Span, budget: Budget) -> Callable[[int, str], str]:
+        """Re-read one page region with the vision model (licence_reread_region). Its tokens
+        count against the resolver's budget, like the resolver's own calls."""
 
         def reread(page: int, region: str) -> str:
             image = Image.open(io.BytesIO(self.page_png(run_id, page)))
@@ -448,6 +473,7 @@ class Pipeline:
                 messages=[{"role": "user", "content": [image_block(buffer.getvalue())]}],
             )
             response = self.deps.llm.call(request)
+            budget.charge_tokens(response.usage.billed_tokens)
             self._trace_call(run_id, parent, request, response)
             return " ".join(b.get("text", "") for b in response.content if b.get("type") == "text")
 
@@ -472,8 +498,10 @@ class Pipeline:
             applicant_name=state["applicant_name"],
             applicant_threshold=self.deps.applicant_threshold,
         )
-        # An uncorroborated "expired" becomes "expiry_uncertain" here, once, so the resolver,
-        # the gate, the review page and the review re-check all see the same result.
+        # An uncorroborated "expired" becomes "expiry_uncertain" here, so the resolver, the
+        # gate, the review page and the review re-check all see the same result. The gate
+        # applies the same change again so it is correct on its own; a second pass changes
+        # nothing.
         return with_expiry_corroboration(run_rules(ctx), state.get("agreement", {}))
 
     def _map_form(self, state: RunState) -> dict[str, Any]:
@@ -606,8 +634,8 @@ class Pipeline:
         reviewer, run_id = action["reviewer"], state["run_id"]
         for d in result.new_decisions:
             self._record_decision(state, d, reviewer)
-        form = result.state["form"]
-        if result.approved_version is not None:
+        form = result.state.get("form")
+        if result.approved_version is not None and form is not None:
             self.db.record_approval(
                 action_id=action["action_id"],
                 run_id=run_id,
@@ -703,15 +731,26 @@ class Pipeline:
         )
         reasons = [r for r in state.get("reasons", []) if r["code"] != "reviewer_rejected"]
         applied = [*state.get("applied_ids", []), action["action_id"]]
-        return {"status": "awaiting_review", "reasons": reasons, "applied_ids": applied}
+        reopened: dict[str, Any] = {
+            "status": "awaiting_review",
+            "reasons": reasons,
+            "applied_ids": applied,
+        }
+        # A reopened case is a new review: a new form version, so no earlier approval
+        # applies to it (FR-026).
+        if state.get("form") is not None:
+            reopened["form"] = {**state["form"], "version": state["form"]["version"] + 1}
+        return reopened
 
     def _apply_retry(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
-        """Start processing again from the step that failed, with no reviewer decisions."""
+        """Start processing again from the step that failed, with no reviewer decisions.
+        Reasons from routing stay: a retry that starts at extract does not route again."""
         self._audit(state, action["action_id"], "retry", actor=action["reviewer"])
         applied = [*state.get("applied_ids", []), action["action_id"]]
+        route_reasons = state.get("route", {}).get("reasons", [])
         return {
             "status": "processing",
-            "reasons": [],
+            "reasons": [reason_entry(code) for code in route_reasons],
             "decisions": {},
             "read_extraction": {},
             "rule_results": [],

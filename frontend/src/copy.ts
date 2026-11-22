@@ -10,6 +10,7 @@ export const copy = {
   // App shell
   'app.title': 'Trade licence to KYB',
   'app.loading': 'Loading',
+  'app.tryAgain': 'Try again',
   'nav.upload': 'Upload a licence',
   'nav.runs': 'Runs',
 
@@ -187,6 +188,8 @@ export const copy = {
   'error.rate_limited': 'You tried too many times. Wait 1 minute. Try again after that.',
   'error.not_retryable':
     'Retry is possible only after a processing failure, or when the system used all of the daily reading limit. Examine the fields.',
+  'error.no_form':
+    'Processing stopped before the form existed. Retry processing, or reject the case.',
   'error.not_found': 'The system cannot find this run. Upload the licence again.',
   'error.network': 'The system cannot connect to the server. Try again.',
 
@@ -271,7 +274,6 @@ export const copy = {
   'runStatus.rejected': 'Rejected',
   'runStatus.awaiting_review': 'Needs examination',
   'runStatus.awaiting_submit': 'Ready to submit',
-  'runStatus.submitted': 'Submitted',
   'runStatus.done': 'Done',
   'trace.tokens.value': '{input} in, {output} out',
   'trace.back': 'Back to the form',

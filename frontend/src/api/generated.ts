@@ -232,7 +232,7 @@ export interface components {
              * Code
              * @enum {string}
              */
-            code: "blocking_rule_failed" | "not_overridable" | "undecided_fields" | "stale_version" | "reason_required" | "not_approved" | "not_awaiting_submit" | "not_rejected" | "not_retryable";
+            code: "blocking_rule_failed" | "not_overridable" | "undecided_fields" | "stale_version" | "reason_required" | "not_approved" | "not_awaiting_submit" | "not_rejected" | "not_retryable" | "no_form";
             /** Field */
             field?: string | null;
             /** Rule Id */
@@ -458,7 +458,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "submitted" | "done";
+            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "done";
         };
         /** RunList */
         RunList: {
@@ -483,7 +483,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "submitted" | "done";
+            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "done";
         };
         /** RunView */
         RunView: {
@@ -511,7 +511,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "submitted" | "done";
+            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "done";
             /** Steps */
             steps: components["schemas"]["StepView"][];
         };

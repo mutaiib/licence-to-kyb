@@ -2,7 +2,8 @@
 
 Eval runs and app runs write the same span format. Attribute names follow the
 OpenTelemetry GenAI semantic conventions, so a later OTLP export needs no renaming.
-Raw tool results and the text the model saw are both kept, encrypted when a cipher is set.
+For a tool call, ``raw_result`` holds the tool's arguments and ``model_view`` the text the
+model saw; both are encrypted when a cipher is set.
 """
 
 from __future__ import annotations
@@ -39,13 +40,13 @@ class Span:
     cost_usd: float = 0.0
     prompt_hash: str | None = None
     error_code: str | None = None
-    # Used from User Story 4: raw tool results and the text the model saw.
+    # A model call: the raw reply. A tool call: the arguments. Both encrypted at rest.
     raw_result: Any = None
     model_view: Any = None
     latency_ms: int = 0
     attributes: dict[str, Any] = field(default_factory=dict)
 
-    # Used from User Story 5 (the trace page) and a later OTLP export.
+    # Shown on the trace page; named for a later OTLP export.
     def otel_attributes(self) -> dict[str, Any]:
         """The span as OpenTelemetry GenAI attributes."""
         attrs: dict[str, Any] = {

@@ -11,7 +11,7 @@ from licence_kyb.schemas.licence import Origin, Status
 from licence_kyb.schemas.results import ActionErrorCode, Outcome, ReasonCode, Route, Severity
 
 RunStatus = Literal[
-    "received", "processing", "rejected", "awaiting_review", "awaiting_submit", "submitted", "done"
+    "received", "processing", "rejected", "awaiting_review", "awaiting_submit", "done"
 ]
 
 
@@ -73,7 +73,6 @@ class RuleView(BaseModel):
     detail: dict[str, str] = {}
 
 
-# Used from User Story 3 (confidence and routing).
 class ConfidenceView(BaseModel):
     """How sure the system is of a read value, from its evidence (FR-019)."""
 

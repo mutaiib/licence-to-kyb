@@ -2,7 +2,7 @@
 
 ## In one minute
 
-Every bug below passed the unit tests at the time. A different kind of check found each one: a browser pass, an eval run, mutation testing, a Docker smoke test, or simply joining two branches. The lesson is not "write more tests"; it is "check from more than one side".
+Every bug below passed the unit tests at the time. A different kind of check found each one: a browser pass, an eval run, mutation testing, a Docker smoke test, joining two branches, an independent code review, or running the app with a real model. The lesson is not "write more tests"; it is "check from more than one side".
 
 ## The bugs, by the check that found them
 
@@ -22,6 +22,14 @@ Every bug below passed the unit tests at the time. A different kind of check fou
 | Docker smoke test | The image crashed at startup (twice) | A test-only library was imported at the top level; `httpx` was dev-only | Build and start the real image in CI |
 | Joining two branches | A crashed run could not be retried | The database said "in review" but the workflow did not | When state lives in two places, change both in one function |
 | Readability review | A date-order rule could never fire | A schema validator rejected the same input first | Two layers checking the same thing hide each other |
+| Independent code review | A reject, then a reopen, kept the old approval: Submit worked with no new approval | Each test checked one action, never a sequence | Test sequences of actions, not only single actions |
+| Independent code review | A retry dropped the reasons found while routing, so the run could reach `ready` | The retry test used a case with no routing doubt | When a step is skipped on retry, its results must survive |
+| Independent code review | Retention, the deadline sweep and the daily budget reset never ran | Each function was tested; nothing tested that the app calls it | Test the wiring: what calls the function, and when |
+| Independent code review | Vision re-reads were not charged to the resolver's token limit | The limit was tested with the agent's own turns only | Every paid call inside a loop counts against the loop's budget |
+| Independent code review | A `max_tokens` retry reported only the second call's usage | The test checked the answer, not the usage | Check the cost of a retry, not only its result |
+| Independent code review | A registry record without an expiry date "confirmed" an expired date | Every mock record had a date | Test the absent case of every external answer |
+| Running the app | A proxy answered with a web page; the UI took it as data and crashed | Tests always served JSON | A success status is not proof of data; check the body |
+| First local-model run | A clean case stopped in processing but scored 100% on reasons | The reason grader allows extra codes | Report failures as their own metric, never inside another |
 
 ## Rules
 

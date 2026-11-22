@@ -16,7 +16,9 @@ import hashlib
 import json
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
+from datetime import date
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -68,6 +70,14 @@ class Usage:
     def billed_tokens(self) -> int:
         return self.input_tokens + self.output_tokens
 
+    def __add__(self, other: Usage) -> Usage:
+        return Usage(
+            input_tokens=self.input_tokens + other.input_tokens,
+            output_tokens=self.output_tokens + other.output_tokens,
+            thinking_tokens=self.thinking_tokens + other.thinking_tokens,
+            cache_read_tokens=self.cache_read_tokens + other.cache_read_tokens,
+        )
+
 
 @dataclass(frozen=True)
 class ModelRequest:
@@ -78,7 +88,6 @@ class ModelRequest:
     system: str
     messages: list[dict[str, Any]]
     output_model: type[BaseModel] | None = None
-    # Used from User Story 4: the resolver's read-only tools.
     tools: list[dict[str, Any]] = field(default_factory=list)
     cache_system: bool = True
 
@@ -149,15 +158,27 @@ class Transport(Protocol):
 
 
 class DailyBudget:
-    """Counts billed tokens for the current day. Thread-safe."""
+    """Counts billed tokens for the current day, and starts again when ``today`` changes.
+    Thread-safe. Without ``today`` it never starts again (tests that need a fixed budget)."""
 
-    def __init__(self, limit_tokens: int) -> None:
+    def __init__(self, limit_tokens: int, *, today: Callable[[], date] | None = None) -> None:
         self.limit_tokens = limit_tokens
         self.used_tokens = 0
+        self._today = today
+        self._day = today() if today else None
         self._lock = threading.Lock()
+
+    def _start_new_day_if_needed(self) -> None:
+        if self._today is None:
+            return
+        with self._lock:
+            day = self._today()
+            if day != self._day:
+                self._day, self.used_tokens = day, 0
 
     @property
     def remaining(self) -> int:
+        self._start_new_day_if_needed()
         return max(self.limit_tokens - self.used_tokens, 0)
 
     def check(self, needed: int) -> None:
@@ -165,6 +186,7 @@ class DailyBudget:
             raise BudgetExhaustedError("the daily token budget is used")
 
     def charge(self, tokens: int) -> None:
+        self._start_new_day_if_needed()
         with self._lock:
             self.used_tokens += tokens
 
@@ -181,7 +203,14 @@ class LLMClient:
     def call(self, req: ModelRequest) -> ModelResponse:
         result = self._send(req)
         if result.stop_reason == "max_tokens":
+            first = result
             result = self._send(replace(req, max_tokens=req.max_tokens * 2))
+            # Both calls were paid for: report them together, so traces and costs are right.
+            result = replace(
+                result,
+                usage=first.usage + result.usage,
+                latency_ms=first.latency_ms + result.latency_ms,
+            )
             if result.stop_reason == "max_tokens":
                 raise OutputTruncatedError("the reply was cut off twice at the token limit")
         if result.stop_reason == "refusal":

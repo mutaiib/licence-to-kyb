@@ -65,6 +65,7 @@ ActionErrorCode = Literal[
     "not_awaiting_submit",
     "not_rejected",
     "not_retryable",
+    "no_form",
 ]
 """Why a reviewer action was refused (409). See contracts/http-api.md."""
 
@@ -118,13 +119,11 @@ def reason_entry(
     return Reason(code=code, field=field, rule_id=rule_id, detail=detail or {}).model_dump()
 
 
-# Used from User Story 3 (the gate node).
 class Decision(StrictModel):
     route: Route
     reasons: tuple[Reason, ...] = ()
 
 
-# Used from User Story 4 (the resolver).
 class ProposedFix(StrictModel):
     field: str
     new_value: str
@@ -134,7 +133,6 @@ class ProposedFix(StrictModel):
     accepted: bool = False
 
 
-# Used from User Story 3 (confidence and routing).
 class FieldConfidence(StrictModel):
     score: float = Field(ge=0, le=1)
     signals: dict[str, float]

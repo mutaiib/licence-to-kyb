@@ -116,7 +116,6 @@ class ModelProfile(BaseModel):
     steps: ModelsConfig
 
 
-# Used from User Story 4 (the resolver).
 class ResolverBudget(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     soft_turns: int

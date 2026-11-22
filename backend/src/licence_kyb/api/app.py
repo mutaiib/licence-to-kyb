@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -21,6 +23,21 @@ from licence_kyb.graph import open_checkpointer
 from licence_kyb.pipeline import Pipeline
 from licence_kyb.store.db import Database
 
+MAINTENANCE_SECONDS = 60
+log = logging.getLogger(__name__)
+
+
+async def run_maintenance(pipeline: Pipeline, retention_days: int) -> None:
+    """Every minute, from startup: late runs go to review, old runs are deleted. A failure is
+    logged, and the next minute tries again."""
+    while True:
+        try:
+            await asyncio.to_thread(pipeline.maintenance, retention_days=retention_days)
+        except Exception:
+            log.exception("scheduled maintenance failed")
+        await asyncio.sleep(MAINTENANCE_SECONDS)
+
+
 PUBLIC = {("POST", "/api/session")}
 
 
@@ -36,9 +53,15 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-        if pipeline is not None:
-            routes_runs.resume_unfinished_runs(pipeline)
-        yield
+        if pipeline is None:
+            yield
+            return
+        routes_runs.resume_unfinished_runs(pipeline)
+        scheduled = asyncio.create_task(run_maintenance(pipeline, settings.retention_days))
+        try:
+            yield
+        finally:
+            scheduled.cancel()
 
     app = FastAPI(
         title="licence-to-kyb",

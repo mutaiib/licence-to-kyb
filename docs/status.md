@@ -51,5 +51,6 @@ The tasks that need a person, money or hardware. Documentation and review tasks 
 - **The registry is a mock.** It stands in for the authorities' verification services.
 - **One reviewer account type.** No roles or four-eyes approval.
 - **SQLite and one process.** Enough for the reference implementation; a shared deployment needs a server database and a job queue.
-- **The `submitted` run status is listed in the API but never set:** a submit goes straight to `done`, or back to review when the read-back differs.
+- **A run that crashed before its form existed** can be retried or rejected; values can be entered by hand only once a form exists (after a reading, even a refused one).
+- **Maintenance runs inside the API process** (every minute). Several API processes would each run it; that is safe (every write is keyed) but wasteful.
 - **A local CPU model is too slow for daily use.** It shows that the system works with any model, and how a weaker model fails safely.

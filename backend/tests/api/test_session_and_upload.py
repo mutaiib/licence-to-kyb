@@ -232,6 +232,21 @@ def test_page_images_are_served_to_signed_in_reviewers(tmp_path: Path, catalogue
     assert response.content.startswith(b"\x89PNG")
 
 
+@pytest.mark.parametrize("run_id", ["%2E%2E", "no-such-run"])
+def test_a_page_of_a_run_that_does_not_exist_is_not_found(
+    tmp_path: Path, catalogue: Any, run_id: str
+) -> None:
+    """The run ID becomes part of a file path, so it must name a known run first."""
+    root, cases = catalogue
+    client = make_client(tmp_path, root, cases[0])
+    csrf = sign_in(client)
+    upload(client, csrf, root, cases[0])
+
+    response = client.get(f"/api/runs/{run_id}/pages/1")
+
+    assert response.status_code == 404
+
+
 def test_reasons_carry_their_values_and_fields_report_their_document_status(
     tmp_path: Path, catalogue: Any
 ) -> None:

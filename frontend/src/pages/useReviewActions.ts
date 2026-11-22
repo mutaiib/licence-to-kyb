@@ -34,18 +34,21 @@ export function useReviewActions(initial: RunView) {
   const [focusName, setFocusName] = useState<string | null>(null);
   const runId = view.run_id;
 
-  // After a retry the run processes in the background: reload until it stops.
+  // After a retry the run processes in the background: reload until it stops. A failed
+  // request counts as one more attempt, so checking goes on after a short outage.
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (view.status !== 'processing') return;
     const timer = setTimeout(() => {
       void getRun(runId).then((result) => {
         if (result.ok) setView(result.data);
+        else setAttempt((n) => n + 1);
       });
     }, POLL_MS);
     return () => {
       clearTimeout(timer);
     };
-  }, [view, runId]);
+  }, [view, runId, attempt]);
 
   const show = (result: { ok: true; data: RunView } | { ok: false; code: string }) => {
     if (result.ok) {

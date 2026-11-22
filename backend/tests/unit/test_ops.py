@@ -91,7 +91,7 @@ def test_retention_deletes_old_runs_and_keeps_current_ones(db: Database, tmp_pat
 
     deleted = ops.apply_retention(days=30)
 
-    assert deleted == 1
+    assert deleted == ["old"]
     assert db.get_run("old") is None
     assert db.get_run("new") is not None
     assert not (files_dir / "old").exists()

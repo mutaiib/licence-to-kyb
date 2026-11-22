@@ -53,10 +53,9 @@ export function documentLabel(code: string): string {
 }
 
 /**
- * The backend's step names, mapped to the progress labels in docs/ui-copy.md. The backend sends
- * preprocess, route, extract, validate, map_form and decide today. The other names are used from
- * later user stories: resolve (User Story 4) and gate (User Story 3). No backend step is called
- * intake or form yet.
+ * The backend's step names, mapped to the progress labels in docs/ui-copy.md: preprocess, route,
+ * extract, validate, resolve, confidence, map_form and gate. `intake` and `form` have labels but
+ * no backend step uses those names.
  */
 const STEP_KEYS: Readonly<Record<string, CopyKey>> = {
   intake: 'progress.intake',
