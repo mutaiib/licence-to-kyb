@@ -17,7 +17,7 @@ const percent = (rate: number) => `${String(Math.round(rate * 100))}%`;
 
 function InAppLink({ path, children }: { path: string; children: string }) {
   return (
-    <Link href={path} onClick={useLinkHandler(path)}>
+    <Link href={path} onClick={useLinkHandler(path)} hasUnderline>
       {children}
     </Link>
   );

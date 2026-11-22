@@ -12,6 +12,7 @@ Faults: ``malformed`` (invalid twice), ``malformed_once`` (invalid, then valid),
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -258,6 +259,10 @@ class LabelDemoTransport:
         return None
 
     def send(self, req: ModelRequest) -> ModelResponse:
+        # No model runs in demo mode, so its answers cost nothing.
+        return replace(self._answer(req), prices=(0.0, 0.0, 0.0))
+
+    def _answer(self, req: ModelRequest) -> ModelResponse:
         case = self._case_for(req)
         if case is None:
             return ScriptedTransport(None, doc_type="unclear", authority="unknown").send(req)

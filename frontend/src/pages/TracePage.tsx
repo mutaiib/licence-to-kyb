@@ -32,7 +32,7 @@ export function TracePage({ runId }: { runId: string }) {
   return (
     <VStack gap={4}>
       <Heading level={1}>{copy['trace.title']}</Heading>
-      <Link href={runPath(runId)} onClick={back}>
+      <Link href={runPath(runId)} onClick={back} hasUnderline>
         {copy['trace.back']}
       </Link>
       <Text color="secondary">{copy['trace.masked']}</Text>
