@@ -71,6 +71,34 @@ jobs:
       - name: Dependency audit
         run: npm audit --audit-level=high
 
+  docker:
+    name: docker images (build and smoke test)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build backend image
+        run: docker build -t lkyb-backend:ci backend
+      - name: Build frontend image
+        run: docker build -t lkyb-frontend:ci frontend
+      - name: Smoke test backend readiness and non-root user
+        run: |
+          docker run -d --name be \
+            -e FERNET_KEYS="$(python3 -c 'import base64,os;print(base64.urlsafe_b64encode(os.urandom(32)).decode())')" \
+            -e SESSION_SECRET=ci-only-secret-0123456789abcdef \
+            lkyb-backend:ci
+          for i in $(seq 1 30); do
+            if docker exec be curl -fsS http://127.0.0.1:8000/readyz; then break; fi
+            sleep 1
+          done
+          docker exec be curl -fsS http://127.0.0.1:8000/readyz
+          test "$(docker exec be id -u)" != "0"
+      - name: Smoke test frontend serves the app as non-root
+        run: |
+          docker run -d --name fe --add-host backend:127.0.0.1 -p 18080:8080 lkyb-frontend:ci
+          for i in $(seq 1 15); do curl -fsS http://127.0.0.1:18080/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:18080/ | grep -q "<title>"
+          test "$(docker exec fe id -u)" != "0"
+
   copy:
     name: UI copy (ASD-STE100)
     runs-on: ubuntu-24.04

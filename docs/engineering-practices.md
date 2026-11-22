@@ -13,7 +13,7 @@ Each practice is listed with how it is enforced. A practice that nothing enforce
 | `main` | — | — | Released code only. Every commit on `main` is a tagged release. |
 | `develop` | `main` (once) | — | Integration branch for the next release. |
 | `feature/<NNN>-<name>` | `develop` | `develop` | Specification work for one Spec Kit feature, for example `feature/001-licence-to-kyb`. |
-| `feature/<NNN>-<name>-<slug>` | `develop` | `develop` | One unit of work for that feature. `<slug>` is `foundation`, `us<N>` (one user story) or `polish`, for example `feature/001-licence-to-kyb-us2`. |
+| `feature/<NNN>-<name>-<slug>` | `develop` | `develop` | One unit of work for that feature. `<slug>` is `foundation`, `us<N>` (one user story), `polish`, or a short maintenance slug such as `ci-docker`, for example `feature/001-licence-to-kyb-us2`. |
 | `release/<x.y.z>` | `develop` | `main` (pull request), then back-merged into `develop` (pull request) | Stabilisation only: version bump, changelog, eval report, fixes. No new features. |
 | `hotfix/<x.y.z>` | `main` | `main` (pull request), then back-merged into `develop` (pull request) | An urgent fix to a released version. |
 
@@ -65,7 +65,7 @@ Each practice is listed with how it is enforced. A practice that nothing enforce
 | Python style and lint | `ruff format`, plus `ruff check` with a strict rule set (pyflakes, pycodestyle, isort, bugbear, pyupgrade, simplify, bandit-style security rules) | pre-commit, CI |
 | Python types | `mypy --strict` on `backend/src`. No untyped definitions, and no `Any` at public boundaries. | CI |
 | TypeScript | `strict: true`, `noUncheckedIndexedAccess`, ESLint and Prettier | pre-commit, CI |
-| Dependencies | `uv.lock` and `package-lock.json` are committed. CI installs from the lock files only. | CI (`uv sync --frozen`, `npm ci`) |
+| Dependencies | `uv.lock` and `package-lock.json` are committed. CI installs from the lock files only. Dependabot pull requests are reviewed like any other: a runtime major version (Python, Node) is a planned change, recorded as an ignore rule with its reason in `.github/dependabot.yml`. | CI (`uv sync --frozen`, `npm ci`), Docker build job |
 | Docstrings | Public modules and functions state their contract: inputs, outputs, failure behaviour | review |
 | Complexity | A function with more than about 40 lines or a cyclomatic complexity above 10 needs a reason in review | ruff `C901`, review |
 | Configuration | [Twelve-Factor](https://12factor.net/config) style. Settings come from environment variables, validated by a typed settings model. No secrets in the code or in config files. | settings validation at startup |
