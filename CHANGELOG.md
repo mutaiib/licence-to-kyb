@@ -34,6 +34,10 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 - Release workflow: CycloneDX SBOMs, a build-provenance attestation and release notes on
   a version tag. Mutation testing of the rules (`make mutation`).
 - Handbook pages on model providers, UX for human review, and the bugs each check caught.
+- Review page: one next step at a time, with at most one main button; reading confidence in a
+  closed Details section; documents to request and Reject case after the fields.
+- Eval options `--limit` and `--public`; the report counts runs that stopped in processing.
+- First real readings with a local open-weight model (docs/experiments.md).
 
 ### Changed
 - UI and UX: the review page leads with the business name, the status and the form

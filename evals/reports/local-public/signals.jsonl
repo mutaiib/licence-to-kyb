@@ -1,0 +1,7 @@
+{"field": "licence_number", "split": "test", "signals": {"agreement": 1.0, "grounding": 1.0, "rules": 1.0, "ocr": 1.0, "corroboration": 1.0, "self_rating": 1.0}, "correct": true}
+{"field": "trade_name_en", "split": "test", "signals": {"agreement": 1.0, "grounding": 1.0, "rules": 1.0, "ocr": 1.0, "self_rating": 1.0}, "correct": true}
+{"field": "legal_form", "split": "test", "signals": {"agreement": 1.0, "grounding": 1.0, "rules": 1.0, "ocr": 1.0, "self_rating": 1.0}, "correct": true}
+{"field": "issuing_authority", "split": "test", "signals": {"grounding": 0.0, "rules": 1.0, "self_rating": 1.0}, "correct": true}
+{"field": "establishment_date", "split": "test", "signals": {"grounding": 0.0, "rules": 1.0, "ocr": 1.0, "self_rating": 0.7}, "correct": false}
+{"field": "issue_date", "split": "test", "signals": {"grounding": 1.0, "rules": 1.0, "ocr": 1.0, "self_rating": 0.7}, "correct": true}
+{"field": "expiry_date", "split": "test", "signals": {"agreement": 1.0, "grounding": 1.0, "rules": 1.0, "ocr": 1.0, "corroboration": 1.0, "self_rating": 0.7}, "correct": true}

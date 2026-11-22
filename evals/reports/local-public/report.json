@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "name": "local-public",
+    "date": "2026-11-22T12:14:42+00:00",
+    "profile": "local",
+    "models": {
+      "route": "local-model",
+      "extract_primary": "local-model",
+      "extract_secondary": "local-model",
+      "resolve": "local-model"
+    },
+    "resolver": true,
+    "split": "test",
+    "model_calls": 6,
+    "max_token_stops": 0
+  },
+  "summary": {
+    "cases": 1,
+    "errors": 0,
+    "route_accuracy": 1.0,
+    "reason_accuracy": 1.0,
+    "field_accuracy": {
+      "activities": 0.0,
+      "chamber_number": 0.0,
+      "establishment_date": 0.0,
+      "expiry_date": 1.0,
+      "issue_date": 1.0,
+      "issuing_authority": 1.0,
+      "legal_form": 1.0,
+      "licence_number": 1.0,
+      "people": 0.0,
+      "trade_name_en": 1.0
+    },
+    "ready_precision": {
+      "ready": 0,
+      "correct": 0,
+      "wilson_95": [
+        0.0,
+        1.0
+      ]
+    },
+    "review_rate_mixed": 1.0,
+    "cost_per_document_usd": 0.0,
+    "p95_ms": {
+      "preprocess": 212,
+      "route": 77085,
+      "extract": 1446177,
+      "validate": 2,
+      "resolve": 54020
+    },
+    "safety_violations": 0
+  },
+  "cases": {
+    "public_adcb_licence": {
+      "route": "needs_review",
+      "reason_codes": [
+        "arabic_name_missing",
+        "evidence_mismatch",
+        "resolver_budget",
+        "ubo_needs_examination"
+      ],
+      "fields": {
+        "activities[0]": false,
+        "chamber_number": false,
+        "establishment_date": false,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": false,
+        "trade_name_en": true
+      }
+    }
+  }
+}

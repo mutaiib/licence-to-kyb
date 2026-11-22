@@ -78,6 +78,8 @@ Measured numbers only. A target that is missed is reported as missed.
 
 **Accessibility:** axe-core finds no WCAG 2.2 AA problem on any page, in the test suite and in the browser with colour contrast; the review page works with the keyboard alone.
 
+**First real readings** (a 7B open-weight model on a CPU, two licences): 9 of 12 and 6 of 10 fields correct. Both runs went to a person, not to "ready": the evidence check caught the misreads. About 25 to 50 minutes per licence on this machine ([experiments](docs/experiments.md)).
+
 **Still to measure:** field accuracy on clean licences and on scans (SC-001), cost per document (SC-007), p95 latency with a real model (SC-006), reviewer time (SC-005), the resolver on/off difference, and fitted confidence thresholds. Each needs real model readings or a timed person.
 
 ## Where each idea lives
