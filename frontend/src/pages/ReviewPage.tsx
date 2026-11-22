@@ -15,7 +15,7 @@ import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { useEffect, useState } from 'react';
 
-import { getRun, type FormFieldView, type RunView } from '../api/client';
+import { getRun, type FormFieldView, type ReasonCode, type RunView } from '../api/client';
 import { EvidenceViewer } from '../components/EvidenceViewer';
 import { StatusLabel } from '../components/StatusLabel';
 import { copy, format } from '../copy';
@@ -33,6 +33,10 @@ import {
 type Load =
   { kind: 'loading' } | { kind: 'failed'; code: string } | { kind: 'loaded'; view: RunView };
 
+/**
+ * Loads the run once per run ID. The result is stored with the ID it belongs to, so a page that
+ * moves to another run shows `loading` instead of the previous run's result.
+ */
 function useRun(runId: string): Load {
   const [load, setLoad] = useState<{ runId: string; load: Load } | null>(null);
   useEffect(() => {
@@ -55,20 +59,29 @@ function useRun(runId: string): Load {
 
 const ROUTE_STATUS = { ready: 'success', needs_review: 'warning', reject: 'error' } as const;
 
+interface FailingRule {
+  rule_id: string;
+  reason_code: ReasonCode;
+  detail?: Readonly<Record<string, string>>;
+}
+
 function FieldDetails({ field }: { field: FormFieldView }) {
-  const failing = field.rule_results.filter((rule) => rule.reason_code !== null);
+  const failing: FailingRule[] = [];
+  for (const rule of field.rule_results) {
+    if (rule.reason_code !== null) {
+      failing.push({ rule_id: rule.rule_id, reason_code: rule.reason_code, detail: rule.detail });
+    }
+  }
   return (
     <VStack gap={3} paddingBlockEnd={2}>
       {failing.length > 0 && (
         <List density="compact" listStyle="disc">
-          {failing.map((rule) =>
-            rule.reason_code === null ? null : (
-              <ListItem
-                key={rule.rule_id}
-                label={<Text>{reasonText(rule.reason_code, rule.detail)}</Text>}
-              />
-            ),
-          )}
+          {failing.map((rule) => (
+            <ListItem
+              key={rule.rule_id}
+              label={<Text>{reasonText(rule.reason_code, rule.detail)}</Text>}
+            />
+          ))}
         </List>
       )}
       <MetadataList>
@@ -134,11 +147,14 @@ function KybForm({
       .filter(([, field]) => isFlagged(field))
       .map(([name]) => name),
   );
+  // The group reports the full list of open fields. The field the reviewer just opened or
+  // closed is the one that is in only one of the two lists; it becomes the selected field.
   const change = (value: string | string[]) => {
     const next = Array.isArray(value) ? value : [value];
-    const toggled =
-      next.find((name) => !open.includes(name)) ?? open.find((name) => !next.includes(name));
+    const opened = next.find((name) => !open.includes(name));
+    const closed = open.find((name) => !next.includes(name));
     setOpen(next);
+    const toggled = opened ?? closed;
     if (toggled !== undefined) onSelect(toggled);
   };
   return (
@@ -159,11 +175,13 @@ function KybForm({
   );
 }
 
+/** The field to select first: a flagged field with evidence, else any field with evidence. */
 function firstSelection(fields: Readonly<Record<string, FormFieldView>>): string | null {
   const entries = Object.entries(fields);
   const flagged = entries.find(([, field]) => isFlagged(field) && field.evidence_box != null);
   const located = entries.find(([, field]) => field.evidence_box != null);
-  return (flagged ?? located ?? entries[0])?.[0] ?? null;
+  const first = flagged ?? located ?? entries[0];
+  return first === undefined ? null : first[0];
 }
 
 function RunSummary({ view }: { view: RunView }) {

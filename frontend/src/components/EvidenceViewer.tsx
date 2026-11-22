@@ -47,7 +47,6 @@ export function EvidenceViewer({
           data-testid="evidence-highlight"
           style={{
             ...highlightBase,
-            // A small outset keeps the outline clear of the glyphs it frames.
             left: `calc(${percent(box.x)} - ${OUTSET})`,
             top: `calc(${percent(box.y)} - ${OUTSET})`,
             width: `calc(${percent(box.w)} + 2 * ${OUTSET})`,

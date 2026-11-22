@@ -120,7 +120,7 @@ export function fieldValueText(field: FormFieldView, name?: string): string {
   if (field.status === 'unclear') return copy['state.unclear'];
   if (name === 'legal_form' && typeof field.value === 'string') {
     const key = `legalForm.${field.value}`;
-    if (key in copy) return copy[key as keyof typeof copy];
+    if (hasCopy(key)) return copy[key];
   }
   return valueText(field.value) ?? copy['state.not_present'];
 }

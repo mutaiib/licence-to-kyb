@@ -83,6 +83,7 @@ export function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const progress = useRunProgress(outcome.kind === 'processing' ? outcome.runId : null);
   const isFinished = progress !== null && !ACTIVE.has(progress.status);
+  const canSubmit = file !== null && fileReason === null && applicantName.trim() !== '';
 
   const chooseFile = (files: File | File[] | null) => {
     const chosen = Array.isArray(files) ? (files[0] ?? null) : files;
@@ -93,7 +94,7 @@ export function UploadPage() {
 
   const submit = async (event: SyntheticEvent) => {
     event.preventDefault();
-    if (file === null || fileReason !== null || applicantName.trim() === '') return;
+    if (!canSubmit) return;
     setIsUploading(true);
     const result = await createRun(file, applicantName.trim());
     setIsUploading(false);
@@ -144,7 +145,7 @@ export function UploadPage() {
               type="submit"
               variant="primary"
               isLoading={isUploading}
-              isDisabled={file === null || fileReason !== null || applicantName.trim() === ''}
+              isDisabled={!canSubmit}
             />
           </VStack>
 
