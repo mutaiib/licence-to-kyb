@@ -18,6 +18,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from licence_kyb.config import ResolverBudget
+from licence_kyb.schemas.licence import TradeLicenceExtraction
 from licence_kyb.schemas.results import ProposedFix
 from licence_kyb.tools import (
     ToolContext,
@@ -163,6 +164,16 @@ class ToolRunner:
         return result
 
     def _propose(self, v: dict[str, Any]) -> ToolResult:
+        codes = allowed_codes(v["field"])
+        if codes and v["new_value"].strip() not in codes:
+            return tool_error(
+                "proposal_refused",
+                what_failed=f"propose_fix for field {v['field']}",
+                why=f"{v['field']} takes one of its codes, not the printed words.",
+                state="No proposal was recorded.",
+                next_action="Propose the code that matches the licence, or call finish.",
+                allowed=codes,
+            )
         value = normalised_value(v["field"], v["new_value"])
         if value is None:
             kind = (
@@ -189,6 +200,14 @@ class ToolRunner:
             )
         )
         return answer(f"Proposal recorded for {v['field']}. It is checked after you finish.")
+
+
+def allowed_codes(field_name: str) -> list[str]:
+    """The codes a coded field takes (legal_form: llc, fze, ...); empty for a free-text field."""
+    annotation = TradeLicenceExtraction.model_fields[field_name].annotation
+    schema: dict[str, Any] = getattr(annotation, "model_json_schema", dict)()
+    options = schema.get("properties", {}).get("value", {}).get("anyOf", [])
+    return next((list(o["enum"]) for o in options if "enum" in o), [])
 
 
 def normalised_value(field_name: str, value: str) -> str | None:

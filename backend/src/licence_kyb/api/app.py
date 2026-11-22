@@ -86,7 +86,7 @@ def create_app(
         db.migrate()
         app.state.db = db
         app.state.checkpointer = open_checkpointer(data_dir / "checkpoints.sqlite3")
-    app.state.auth = Auth(settings)
+    app.state.auth = Auth(settings, app.state.db)
 
     @app.middleware("http")
     async def guard(

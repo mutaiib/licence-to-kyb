@@ -90,6 +90,7 @@ def run_rules(ctx: RuleContext) -> list[RuleResult]:
                     severity="block",
                     outcome="could_not_run",
                     reason_code="other",
+                    overridable=True,  # a reviewer can check it by hand and record why
                 )
             )
     return results

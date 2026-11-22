@@ -57,7 +57,6 @@ def _profile_text(profile: AuthorityProfile) -> str:
             "licence_number_labels": profile.licence_number_labels,
             "licence_number_format": profile.number_pattern,
             "date_format": profile.date_format,
-            "allowed_legal_forms": profile.allowed_legal_forms,
         },
         ensure_ascii=False,
     )
@@ -96,6 +95,17 @@ class _Reading[M: BaseModel]:
     refused: bool = False
 
 
+def model_values(raw: Any) -> Any:
+    """The model's reply without any ``origin`` key, at any depth. Only a reviewer's action
+    sets an origin; a value from the model is always "read" and needs its evidence, so a
+    document cannot make the model skip the checks by claiming a reviewer typed a value."""
+    if isinstance(raw, dict):
+        return {k: model_values(v) for k, v in raw.items() if k != "origin"}
+    if isinstance(raw, list):
+        return [model_values(v) for v in raw]
+    return raw
+
+
 def _read[M: BaseModel](llm: LLMClient, request: ModelRequest, model: type[M]) -> _Reading[M]:
     reading = _Reading[M]()
     try:
@@ -108,7 +118,7 @@ def _read[M: BaseModel](llm: LLMClient, request: ModelRequest, model: type[M]) -
     if is_fallback(request, response):
         reading.reasons.append("fallback_model")
     try:
-        reading.parsed = model.model_validate(response.parsed)
+        reading.parsed = model.model_validate(model_values(response.parsed))
     except ValidationError as err:
         _retry_once(llm, _retry_request(request, response, err), model, reading)
     return reading
@@ -125,7 +135,7 @@ def _retry_once[M: BaseModel](
         return
     reading.responses.append((retry, response))
     try:
-        reading.parsed = model.model_validate(response.parsed)
+        reading.parsed = model.model_validate(model_values(response.parsed))
     except ValidationError:
         reading.reasons.append("processing_failed")
 

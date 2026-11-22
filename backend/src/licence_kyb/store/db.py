@@ -8,6 +8,7 @@ after a LangGraph resume (data-model.md, "Writes and resumption").
 from __future__ import annotations
 
 import sqlite3
+import time
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -20,7 +21,7 @@ _TABLES = frozenset(
     {
         "runs",
         "files",
-        "review_decisions",
+        "revoked_sessions",
         "approvals",
         "submissions",
         "audit_events",
@@ -194,27 +195,22 @@ class Database:
         return str(row["mime"])
 
     # ------------------------------------------------------------------ keyed writes
-    def record_decision(
-        self,
-        *,
-        decision_id: str,
-        run_id: str,
-        form_version: int,
-        target: str,
-        action: str,
-        value: str | None,
-        reason: str | None,
-        reviewer: str,
-    ) -> bool:
-        """Return True when the decision is new, False when its key was already applied."""
+    def revoke_session(self, session_id: str, expires_at: int) -> None:
+        """End a session on the server. Revoked IDs are kept until they would have expired."""
         with self.connect() as conn:
-            cur = conn.execute(
-                "INSERT INTO review_decisions (decision_id, run_id, form_version, target, action, "
-                "value_enc, reason, reviewer) VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
-                "ON CONFLICT(decision_id) DO NOTHING",
-                (decision_id, run_id, form_version, target, action, value, reason, reviewer),
+            conn.execute(
+                "INSERT INTO revoked_sessions (session_id, expires_at) VALUES (?, ?) "
+                "ON CONFLICT(session_id) DO NOTHING",
+                (session_id, expires_at),
             )
-            return cur.rowcount == 1
+            conn.execute("DELETE FROM revoked_sessions WHERE expires_at < ?", (int(time.time()),))
+
+    def is_revoked(self, session_id: str) -> bool:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT 1 FROM revoked_sessions WHERE session_id = ?", (session_id,)
+            ).fetchone()
+            return row is not None
 
     def record_approval(
         self, *, action_id: str, run_id: str, form_version: int, reviewer: str

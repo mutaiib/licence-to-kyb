@@ -50,3 +50,15 @@ def test_the_newest_report_is_found_by_its_date_not_its_name(tmp_path: Path) -> 
         (tmp_path / name / "report.json").write_text(json.dumps({"meta": {"date": date}}))
 
     assert newest_report(tmp_path).parent.name == "2026-11-22T10-00"
+
+
+def test_a_value_that_changes_from_one_wrong_reading_to_another_is_listed() -> None:
+    """Right/wrong stays 'wrong', but the model now reads something else: a change to see."""
+    before = {"cases": {"a": {**case("ready", [], {"expiry_date": False}), "values": {}}}}
+    before["cases"]["a"]["values"] = {"expiry_date": "2028-12-25"}
+    after = {"cases": {"a": {**case("ready", [], {"expiry_date": False}), "values": {}}}}
+    after["cases"]["a"]["values"] = {"expiry_date": "2029-12-25"}
+
+    assert changed_cases(before, after)["a"]["values"] == {
+        "expiry_date": ("2028-12-25", "2029-12-25")
+    }
