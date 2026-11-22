@@ -285,6 +285,8 @@ export interface components {
              * @enum {string}
              */
             origin: "read" | "entered_by_reviewer";
+            /** Proposal Accepted */
+            proposal_accepted?: boolean | null;
             /**
              * Rule Results
              * @default []

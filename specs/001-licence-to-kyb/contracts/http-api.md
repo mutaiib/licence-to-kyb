@@ -74,7 +74,8 @@ Response `RunView`:
   "evidence_box": { "page": 1, "x": 0.62, "y": 0.11, "w": 0.2, "h": 0.03 },
   "confidence": { "score": 0.81, "threshold": 0.9, "signals": { "agreement": 0, "grounding": 0.97 } },
   "rule_results": [{ "rule_id": "expiry", "severity": "warn", "outcome": "passed | failed | could_not_run | not_applicable", "reason_code": "near_expiry", "overridable": false }],
-  "model_rationale": "string or null"
+  "model_rationale": "string or null (the resolver's explanation: model output)",
+  "proposal_accepted": "bool or null (whether the resolver's proposal replaced the value)"
 }
 ```
 

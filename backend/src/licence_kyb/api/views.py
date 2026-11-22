@@ -33,6 +33,7 @@ STEP_OUTPUT: dict[str, str] = {
     "route": "route",
     "extract": "extraction",
     "validate": "rule_results",
+    "resolve": "resolver_rounds",
     "confidence": "confidence",
     "map_form": "form",
     "gate": "decision",
@@ -94,6 +95,7 @@ def _form_view(state: dict[str, Any]) -> tuple[FormView | None, list[str]]:
             words=words,
             failing=failing,
             confidence=state.get("confidence", {}).get(source_name),
+            proposal=_latest_proposal(state, source_name),
         )
     documents: list[str] = [item.document for item in form.required_documents]
     return FormView(version=form.version, fields=fields), documents
@@ -108,6 +110,7 @@ def _field_view(
     words: list[Word],
     failing: list[RuleResult],
     confidence: dict[str, Any] | None,
+    proposal: dict[str, Any] | None,
 ) -> FormFieldView:
     form_value: FormValue = getattr(form, form_field)
     has_form_value = form_value is not None and form_value != ()
@@ -126,7 +129,14 @@ def _field_view(
         confidence=(
             ConfidenceView(**confidence) if confidence and source.origin == "read" else None
         ),
+        model_rationale=proposal["rationale"] if proposal else None,
+        proposal_accepted=proposal["accepted"] if proposal else None,
     )
+
+
+def _latest_proposal(state: dict[str, Any], source: str) -> dict[str, Any] | None:
+    proposals = [p for p in state.get("proposals", []) if p["field"] == source]
+    return proposals[-1] if proposals else None
 
 
 def _rule_view(result: RuleResult) -> RuleView:
