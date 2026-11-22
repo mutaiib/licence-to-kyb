@@ -74,6 +74,8 @@ The Technical Context has no open questions. This file records each technical de
   - Writes inside the interrupting node: they are duplicated on resume.
   - An external job queue (Celery, RQ): too heavy at this scale. The checkpointer already stores the progress.
 
+**Simplified for US2 (2026-11-22):** one `wait_for_reviewer` node (interrupt only) and one `apply_action` node (all reviewer actions, keyed writes). Actions are checked by a pure function in the API before the run resumes, so 409 answers are immediate and the graph only sees valid actions.
+
 ## R7. Persistence and security
 
 - **Decision:**
