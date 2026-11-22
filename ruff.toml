@@ -1,0 +1,37 @@
+# Ruff configuration for every Python file in the repository.
+line-length = 100
+target-version = "py312"
+src = ["backend/src", "backend/tests", "scripts", "evals"]
+# Markdown and vendor folders are not Python sources.
+extend-exclude = ["docs", "specs", ".specify", ".claude", "frontend", "*.md"]
+
+[lint]
+select = [
+  "F",    # pyflakes
+  "E", "W",  # pycodestyle
+  "I",    # isort
+  "B",    # bugbear
+  "UP",   # pyupgrade
+  "SIM",  # simplify
+  "S",    # bandit-style security rules
+  "C90",  # complexity
+  "N",    # naming
+  "RUF",
+  "PT",   # pytest style
+  "PL",   # pylint subset
+]
+ignore = [
+  "PLR0913",  # many arguments: typed request objects are preferred, reviewed case by case
+]
+
+[lint.per-file-ignores]
+"backend/tests/**" = ["S101", "PLR2004"]
+"evals/tests/**" = ["S101", "PLR2004", "RUF012"]
+# Synthetic test data is generated from seeded pseudo-random numbers on purpose.
+"backend/src/licence_kyb/testdata/**" = ["S311"]
+# Scripts are command-line entry points that print results.
+"scripts/**" = ["T201"]
+
+[lint.mccabe]
+max-complexity = 10
+

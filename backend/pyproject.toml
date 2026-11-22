@@ -57,40 +57,6 @@ packages = ["src/licence_kyb"]
 [tool.uv]
 default-groups = ["dev", "data"]
 
-# ---------------------------------------------------------------- ruff
-[tool.ruff]
-line-length = 100
-target-version = "py312"
-src = ["src", "tests", "../scripts", "../evals"]
-
-[tool.ruff.lint]
-select = [
-  "F",    # pyflakes
-  "E", "W",  # pycodestyle
-  "I",    # isort
-  "B",    # bugbear
-  "UP",   # pyupgrade
-  "SIM",  # simplify
-  "S",    # bandit-style security rules
-  "C90",  # complexity
-  "N",    # naming
-  "RUF",
-  "PT",   # pytest style
-  "PL",   # pylint subset
-]
-ignore = [
-  "PLR0913",  # many arguments: typed request objects are preferred, reviewed case by case
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "PLR2004"]
-# Synthetic test data is generated from seeded pseudo-random numbers on purpose.
-"src/licence_kyb/testdata/**" = ["S311"]
-"../evals/tests/**" = ["S101", "PLR2004"]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
 # ---------------------------------------------------------------- mypy
 [tool.mypy]
 python_version = "3.12"
