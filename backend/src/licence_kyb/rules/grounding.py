@@ -22,6 +22,7 @@ QUOTE_THRESHOLD = 85
 VALUE_THRESHOLD = 90
 # Fields whose value is a code (not printed verbatim): only the quote is checked.
 CODED = frozenset({"legal_form", "licence_category", "issuing_authority", "activities", "people"})
+LISTS = frozenset({"activities", "people"})
 # Dates and identifiers must appear exactly: one wrong digit is a different value.
 EXACT = frozenset(
     {
@@ -59,9 +60,34 @@ def _value_forms(value: Any) -> list[str]:
     return [str(value)]
 
 
+def _quote_on_page(quote: str, ocr: str) -> bool:
+    """A PDF text layer can return Arabic in visual (reversed) order, so try both."""
+    return (
+        max(fuzz.partial_ratio(quote, ocr), fuzz.partial_ratio(quote, ocr[::-1])) >= QUOTE_THRESHOLD
+    )
+
+
+def _list_grounded(f: Field[Any], ocr: str) -> bool:
+    """A list is grounded when each element's own fields are: one quote cannot span a table."""
+    for element in f.value or []:
+        parts = [
+            getattr(element, k) for k in ("name", "code", "description_en") if hasattr(element, k)
+        ]
+        for part in parts:
+            if (
+                part.status == "present"
+                and part.origin == "read"
+                and not _quote_on_page(normalise_text(part.evidence_quote or ""), ocr)
+            ):
+                return False
+    return True
+
+
 def _grounded(name: str, f: Field[Any], ocr: str) -> bool:
+    if name in LISTS:
+        return _list_grounded(f, ocr)
     quote = normalise_text(f.evidence_quote or "")
-    if not quote or fuzz.partial_ratio(quote, ocr) < QUOTE_THRESHOLD:
+    if not quote or not _quote_on_page(quote, ocr):
         return False
     if name in CODED:
         return True

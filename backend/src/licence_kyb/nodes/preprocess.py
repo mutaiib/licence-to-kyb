@@ -22,6 +22,7 @@ RENDER_DPI = 200
 OCR_LANG = "eng+ara"
 MIN_TEXT_LAYER_WORDS = 5
 OCR_TIMEOUT_SECONDS = 30
+ROW_TOLERANCE = 0.006  # fraction of page height
 
 
 @dataclass(frozen=True)
@@ -42,10 +43,20 @@ class PageSet:
 
     @property
     def text(self) -> str:
-        lines: dict[tuple[int, int], list[str]] = {}
-        for w in self.words:
-            lines.setdefault((w.page, round(w.bbox[1] * 200)), []).append(w.text)
-        return "\n".join(" ".join(parts) for _, parts in sorted(lines.items()))
+        """Words grouped into visual rows (by vertical centre), each row read left to right."""
+        rows: list[list[Word]] = []
+        for w in sorted(self.words, key=lambda w: (w.page, (w.bbox[1] + w.bbox[3]) / 2)):
+            centre = (w.bbox[1] + w.bbox[3]) / 2
+            last = rows[-1] if rows else None
+            if last and last[0].page == w.page and abs(_centre(last) - centre) <= ROW_TOLERANCE:
+                last.append(w)
+            else:
+                rows.append([w])
+        return "\n".join(" ".join(w.text for w in sorted(r, key=lambda w: w.bbox[0])) for r in rows)
+
+
+def _centre(row: list[Word]) -> float:
+    return sum((w.bbox[1] + w.bbox[3]) / 2 for w in row) / len(row)
 
 
 def _png(img: Image.Image) -> bytes:
