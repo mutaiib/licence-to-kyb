@@ -1,6 +1,7 @@
 <!--
 Sync Impact Report
-- Version change: 1.1.0 → 2.0.0 (MAJOR)
+- Version change: 2.0.0 → 2.1.0 (MINOR: Development Workflow adds the per-story local visual check)
+- Earlier: 1.1.0 → 2.0.0 (MAJOR)
   - Principle X was redefined.
   - The Branching and Releases rules were redefined: one branch per unit of work, release and back-merge through pull requests, and no required human approval while there is one maintainer.
   - Under this file's Governance rules, redefining a principle or a rule is a MAJOR change.
@@ -173,6 +174,7 @@ These standards are non-negotiable. The detail, tooling and sources are in `docs
 - Every feature uses the Spec Kit sequence: specify → clarify → plan → tasks → analyze → implement.
 - The plan MUST pass the Constitution Check before research and again after design.
 - Each user story is implemented and verified on its own. Stories start in priority order, and stories whose dependencies are met may run in parallel on separate branches.
+- Each user story ends with a local visual check: its quickstart rows are run in a browser against the local demo (`make dev`), every defect found is fixed with a regression test, and screenshots of synthetic data are attached to the pull request.
 - CI runs lint, the copy check and all offline tests. The eval suite runs on demand, because it uses the paid API.
 
 ## Governance
@@ -185,4 +187,4 @@ These standards are non-negotiable. The detail, tooling and sources are in `docs
   - PATCH: wording only.
 - Every plan and review MUST check compliance. A violation is allowed only with a written justification in the plan's Complexity Tracking table.
 
-**Version**: 2.0.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21
+**Version**: 2.1.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21
