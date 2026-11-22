@@ -225,6 +225,7 @@ def build(root: Path, seed: int = 20260601, groups: tuple[Group, ...] = GROUPS) 
             )
             result.cases.append(case)
 
+    _register_public(result.registry, root / "evals" / "cases" / "public")
     (root / "data" / "registry_mock.json").write_text(
         json.dumps(result.registry, ensure_ascii=False, indent=2, sort_keys=True) + "\n", "utf-8"
     )
@@ -240,3 +241,13 @@ def _register(registry: dict[str, dict[str, Any]], spec: LicenceSpec) -> None:
         "expiry_date": spec.expiry_date.isoformat(),
         "trade_name_en": spec.trade_name_en,
     }
+
+
+def _register_public(registry: dict[str, dict[str, Any]], public_dir: Path) -> None:
+    """Public sample licences carry their own registry entry in their label file."""
+    for label_path in sorted(public_dir.glob("*.json")) if public_dir.exists() else []:
+        label = json.loads(label_path.read_text("utf-8"))
+        entry = label.get("registry_entry")
+        if entry:
+            number = label["expected_values"]["licence_number"]
+            registry.setdefault(label["authority"], {})[number] = entry
