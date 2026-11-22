@@ -32,13 +32,13 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 **Purpose**: repository standards, tooling and project skeletons.
 
-- [ ] T001 Create `main` with the first commit, then `develop` from `main`. Merge the specification branch `feature/001-licence-to-kyb` by pull request, then create `feature/001-licence-to-kyb-foundation` from `develop`. Configure GitHub rulesets for `main` and `develop` per `docs/engineering-practices.md` section 1, with CODEOWNERS used to request reviewers only.
-- [ ] T002 Create the backend project with `uv`, Python 3.12, the dependencies from plan.md (including `argon2-cffi`), and a committed lock file, in `backend/pyproject.toml` and `backend/uv.lock`
-- [ ] T003 [P] Create the frontend with Vite, React 19 and TypeScript `strict` in `frontend/package.json`. Install `@astryxdesign/core`, `@astryxdesign/theme-neutral`, `@stylexjs/stylex`, Vitest and Testing Library, then run `npx @astryxdesign/cli init`.
-- [ ] T004 [P] Configure ruff (strict rule set) and `mypy --strict` in `backend/pyproject.toml`
-- [ ] T005 [P] Configure ESLint, Prettier and `noUncheckedIndexedAccess` in `frontend/eslint.config.js` and `frontend/tsconfig.json`
-- [ ] T006 [P] Add pre-commit hooks for ruff, mypy, gitleaks, end-of-file and commitlint in `.pre-commit-config.yaml` and `commitlint.config.mjs`
-- [ ] T007 [P] Add the CI workflow in `.github/workflows/ci.yml`. It runs every check in the CI gate list of `docs/engineering-practices.md` section 4:
+- [X] T001 Create `main` with the first commit, then `develop` from `main`. Merge the specification branch `feature/001-licence-to-kyb` by pull request, then create `feature/001-licence-to-kyb-foundation` from `develop`. Configure GitHub rulesets for `main` and `develop` per `docs/engineering-practices.md` section 1, with CODEOWNERS used to request reviewers only.
+- [X] T002 Create the backend project with `uv`, Python 3.12, the dependencies from plan.md (including `argon2-cffi`), and a committed lock file, in `backend/pyproject.toml` and `backend/uv.lock`
+- [X] T003 [P] Create the frontend with Vite, React 19 and TypeScript `strict` in `frontend/package.json`. Install `@astryxdesign/core`, `@astryxdesign/theme-neutral`, `@stylexjs/stylex`, Vitest and Testing Library, then run `npx @astryxdesign/cli init`.
+- [X] T004 [P] Configure ruff (strict rule set) and `mypy --strict` in `backend/pyproject.toml`
+- [X] T005 [P] Configure ESLint, Prettier and `noUncheckedIndexedAccess` in `frontend/eslint.config.js` and `frontend/tsconfig.json`
+- [X] T006 [P] Add pre-commit hooks for ruff, mypy, gitleaks, end-of-file and commitlint in `.pre-commit-config.yaml` and `commitlint.config.mjs`
+- [X] T007 [P] Add the CI workflow in `.github/workflows/ci.yml`. It runs every check in the CI gate list of `docs/engineering-practices.md` section 4:
   - lint and format
   - type checks
   - backend offline tests
@@ -51,10 +51,10 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
   - the PR title check
 
   Actions are pinned to SHAs, with `permissions: contents: read`.
-- [ ] T008 [P] Add `.github/dependabot.yml` (pip, npm, actions, docker), `.github/CODEOWNERS`, `.github/pull_request_template.md` (spec link, test evidence, eval numbers, worksheet rows changed), and `.github/ISSUE_TEMPLATE/`
-- [ ] T009 [P] Add `CONTRIBUTING.md` (GitFlow, story branches, Conventional Commits, how to run checks), `SECURITY.md`, `LICENSE` (MIT), and `CHANGELOG.md` with an `Unreleased` section
-- [ ] T010 [P] Add a `Makefile` with the targets `setup`, `lint`, `test`, `data`, `eval`, `eval-compare`, `eval-precision`, `approve-capture`, `measure`, `demo`, `types` and `backup`, and add `.env.example`
-- [ ] T011 [P] Add `docker-compose.yml`, `backend/Dockerfile` and `frontend/Dockerfile`: multi-stage, base images pinned by digest, a non-root user and health checks on `/healthz`
+- [X] T008 [P] Add `.github/dependabot.yml` (pip, npm, actions, docker), `.github/CODEOWNERS`, `.github/pull_request_template.md` (spec link, test evidence, eval numbers, worksheet rows changed), and `.github/ISSUE_TEMPLATE/`
+- [X] T009 [P] Add `CONTRIBUTING.md` (GitFlow, story branches, Conventional Commits, how to run checks), `SECURITY.md`, `LICENSE` (MIT), and `CHANGELOG.md` with an `Unreleased` section
+- [X] T010 [P] Add a `Makefile` with the targets `setup`, `lint`, `test`, `data`, `eval`, `eval-compare`, `eval-precision`, `approve-capture`, `measure`, `demo`, `types` and `backup`, and add `.env.example`
+- [X] T011 [P] Add `docker-compose.yml`, `backend/Dockerfile` and `frontend/Dockerfile`: multi-stage, base images pinned by digest, a non-root user and health checks on `/healthz`
 
 **Checkpoint**: an empty project passes CI.
 
@@ -68,34 +68,34 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for the foundation (write first; they must fail)
 
-- [ ] T012 [P] Write schema tests from the "Schemas and authority profiles" table in `backend/tests/unit/test_schemas.py`
-- [ ] T013 [P] Write profile tests in `backend/tests/unit/test_profiles.py`: each profile's pattern accepts its own valid examples and rejects other authorities' examples
-- [ ] T014 [P] Write security tests in `backend/tests/unit/test_security.py`:
+- [X] T012 [P] Write schema tests from the "Schemas and authority profiles" table in `backend/tests/unit/test_schemas.py`
+- [X] T013 [P] Write profile tests in `backend/tests/unit/test_profiles.py`: each profile's pattern accepts its own valid examples and rejects other authorities' examples
+- [X] T014 [P] Write security tests in `backend/tests/unit/test_security.py`:
   - a round trip through MultiFernet, plus decrypting with a rotated key
   - the stored bytes differ from the input
   - the masking filter removes PII-tagged values from log records and from trace output
-- [ ] T015 [P] Write `LLMClient` tests in `backend/tests/unit/test_llm_client.py`:
+- [X] T015 [P] Write `LLMClient` tests in `backend/tests/unit/test_llm_client.py`:
   - a recorded response and its serving model are returned for a known request hash
   - a missing recording fails, naming the hash
   - no network is used
   - an exhausted daily budget blocks the call and returns `budget_exhausted`
-- [ ] T016 [P] Write operations tests in `backend/tests/unit/test_ops.py`:
+- [X] T016 [P] Write operations tests in `backend/tests/unit/test_ops.py`:
   - on startup, runs in `received` or `processing` resume
   - a run past `deadline_at` moves to `awaiting_review` with `processing_failed`
   - retention deletes expired runs, files and captured corrections, and keeps current ones
-- [ ] T017 [P] Write idempotent-write tests in `backend/tests/unit/test_store_idempotency.py`: writing any keyed entity twice with the same key leaves one row
+- [X] T017 [P] Write idempotent-write tests in `backend/tests/unit/test_store_idempotency.py`: writing any keyed entity twice with the same key leaves one row
 
 ### Implementation for the foundation
 
-- [ ] T018 [P] Implement `Field[T]` (with `origin`), `RouteResult`, `TradeLicenceExtraction`, `CriticalFields`, `Activity` and `Person` in `backend/src/licence_kyb/schemas/licence.py`
-- [ ] T019 [P] Implement `RuleResult` (with `outcome`), `ReasonCode`, `Reason`, `ProposedFix`, `FieldConfidence` and the routing `Decision` in `backend/src/licence_kyb/schemas/results.py`
-- [ ] T020 [P] Implement `KYBOnboardingForm` and `field_states` in `backend/src/licence_kyb/schemas/kyb_form.py`
-- [ ] T021 [P] Write the authority profiles in `backend/src/licence_kyb/profiles/{det,added,dmcc,ifza,generic}.yaml`, each with a `has_register` flag (IFZA is false), and a loader in `backend/src/licence_kyb/profiles/__init__.py`
-- [ ] T022 [P] Implement typed settings from the environment: reviewer accounts with argon2id hashes, keys, the daily budget, retention, and the applicant-name threshold. Also load `config/models.yaml`, `config/thresholds.yaml` and `config/budgets.yaml`. All of this goes in `backend/src/licence_kyb/config.py`.
-- [ ] T023 [P] Implement an injectable clock in `backend/src/licence_kyb/clock.py`
-- [ ] T024 Implement the SQLite schema and forward-only migrations in `backend/src/licence_kyb/store/db.py` and `backend/src/licence_kyb/store/migrations/`. It covers runs, files, review decisions, approvals, submissions, audit events, captured corrections and spans, with a unique key on every write entity.
-- [ ] T025 [P] Implement MultiFernet encryption, the masking log filter and the trace serializer in `backend/src/licence_kyb/security.py`, and structured JSON logging with the run ID in `backend/src/licence_kyb/logging.py`
-- [ ] T026 [P] Implement `LLMClient` in `backend/src/licence_kyb/llm/client.py`, following `contracts/model-calls.md`:
+- [X] T018 [P] Implement `Field[T]` (with `origin`), `RouteResult`, `TradeLicenceExtraction`, `CriticalFields`, `Activity` and `Person` in `backend/src/licence_kyb/schemas/licence.py`
+- [X] T019 [P] Implement `RuleResult` (with `outcome`), `ReasonCode`, `Reason`, `ProposedFix`, `FieldConfidence` and the routing `Decision` in `backend/src/licence_kyb/schemas/results.py`
+- [X] T020 [P] Implement `KYBOnboardingForm` and `field_states` in `backend/src/licence_kyb/schemas/kyb_form.py`
+- [X] T021 [P] Write the authority profiles in `backend/src/licence_kyb/profiles/{det,added,dmcc,ifza,generic}.yaml`, each with a `has_register` flag (IFZA is false), and a loader in `backend/src/licence_kyb/profiles/__init__.py`
+- [X] T022 [P] Implement typed settings from the environment: reviewer accounts with argon2id hashes, keys, the daily budget, retention, and the applicant-name threshold. Also load `config/models.yaml`, `config/thresholds.yaml` and `config/budgets.yaml`. All of this goes in `backend/src/licence_kyb/config.py`.
+- [X] T023 [P] Implement an injectable clock in `backend/src/licence_kyb/clock.py`
+- [X] T024 Implement the SQLite schema and forward-only migrations in `backend/src/licence_kyb/store/db.py` and `backend/src/licence_kyb/store/migrations/`. It covers runs, files, review decisions, approvals, submissions, audit events, captured corrections and spans, with a unique key on every write entity.
+- [X] T025 [P] Implement MultiFernet encryption, the masking log filter and the trace serializer in `backend/src/licence_kyb/security.py`, and structured JSON logging with the run ID in `backend/src/licence_kyb/logging.py`
+- [X] T026 [P] Implement `LLMClient` in `backend/src/licence_kyb/llm/client.py`, following `contracts/model-calls.md`:
   - structured outputs, strict tools and explicit effort
   - cache-ordered prompts
   - refusal and `max_tokens` handling
@@ -105,25 +105,25 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
   - a span per call
 
   Implement the replay recorder, which stores the serving model, in `backend/src/licence_kyb/llm/recorder.py`.
-- [ ] T027 [P] Implement spans (step, model call, tool call), with OpenTelemetry GenAI attribute names, requested and serving model, and thinking tokens, in `backend/src/licence_kyb/tracing.py`
-- [ ] T028 Implement `backend/src/licence_kyb/ops.py`:
+- [X] T027 [P] Implement spans (step, model call, tool call), with OpenTelemetry GenAI attribute names, requested and serving model, and thinking tokens, in `backend/src/licence_kyb/tracing.py`
+- [X] T028 Implement `backend/src/licence_kyb/ops.py`:
   - startup resume of `received` and `processing` runs
   - the deadline sweep
   - the scheduled retention job
   - the daily budget counter
 
   Add `/healthz` and `/readyz` in `backend/src/licence_kyb/api/routes_health.py`.
-- [ ] T029 Implement `RunState` in `backend/src/licence_kyb/state.py`, and the graph skeleton with the SQLite checkpointer and the rule that side effects run only in their own nodes, in `backend/src/licence_kyb/graph.py`
-- [ ] T030 [P] Implement the synthetic licence generator in `scripts/gen_licences.py`, with templates in `scripts/templates/`:
+- [X] T029 Implement `RunState` in `backend/src/licence_kyb/state.py`, and the graph skeleton with the SQLite checkpointer and the rule that side effects run only in their own nodes, in `backend/src/licence_kyb/graph.py`
+- [X] T030 [P] Implement the synthetic licence generator in `scripts/gen_licences.py`, with layouts in `scripts/layouts/` (`reportlab`, per research R9a):
   - at least two bilingual layouts per authority, with Noto Naskh Arabic
   - QR codes and a SPECIMEN watermark
   - Faker values with a fixed seed
   - a ground-truth JSON per document, with its group, split and mix weight
   - the degradations in the catalogue
-- [ ] T031 [P] Add `data/high_risk_activities.yaml`, `data/activities_sample.yaml` and `data/registry_mock.json` (DET, ADDED and DMCC entries only)
-- [ ] T032 Generate the labelled catalogue (every group and count in `test-cases.md`) in `evals/cases/synthetic/`. Add `scripts/fetch_public_samples.py`, with hand labels in `evals/cases/public/`.
-- [ ] T033 Implement a minimal case runner in `evals/runner.py`. It runs the graph headless over a set of cases, with a simulated reviewer that answers from ground truth, and returns the final state of each case. US3 calibration and the US4 comparison use it before US6 adds reports.
-- [ ] T034 **Manual, not in CI (it uses the paid API).** Write a throughput probe in `scripts/measure_throughput.py`. It calls the SDK directly, with prompts of the planned sizes and synthetic page images, at the planned efforts. It needs no pipeline node. Record output tokens per second, time to first token and p95 latency in `docs/experiments.md`. Then set the provisional budgets in `contracts/resolver-tools.md` and the plan's latency budget from the probe.
+- [X] T031 [P] Add `data/high_risk_activities.yaml`, `data/activities_sample.yaml` and `data/registry_mock.json` (DET, ADDED and DMCC entries only)
+- [X] T032 Generate the labelled catalogue (every group and count in `test-cases.md`) in `evals/cases/synthetic/`. Add `scripts/fetch_public_samples.py`, with hand labels in `evals/cases/public/`.
+- [X] T033 Implement a minimal case runner in `evals/runner.py`. It runs the graph headless over a set of cases, with a simulated reviewer that answers from ground truth, and returns the final state of each case. US3 calibration and the US4 comparison use it before US6 adds reports.
+- [ ] T034 *(script ready in `scripts/measure_throughput.py`; measurement pending owner approval of paid API use)* **Manual, not in CI (it uses the paid API).** Write a throughput probe in `scripts/measure_throughput.py`. It calls the SDK directly, with prompts of the planned sizes and synthetic page images, at the planned efforts. It needs no pipeline node. Record output tokens per second, time to first token and p95 latency in `docs/experiments.md`. Then set the provisional budgets in `contracts/resolver-tools.md` and the plan's latency budget from the probe.
 
 **Checkpoint**: schemas, storage, client, operations, tracing, test data and the runner are ready. The foundation tests pass.
 

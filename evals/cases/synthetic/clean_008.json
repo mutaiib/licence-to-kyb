@@ -1,0 +1,61 @@
+{
+  "applicant_name": "JONES TRADING FZCO",
+  "authority": "IFZA",
+  "case_id": "clean_008",
+  "document": "data/generated/clean_008.pdf",
+  "document_sha256": "f89de34323efec3e408cbace27eb74d6fb9b2248514564edf51d8d8d9455c98e",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 438, Christopher Ports, Dubai Silicon Oasis",
+    "chamber_number": "161440",
+    "establishment_date": "2025-07-16",
+    "expiry_date": "2027-01-01",
+    "issue_date": "2026-01-01",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "80405",
+    "people": [
+      {
+        "name": "Elizabeth Moore",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 80.0
+      },
+      {
+        "name": "James Kelly",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 20.0
+      },
+      {
+        "name": "Jamie Preston",
+        "nationality": "Lebanon",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Jones Trading FZCO"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601007,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,7 @@
+# Model and effort per step (plan.md, "Model usage"). A change here is a pull request
+# with before-and-after eval numbers (docs/engineering-practices.md, section 6).
+route:             { model: claude-opus-5-5, effort: low,    max_tokens: 4000 }
+extract_primary:   { model: claude-opus-5-5, effort: medium, max_tokens: 16000 }
+extract_secondary: { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
+resolve:           { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
+reread_vision:     { model: claude-opus-5-5, effort: low,    max_tokens: 2000 }

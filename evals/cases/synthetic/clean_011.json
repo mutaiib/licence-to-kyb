@@ -1,0 +1,55 @@
+{
+  "applicant_name": "LEWIS CONSULTANCY FZE",
+  "authority": "DMCC",
+  "case_id": "clean_011",
+  "document": "data/generated/clean_011.pdf",
+  "document_sha256": "b5d5893fb20c6025a38e9e3b7877945ff51edc6116765b0e0da2f8dc379fa03c",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 330, Elliott Estate, JLT, Dubai",
+    "chamber_number": "600904",
+    "establishment_date": "2026-01-02",
+    "expiry_date": "2027-02-04",
+    "issue_date": "2026-02-04",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-38017",
+    "people": [
+      {
+        "name": "Alan Morris",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Carla Jackson",
+        "nationality": "Jordan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Lewis Consultancy FZE"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601010,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

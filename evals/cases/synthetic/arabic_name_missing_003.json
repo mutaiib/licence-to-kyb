@@ -1,0 +1,59 @@
+{
+  "applicant_name": "MARTINEZ CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "arabic_name_missing_003",
+  "document": "data/generated/arabic_name_missing_003.pdf",
+  "document_sha256": "7c6762b43020024e6852b59012f63d8ff53125b0bc9d83a5bdbaddda99437b69",
+  "expected_reason_codes": [
+    "arabic_name_missing"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 211, John Ways, Dubai",
+    "chamber_number": "899259",
+    "establishment_date": "2024-12-14",
+    "expiry_date": "2027-04-24",
+    "issue_date": "2026-04-24",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "3601653",
+    "people": [
+      {
+        "name": "Miss Alison Garcia PhD",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 80.0
+      },
+      {
+        "name": "Tiffany Reynolds",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 20.0
+      }
+    ],
+    "trade_name_ar": null,
+    "trade_name_en": "Martinez Consultancy LLC"
+  },
+  "faults": [
+    "arabic_name_missing"
+  ],
+  "group": "arabic_name_missing",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601802,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,56 @@
+{
+  "applicant_name": "PATTERSON SERVICES FZE",
+  "authority": "DMCC",
+  "case_id": "scans_007",
+  "document": "data/generated/scans_007.jpg",
+  "document_sha256": "ea1fcfe5bc8fce64985f7363b0ac8129b1676b7aa86932d7bebdda863a51fd44",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 820, Janet Point, JLT, Dubai",
+    "chamber_number": "154404",
+    "establishment_date": "2023-05-17",
+    "expiry_date": "2026-08-19",
+    "issue_date": "2025-08-19",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-31434",
+    "people": [
+      {
+        "name": "Curtis Jarvis",
+        "nationality": "Egypt",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Mr. Paul Travis",
+        "nationality": "Lebanon",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Patterson Services FZE"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601106,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

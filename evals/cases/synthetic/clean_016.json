@@ -1,0 +1,61 @@
+{
+  "applicant_name": "MILLER CONSULTANCY FZCO",
+  "authority": "IFZA",
+  "case_id": "clean_016",
+  "document": "data/generated/clean_016.pdf",
+  "document_sha256": "ea36d35bf1c2a7b3436db7ced6df3f039bafecde11e8d969f5891581b9cfc495",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 460, Michael Union, Dubai Silicon Oasis",
+    "chamber_number": "48606",
+    "establishment_date": "2024-04-04",
+    "expiry_date": "2027-01-27",
+    "issue_date": "2026-01-27",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "30677",
+    "people": [
+      {
+        "name": "William Hale",
+        "nationality": "Egypt",
+        "role": "owner",
+        "share_pct": 20.0
+      },
+      {
+        "name": "Eric Moore",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 80.0
+      },
+      {
+        "name": "Chelsea Moore",
+        "nationality": "Pakistan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Miller Consultancy FZCO"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601015,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,15 @@
+# Dubai Multi Commodities Centre (free zone).
+# Number format seen in public listings: "DMCC" with an optional hyphen and digits (inferred).
+code: DMCC
+name_en: Dubai Multi Commodities Centre
+number_pattern: '^DMCC-?\d{4,6}$'
+number_pattern_source: inferred
+date_format: DD/MM/YYYY
+licence_number_labels: ["Licence No", "License No", "رقم الرخصة"]
+licence_titles: ["Trade Licence", "Trade License", "رخصة تجارية"]
+allowed_legal_forms: [fze, fzco, fz_llc, branch]
+arabic_name_required: false
+has_qr: true
+has_register: true
+free_zone: true
+tenancy_document: free_zone_lease

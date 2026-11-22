@@ -1,0 +1,62 @@
+{
+  "applicant_name": "BAILEY SERVICES FZCO",
+  "authority": "IFZA",
+  "case_id": "photos_004",
+  "document": "data/generated/photos_004.jpg",
+  "document_sha256": "ffaf732ba4a9ef535bf4c920514b940c5d8e810c4e78d776d8bae88b22caf4b9",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 882, Mary Mission, Dubai Silicon Oasis",
+    "chamber_number": "202026",
+    "establishment_date": "2022-12-01",
+    "expiry_date": "2027-02-04",
+    "issue_date": "2026-02-04",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "55594",
+    "people": [
+      {
+        "name": "Patricia Pratt",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 5.0
+      },
+      {
+        "name": "Mrs. Alice Mckenzie MD",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 15.0
+      },
+      {
+        "name": "Jennifer Jackson",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 80.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Bailey Services FZCO"
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601203,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

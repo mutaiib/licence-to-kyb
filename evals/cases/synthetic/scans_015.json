@@ -1,0 +1,50 @@
+{
+  "applicant_name": "MARSHALL SERVICES FZE",
+  "authority": "DMCC",
+  "case_id": "scans_015",
+  "document": "data/generated/scans_015.jpg",
+  "document_sha256": "5b7f95629349564d95a33cc39d6233d4e7ff9c8559bc68aee01bf4390e7dc62c",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 859, Mary Path, JLT, Dubai",
+    "chamber_number": "568307",
+    "establishment_date": "2025-06-24",
+    "expiry_date": "2026-10-27",
+    "issue_date": "2025-10-27",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-77671",
+    "people": [
+      {
+        "name": "Robert Molina",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Marshall Services FZE"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601114,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,14 @@
+services:
+  backend:
+    build: ./backend
+    env_file: backend/.env
+    volumes: [appdata:/data]
+    read_only: true
+    tmpfs: [/tmp]
+  frontend:
+    build: ./frontend
+    ports: ["5173:8080"]
+    depends_on:
+      backend: { condition: service_healthy }
+volumes:
+  appdata:

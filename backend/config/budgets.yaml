@@ -1,0 +1,12 @@
+# Provisional until the throughput probe (task T034) measures real figures.
+# Normative definitions: specs/001-licence-to-kyb/contracts/resolver-tools.md, "Budgets".
+processing_deadline_seconds: 120
+resolver:
+  soft_turns: 5
+  hard_turns: 6
+  hard_rounds: 2
+  soft_tokens: 32000
+  hard_tokens: 40000
+  soft_seconds: 35
+  hard_seconds: 45
+  hard_tool_calls: 12

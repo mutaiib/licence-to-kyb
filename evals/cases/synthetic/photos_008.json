@@ -1,0 +1,68 @@
+{
+  "applicant_name": "JONES SERVICES FZCO",
+  "authority": "IFZA",
+  "case_id": "photos_008",
+  "document": "data/generated/photos_008.jpg",
+  "document_sha256": "44a8c68f866ac8f7434bfb0ae4bebaca688d9f3864f662f8aff3450493cb7b8c",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 449, Gonzalez Harbor, Dubai Silicon Oasis",
+    "chamber_number": "157724",
+    "establishment_date": "2020-12-28",
+    "expiry_date": "2027-02-07",
+    "issue_date": "2026-02-07",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "84099",
+    "people": [
+      {
+        "name": "Connor Joseph",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 35.0
+      },
+      {
+        "name": "Charles Cummings",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 15.0
+      },
+      {
+        "name": "Christopher Cunningham",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 50.0
+      },
+      {
+        "name": "Vicki Thomas",
+        "nationality": "United Arab Emirates",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Jones Services FZCO"
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601207,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

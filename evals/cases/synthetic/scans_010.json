@@ -1,0 +1,68 @@
+{
+  "applicant_name": "LEE TECHNOLOGIES LLC",
+  "authority": "ADDED",
+  "case_id": "scans_010",
+  "document": "data/generated/scans_010.jpg",
+  "document_sha256": "13da62db8bb116f39584a42d03c7c156da1a50c73c99110712fa0218bb57d40f",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 298, Morales Falls, Abu Dhabi",
+    "chamber_number": "175907",
+    "establishment_date": "2021-05-24",
+    "expiry_date": "2027-03-13",
+    "issue_date": "2026-03-13",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc",
+    "licence_number": "CN-5988224",
+    "people": [
+      {
+        "name": "Hunter Mills",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 20.0
+      },
+      {
+        "name": "Christopher Pope",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 40.0
+      },
+      {
+        "name": "Scott Villegas",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 40.0
+      },
+      {
+        "name": "Cindy Smith",
+        "nationality": "Saudi Arabia",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Lee Technologies LLC"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601109,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

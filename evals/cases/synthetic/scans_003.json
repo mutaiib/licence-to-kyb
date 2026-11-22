@@ -1,0 +1,56 @@
+{
+  "applicant_name": "JENSEN TECHNOLOGIES FZE",
+  "authority": "DMCC",
+  "case_id": "scans_003",
+  "document": "data/generated/scans_003.jpg",
+  "document_sha256": "ade15beafc2a35ea5eaaea3c092265fee3a0b72f1f410b38b2980a8c805d3fd0",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 205, Weber Mews, JLT, Dubai",
+    "chamber_number": "287343",
+    "establishment_date": "2022-03-28",
+    "expiry_date": "2026-09-09",
+    "issue_date": "2025-09-09",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-69281",
+    "people": [
+      {
+        "name": "Richard Hall",
+        "nationality": "Egypt",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Timothy Bean",
+        "nationality": "Jordan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Jensen Technologies FZE"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601102,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

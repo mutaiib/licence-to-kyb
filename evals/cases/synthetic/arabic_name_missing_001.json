@@ -1,0 +1,59 @@
+{
+  "applicant_name": "DAVID CONSULTANCY EST.",
+  "authority": "DET",
+  "case_id": "arabic_name_missing_001",
+  "document": "data/generated/arabic_name_missing_001.pdf",
+  "document_sha256": "265c5c0e27544fe65147b0a653fc1e1ad9203c884d654d55bf0f24c762dd542c",
+  "expected_reason_codes": [
+    "arabic_name_missing"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 194, Robinson Points, Dubai",
+    "chamber_number": "240159",
+    "establishment_date": "2020-11-18",
+    "expiry_date": "2027-02-28",
+    "issue_date": "2026-02-28",
+    "issuing_authority": "DET",
+    "legal_form": "sole_establishment",
+    "licence_number": "6997826",
+    "people": [
+      {
+        "name": "Jessica Wall",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Michael Drake",
+        "nationality": "United Kingdom",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": null,
+    "trade_name_en": "David Consultancy Est."
+  },
+  "faults": [
+    "arabic_name_missing"
+  ],
+  "group": "arabic_name_missing",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601800,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,22 @@
+{
+  "applicant_name": "Sample Holder Trading LLC",
+  "authority": null,
+  "case_id": "out_of_scope_002",
+  "document": "data/generated/out_of_scope_002.pdf",
+  "document_sha256": "5971b217d3f3101c4270dc036c8dc97a897f2f095d91071fe3d23edb5e42ce53",
+  "expected_reason_codes": [
+    "out_of_scope"
+  ],
+  "expected_route": [
+    "reject"
+  ],
+  "expected_values": null,
+  "faults": [],
+  "group": "out_of_scope",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602501,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

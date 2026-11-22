@@ -1,0 +1,55 @@
+{
+  "applicant_name": "BALLARD CONSULTANCY FZE",
+  "authority": "DMCC",
+  "case_id": "clean_023",
+  "document": "data/generated/clean_023.pdf",
+  "document_sha256": "2ad6cb6c7a110f91a4d3eb5a8e71384aceac20926f1775696422e4c2cfab063a",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 263, Maria Dale, JLT, Dubai",
+    "chamber_number": "133106",
+    "establishment_date": "2025-04-05",
+    "expiry_date": "2027-01-05",
+    "issue_date": "2026-01-05",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-81076",
+    "people": [
+      {
+        "name": "Jonathan Wood",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Robin Gregory",
+        "nationality": "Bangladesh",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Ballard Consultancy FZE"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601022,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

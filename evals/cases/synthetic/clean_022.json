@@ -1,0 +1,55 @@
+{
+  "applicant_name": "MCLAUGHLIN SERVICES LLC",
+  "authority": "ADDED",
+  "case_id": "clean_022",
+  "document": "data/generated/clean_022.pdf",
+  "document_sha256": "7e4d910511bd56f7d5583acdcd61891ea94eab8f52abfc07f013997217bb1e83",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 883, Joseph Crossing, Abu Dhabi",
+    "chamber_number": "595137",
+    "establishment_date": "2024-10-20",
+    "expiry_date": "2027-04-20",
+    "issue_date": "2026-04-20",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc_single_owner",
+    "licence_number": "CN-3069928",
+    "people": [
+      {
+        "name": "Teresa Hansen",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Natasha Barnett",
+        "nationality": "Pakistan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Mclaughlin Services LLC"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601021,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

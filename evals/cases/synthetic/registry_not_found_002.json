@@ -1,0 +1,59 @@
+{
+  "applicant_name": "AVERY CONSULTANCY EST.",
+  "authority": "ADDED",
+  "case_id": "registry_not_found_002",
+  "document": "data/generated/registry_not_found_002.pdf",
+  "document_sha256": "bfa490518b77a74b6a98ec27cd7383653a8365d937996deb23a6e94037f4af71",
+  "expected_reason_codes": [
+    "registry_not_found"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 182, Blackwell Haven, Abu Dhabi",
+    "chamber_number": "308041",
+    "establishment_date": "2022-01-02",
+    "expiry_date": "2026-12-26",
+    "issue_date": "2025-12-26",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-2902077",
+    "people": [
+      {
+        "name": "April Sanchez",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Mrs. Michelle Hull",
+        "nationality": "Egypt",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Avery Consultancy Est."
+  },
+  "faults": [
+    "registry_not_found"
+  ],
+  "group": "registry_not_found",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602101,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

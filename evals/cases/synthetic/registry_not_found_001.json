@@ -1,0 +1,53 @@
+{
+  "applicant_name": "SHARP CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "registry_not_found_001",
+  "document": "data/generated/registry_not_found_001.pdf",
+  "document_sha256": "2ef1838e7af4b0baa8c49bd3cdf05a70bd448f013f2d4f81308d243e6f512de4",
+  "expected_reason_codes": [
+    "registry_not_found"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 711, Ashley Lodge, Dubai",
+    "chamber_number": "260730",
+    "establishment_date": "2022-11-26",
+    "expiry_date": "2027-02-01",
+    "issue_date": "2026-02-01",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "7812053",
+    "people": [
+      {
+        "name": "Justin Estrada",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Sharp Consultancy LLC"
+  },
+  "faults": [
+    "registry_not_found"
+  ],
+  "group": "registry_not_found",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602100,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

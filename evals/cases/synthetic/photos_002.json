@@ -1,0 +1,50 @@
+{
+  "applicant_name": "SANCHEZ TRADING EST.",
+  "authority": "ADDED",
+  "case_id": "photos_002",
+  "document": "data/generated/photos_002.jpg",
+  "document_sha256": "8a98a8b684ec734e3ebef0feb4cde7877e93965c9fd494f233a47887caf06652",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 392, Palmer Mews, Abu Dhabi",
+    "chamber_number": "841031",
+    "establishment_date": "2022-10-29",
+    "expiry_date": "2026-09-13",
+    "issue_date": "2025-09-13",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-8305569",
+    "people": [
+      {
+        "name": "Zoe Bentley",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Sanchez Trading Est."
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601201,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

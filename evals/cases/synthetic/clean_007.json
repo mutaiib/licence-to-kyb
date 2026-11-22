@@ -1,0 +1,49 @@
+{
+  "applicant_name": "BROWN CONSULTANCY FZE",
+  "authority": "DMCC",
+  "case_id": "clean_007",
+  "document": "data/generated/clean_007.pdf",
+  "document_sha256": "7edd9936a8ecc2055dae7c1118d0fb2ce70ac61d6ce3be187f267bd7f378d6e8",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 963, Robertson Islands, JLT, Dubai",
+    "chamber_number": "862403",
+    "establishment_date": "2023-01-21",
+    "expiry_date": "2026-12-10",
+    "issue_date": "2025-12-10",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-55778",
+    "people": [
+      {
+        "name": "Cheryl Hoffman",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Brown Consultancy FZE"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601006,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,65 @@
+{
+  "applicant_name": "MOORE TRADING LLC",
+  "authority": "ADDED",
+  "case_id": "shares_total_002",
+  "document": "data/generated/shares_total_002.pdf",
+  "document_sha256": "9f5840187552d8c127bd7408603ddcb41b96a629eb5d8f7278ac9b76f81db3c4",
+  "expected_reason_codes": [
+    "shares_total"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 177, Arthur Club, Abu Dhabi",
+    "chamber_number": "385092",
+    "establishment_date": "2024-12-01",
+    "expiry_date": "2026-10-08",
+    "issue_date": "2025-10-08",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc",
+    "licence_number": "CN-3644719",
+    "people": [
+      {
+        "name": "Micheal Campbell",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 50.0
+      },
+      {
+        "name": "Bryan Lee",
+        "nationality": "Egypt",
+        "role": "owner",
+        "share_pct": 30.0
+      },
+      {
+        "name": "Lauren Hernandez",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 10.0
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Moore Trading LLC"
+  },
+  "faults": [
+    "shares_total"
+  ],
+  "group": "shares_total",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601601,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

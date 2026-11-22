@@ -1,0 +1,65 @@
+{
+  "applicant_name": "DURAN SERVICES LLC",
+  "authority": "DET",
+  "case_id": "shares_total_003",
+  "document": "data/generated/shares_total_003.pdf",
+  "document_sha256": "bb01db75c59a70a0143b9219e40bf72e08ec533e631db020450c139cd61ba646",
+  "expected_reason_codes": [
+    "shares_total"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 882, Scott Mountains, Dubai",
+    "chamber_number": "448509",
+    "establishment_date": "2024-01-08",
+    "expiry_date": "2027-02-26",
+    "issue_date": "2026-02-26",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "9631425",
+    "people": [
+      {
+        "name": "Mark Edwards",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 75.0
+      },
+      {
+        "name": "Jonathan Powers",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 15.0
+      },
+      {
+        "name": "Justin Young",
+        "nationality": "Philippines",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Duran Services LLC"
+  },
+  "faults": [
+    "shares_total"
+  ],
+  "group": "shares_total",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601602,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

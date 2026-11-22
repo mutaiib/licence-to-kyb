@@ -1,0 +1,61 @@
+{
+  "applicant_name": "ROBINSON SERVICES FZCO",
+  "authority": "IFZA",
+  "case_id": "clean_012",
+  "document": "data/generated/clean_012.pdf",
+  "document_sha256": "981d4d8a71ace2d9b9f34381d15acceca911b449ff9876c8f3678408d919ffcb",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 517, Stark Plains, Dubai Silicon Oasis",
+    "chamber_number": "577938",
+    "establishment_date": "2023-12-02",
+    "expiry_date": "2026-11-06",
+    "issue_date": "2025-11-06",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "38659",
+    "people": [
+      {
+        "name": "James Jones",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 65.0
+      },
+      {
+        "name": "Charles Benson",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 35.0
+      },
+      {
+        "name": "Sarah Cooper",
+        "nationality": "Pakistan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Robinson Services FZCO"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601011,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}
