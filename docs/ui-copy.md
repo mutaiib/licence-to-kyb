@@ -49,6 +49,8 @@ All interface text follows **ASD-STE100 Simplified Technical English**.
 | Key | Text |
 |---|---|
 | `app.title` | Trade licence to KYB |
+| `app.loading` | Loading |
+| `nav.upload` | Upload a licence |
 
 ### Sign-in
 
@@ -66,6 +68,8 @@ All interface text follows **ASD-STE100 Simplified Technical English**.
 |---|---|
 | `upload.title` | Upload a trade licence |
 | `upload.instruction` | Upload the trade licence. Use a PDF, JPG or PNG file of 10 MB or less, with 5 pages or less. |
+| `upload.file.label` | Licence file |
+| `upload.file.placeholder` | Choose a file |
 | `upload.applicantName.label` | Business name on the application |
 | `upload.button` | Upload |
 | `reason.invalid_type` | The system cannot read this file type. Use a PDF, JPG or PNG file. |
@@ -74,6 +78,7 @@ All interface text follows **ASD-STE100 Simplified Technical English**.
 | `reason.image_too_large` | The image is larger than 50 megapixels. Use a smaller image. |
 | `reason.unreadable_file` | The system cannot open this file. Upload a new copy of the licence. |
 | `upload.duplicate` | You uploaded this file before. Open the existing run. |
+| `upload.openRun` | Open the run |
 
 ### Progress
 
@@ -81,6 +86,7 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 
 | Key | Text |
 |---|---|
+| `progress.title` | Progress |
 | `progress.intake` | File check |
 | `progress.preprocess` | Page reading |
 | `progress.route` | Document type |
@@ -118,6 +124,45 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `state.entered_by_reviewer` | Value from reviewer |
 | `state.not_present` | Not on the licence |
 | `state.unclear` | Not readable |
+| `legalForm.llc` | Limited liability company |
+| `legalForm.llc_single_owner` | Single-owner limited liability company |
+| `legalForm.sole_establishment` | Sole establishment |
+| `legalForm.civil_company` | Civil company |
+| `legalForm.branch` | Branch |
+| `legalForm.fze` | Free zone establishment |
+| `legalForm.fzco` | Free zone company |
+| `legalForm.fz_llc` | Free zone limited liability company |
+| `legalForm.public_joint_stock` | Public joint-stock company |
+| `legalForm.private_joint_stock` | Private joint-stock company |
+| `legalForm.other` | Other legal form |
+
+### Form fields
+
+| Key | Text |
+|---|---|
+| `field.legal_name_en` | English trade name |
+| `field.legal_name_ar` | Arabic trade name |
+| `field.legal_form` | Legal form |
+| `field.licence_number` | Licence number |
+| `field.issuing_authority` | Issuing authority |
+| `field.issue_date` | Issue date |
+| `field.expiry_date` | Expiry date |
+| `field.activities` | Activities |
+| `field.registered_address` | Registered address |
+| `field.beneficial_owners` | Beneficial owners |
+| `field.controllers` | Controllers |
+| `field.chamber_number` | Chamber of commerce number |
+
+### Required documents
+
+| Key | Text |
+|---|---|
+| `document.memorandum_of_association` | Memorandum of association |
+| `document.identity_document` | Identity document of each owner |
+| `document.tenancy_contract_ejari` | Tenancy contract (Ejari) |
+| `document.tenancy_contract_tawtheeq` | Tenancy contract (Tawtheeq) |
+| `document.free_zone_lease` | Free zone lease |
+| `document.parent_company_registration` | Registration of the parent company |
 
 ### Review page
 
@@ -125,6 +170,9 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 |---|---|
 | `review.title` | Examine the form |
 | `review.instruction` | Examine each flagged field. Approve or correct the value. |
+| `review.form.title` | KYB form |
+| `review.page.label` | Licence page `{page}` |
+| `review.reasons.title` | Reasons |
 | `review.evidence.label` | Text on the licence |
 | `review.confidence.label` | Confidence |
 | `review.threshold.label` | Required confidence |
@@ -154,6 +202,8 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 
 ### API error codes
 
+The key in `copy.ts` is `error.<code>`. `not_found` and `network` are client-side: the API returns `not_found` for a missing run, and the client uses `network` when it cannot reach the server.
+
 | Code | Text |
 |---|---|
 | `blocking_rule_failed` | This value does not pass a required check. Correct the value or reject the case. |
@@ -168,11 +218,13 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `invalid_credentials` | The user name or password is incorrect. Try again. |
 | `forbidden` | The system stopped this request. Load the page again. Try the action again. |
 | `rate_limited` | You tried too many times. Wait 1 minute. Try again after that. |
+| `not_found` | The system cannot find this run. Upload the licence again. |
+| `network` | The system cannot connect to the server. Try again. |
 | `not_retryable` | Retry is possible only after a processing failure, or when the system used all of the daily reading limit. Examine the fields. |
 
 ### Reason codes
 
-Each failure states the condition, then the action. `{…}` marks a value that the system inserts.
+The key in `copy.ts` is `reason.<code>`. Each failure states the condition, then the action. `{…}` marks a value that the system inserts.
 
 | Code | Text |
 |---|---|
@@ -236,6 +288,7 @@ Each failure states the condition, then the action. `{…}` marks a value that t
 
 | Key | Text |
 |---|---|
+| `glossary.label` | Meaning of the abbreviation |
 | `glossary.kyb` | KYB: Know Your Business. These are the checks a provider does before it approves a business. |
 | `glossary.ubo` | UBO: ultimate beneficial owner. This is a person who owns 25% or more of the business. |
 | `glossary.moa` | MOA: memorandum of association. This document shows the owners and their shares. |
