@@ -15,7 +15,7 @@ What is complete, what is pending, and why. Last updated with release
 | US4 One bounded agent re-reads failed values | ✅ | [`nodes/resolve.py`](../backend/src/licence_kyb/nodes/resolve.py); [architecture §7](architecture.md#the-agent-loop-with-its-limits) |
 | US5 Trace of every step, model call and tool call | ✅ | Trace page; [`tracing.py`](../backend/src/licence_kyb/tracing.py) |
 | US6 Evals on labelled cases | ✅ | `make eval`; [`evals/`](../evals/) |
-| Any model by configuration (Claude or a local model) | ✅ | [ADR-004](decisions/ADR-004-provider-neutral-model-calls.md), [handbook 14](handbook/14-model-providers.md) |
+| Claude or an OpenAI-compatible server, by configuration (tested: Claude SDK offline, llama.cpp live) | ✅ | [ADR-004](decisions/ADR-004-provider-neutral-model-calls.md), [handbook 14](handbook/14-model-providers.md) |
 | Release with SBOMs and build provenance | ✅ | [`.github/workflows/release.yml`](../.github/workflows/release.yml) |
 
 ## Success criteria (spec)

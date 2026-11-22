@@ -109,7 +109,7 @@ Measured numbers only. A target that is missed is reported as missed.
 | Confidence and routing | [`nodes/confidence.py`](backend/src/licence_kyb/nodes/confidence.py), [`nodes/gate.py`](backend/src/licence_kyb/nodes/gate.py) |
 | Human review: check, then apply, keyed and idempotent | [`nodes/review.py`](backend/src/licence_kyb/nodes/review.py) |
 | Encryption at rest, masking, sessions, CSRF | [`security.py`](backend/src/licence_kyb/security.py), [`api/auth.py`](backend/src/licence_kyb/api/auth.py) |
-| Any model by configuration | [`llm/openai_compatible.py`](backend/src/licence_kyb/llm/openai_compatible.py), [`config/models.yaml`](backend/config/models.yaml) |
+| Claude or an OpenAI-compatible server, by configuration | [`llm/openai_compatible.py`](backend/src/licence_kyb/llm/openai_compatible.py), [`config/models.yaml`](backend/config/models.yaml) |
 | Evals and graders | [`evals/`](evals/) |
 | Synthetic licences with labels | [`testdata/`](backend/src/licence_kyb/testdata/) |
 
@@ -124,7 +124,7 @@ Measured numbers only. A target that is missed is reported as missed.
 | [Architecture](docs/architecture.md) | Diagrams of the graph, the agent loop, the run states and the components; one licence traced from start to finish; schemas, tool calls, trust boundaries |
 | [Constitution](.specify/memory/constitution.md) | The project's rules: workflow first, typed contracts, outcome-based tests, GitFlow |
 | [Feature spec, plan, tasks](specs/001-licence-to-kyb/) | User stories, requirements, contracts, test cases and every task (Spec Kit) |
-| [Decisions](docs/decisions/) | Why a workflow, why the SDK in graph nodes, why evidence-based confidence, why any model by configuration |
+| [Decisions](docs/decisions/) | Why a workflow, why the SDK in graph nodes, why evidence-based confidence, why the model is chosen by configuration |
 | [Experiments](docs/experiments.md) | Each measured result, including mutation testing and the eval baseline |
 | [UX review](specs/001-licence-to-kyb/ux-review.md) | What a page-by-page review found, and what changed |
 | [Engineering practices](docs/engineering-practices.md) | Branching, CI, security (OWASP LLM Top 10), operations |
