@@ -55,11 +55,7 @@ FILE_REASONS: frozenset[str] = frozenset(
     {"invalid_type", "too_large", "too_many_pages", "image_too_large", "unreadable_file"}
 )
 
-# Used from User Story 2: the review API answers with these codes.
-ErrorCode = Literal[
-    "invalid_credentials",
-    "session_expired",
-    "forbidden",
+ActionErrorCode = Literal[
     "blocking_rule_failed",
     "not_overridable",
     "undecided_fields",
@@ -69,6 +65,14 @@ ErrorCode = Literal[
     "not_awaiting_submit",
     "not_rejected",
     "not_retryable",
+]
+"""Why a reviewer action was refused (409). See contracts/http-api.md."""
+
+ErrorCode = Literal[
+    "invalid_credentials",
+    "session_expired",
+    "forbidden",
+    ActionErrorCode,
     "invalid_type",
     "too_large",
     "too_many_pages",

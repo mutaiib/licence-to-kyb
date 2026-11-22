@@ -6,6 +6,7 @@ run. A refused action is answered with 409 and an error code; nothing changes.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Request
@@ -27,6 +28,7 @@ from licence_kyb.nodes.review import ActionRefused
 from licence_kyb.pipeline import Pipeline
 
 router = APIRouter(prefix="/api/runs", tags=["review"])
+log = logging.getLogger(__name__)
 ERRORS: dict[int | str, dict[str, Any]] = {404: {"model": ErrorOut}, 409: {"model": ActionErrorOut}}
 
 
@@ -46,6 +48,15 @@ def _refused(error: ActionRefused) -> JSONResponse:
 
 def _not_found() -> JSONResponse:
     return JSONResponse({"code": "not_found"}, status_code=404)
+
+
+def retry_in_background(pipeline: Pipeline, run_id: str, action: dict[str, Any]) -> None:
+    """Process the run again. An error sends it back to review, as on the first attempt."""
+    try:
+        pipeline.act(run_id, action)
+    except Exception:
+        log.exception("retry failed", extra={"run_id": run_id})
+        pipeline.mark_failed(run_id)
 
 
 def _act_and_view(request: Request, run_id: str, action: dict[str, Any]) -> RunView | JSONResponse:
@@ -101,5 +112,5 @@ def retry_run(
         pipeline.check(run_id, action)
     except ActionRefused as error:
         return _refused(error)
-    background.add_task(pipeline.act, run_id, action)
+    background.add_task(retry_in_background, pipeline, run_id, action)
     return RunCreated(run_id=run_id, status="processing")

@@ -152,12 +152,13 @@ def start(
     faults: set[str] | None = None,
     registry_down: bool = False,
     misread: dict[str, str] | None = None,
+    crash: bool = False,
 ) -> Reviewer:
     """Upload the group's licence and return a signed-in reviewer for its run.
     ``misread`` makes the scripted model read these values wrong."""
     root, case = catalogue[0], case_of(catalogue, group)
     labels = {**case["expected_values"], **(misread or {})}
-    transport = ScriptedTransport(labels, faults=faults)
+    transport = (CrashingTransport if crash else ScriptedTransport)(labels, faults=faults)
     client = make_client(tmp_path / "var", root, transport, registry_down=registry_down)
     csrf = sign_in(client)
     created = client.post(
@@ -167,6 +168,17 @@ def start(
         headers={"X-CSRF-Token": csrf},
     )
     return Reviewer(client, csrf, created.json()["run_id"], transport)
+
+
+class CrashingTransport(ScriptedTransport):
+    """A model client with a bug: it raises an unexpected error until ``is_broken`` is False."""
+
+    is_broken = True
+
+    def send(self, req: Any) -> Any:
+        if self.is_broken:
+            raise RuntimeError("unexpected error in the model client")
+        return super().send(req)
 
 
 def misread_expiry(catalogue: Any) -> tuple[dict[str, str], str]:
@@ -447,6 +459,18 @@ def test_retry_processing_after_a_failure_continues_the_run(tmp_path: Path, cata
     assert view["status"] == "awaiting_submit"
     assert "processing_failed" not in {x["code"] for x in view["reasons"]}
     assert len(r.audit("retry")) == 1
+
+
+def test_retry_after_a_crash_processes_the_run_again(tmp_path: Path, catalogue: Any) -> None:
+    r = start(tmp_path, catalogue, "clean", crash=True)
+    assert "processing_failed" in {x["code"] for x in r.view()["reasons"]}
+    assert isinstance(r.transport, CrashingTransport)
+    r.transport.is_broken = False
+
+    response = r.post("retry", {"action_id": new_id()})
+
+    assert response.status_code == 202
+    assert r.view()["status"] == "awaiting_submit"
 
 
 def test_retry_is_refused_when_processing_did_not_fail(tmp_path: Path, catalogue: Any) -> None:

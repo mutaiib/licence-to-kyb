@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
 from licence_kyb.schemas.kyb_form import FieldState, FormValue
 from licence_kyb.schemas.licence import Origin, Status
-from licence_kyb.schemas.results import Outcome, ReasonCode, Route, Severity
+from licence_kyb.schemas.results import ActionErrorCode, Outcome, ReasonCode, Route, Severity
 
 RunStatus = Literal[
     "received", "processing", "rejected", "awaiting_review", "awaiting_submit", "submitted", "done"
@@ -173,16 +173,6 @@ class RetryIn(BaseModel):
 class ActionErrorOut(BaseModel):
     """409: the action is not possible now. ``code`` names the reason (contracts/http-api.md)."""
 
-    code: Literal[
-        "blocking_rule_failed",
-        "not_overridable",
-        "undecided_fields",
-        "stale_version",
-        "reason_required",
-        "not_approved",
-        "not_awaiting_submit",
-        "not_rejected",
-        "not_retryable",
-    ]
+    code: ActionErrorCode
     field: str | None = None
     rule_id: str | None = None

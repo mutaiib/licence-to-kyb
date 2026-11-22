@@ -27,7 +27,7 @@ from typing import Any
 
 from licence_kyb.nodes.map_form import SOURCES, build_form
 from licence_kyb.schemas.licence import TradeLicenceExtraction
-from licence_kyb.schemas.results import RuleResult
+from licence_kyb.schemas.results import ActionErrorCode, RuleResult, reason_entry
 
 # Fields a reviewer can type a value into. Lists (activities, owners) are approved, not retyped.
 CORRECTABLE = frozenset(
@@ -52,7 +52,9 @@ RunRules = Callable[[TradeLicenceExtraction], list[RuleResult]]
 class ActionRefused(Exception):  # noqa: N818 - reads as "the action was refused"
     """An action the contract answers with 409 and an error code."""
 
-    def __init__(self, code: str, *, field: str | None = None, rule_id: str | None = None):
+    def __init__(
+        self, code: ActionErrorCode, *, field: str | None = None, rule_id: str | None = None
+    ):
         super().__init__(code)
         self.code, self.field, self.rule_id = code, field, rule_id
 
@@ -176,8 +178,9 @@ def open_reasons(
             continue
         for f in r.fields or (None,):
             if f not in decided:
+                assert r.reason_code is not None  # noqa: S101 - every failed rule has a reason code
                 reasons.append(
-                    {"code": r.reason_code, "field": f, "rule_id": r.rule_id, "detail": r.detail}
+                    reason_entry(r.reason_code, field=f, rule_id=r.rule_id, detail=r.detail)
                 )
     return reasons
 
@@ -192,7 +195,9 @@ def check_review_target(state: dict[str, Any], d: dict[str, Any]) -> None:
     if d["action"] == "override":
         if not d.get("reason"):
             raise ActionRefused("reason_required", rule_id=d.get("rule_id"))
-        rule = next((r for r in state["rule_results"] if r["rule_id"] == d.get("rule_id")), None)
+        rule = next(
+            (r for r in state.get("rule_results", []) if r["rule_id"] == d.get("rule_id")), None
+        )
         if rule is None or rule["outcome"] != "could_not_run" or not rule["overridable"]:
             raise ActionRefused("not_overridable", rule_id=d.get("rule_id"))
         return
@@ -295,7 +300,7 @@ def apply_review(
 
     reasons = [r for r in state.get("reasons", []) if r.get("rule_id") is None]
     if form_action == "reject":
-        reasons.append({"code": "reviewer_rejected", "field": None, "rule_id": None})
+        reasons.append(reason_entry("reviewer_rejected"))
     reasons += open_reasons(results, decided_sources(decisions, results), overridden)
     applied = [*state.get("applied_ids", []), *(d["decision_id"] for d in fresh)]
     if form_action:

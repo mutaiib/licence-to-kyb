@@ -122,18 +122,36 @@ class Pipeline:
             raise KeyError(run_id)
         applicant = self.deps.cipher.decrypt_text(run["applicant_name"])
         self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
+        config = thread_config(run_id)
+        if self.graph.get_state(config).next:
+            # A restart stopped this run part way: continue after its last completed step.
+            resumed: dict[str, Any] = self.graph.invoke(None, config)
+            return resumed
         state: dict[str, Any] = self.graph.invoke(
-            {"run_id": run_id, "applicant_name": applicant}, thread_config(run_id)
+            {"run_id": run_id, "applicant_name": applicant}, config
         )
         return state
 
     def mark_failed(self, run_id: str) -> None:
-        """Send a run whose processing raised an error to review (FR-039)."""
+        """Send a run whose processing raised an error to review (FR-039).
+
+        The run's graph also moves to the review pause, so the reviewer can retry it.
+        """
         run = self.db.get_run(run_id)
-        if run is not None:
-            self.ops.send_to_review(
-                run, event="processing_error", note="processing raised an error"
-            )
+        if run is None:
+            return
+        self.ops.send_to_review(run, event="processing_error", note="processing raised an error")
+        updated = self.db.get_run(run_id) or run
+        self.graph.update_state(
+            thread_config(run_id),
+            {
+                "run_id": run_id,
+                "applicant_name": self.deps.cipher.decrypt_text(run["applicant_name"]),
+                "status": "awaiting_review",
+                "reasons": json.loads(updated["reasons_json"]),
+            },
+            as_node="persist",  # the next node is wait_for_reviewer
+        )
 
     def page_png(self, run_id: str, page: int) -> bytes:
         return self.deps.cipher.decrypt(
@@ -167,7 +185,7 @@ class Pipeline:
         if action["action_id"] in self.state(run_id).get("applied_ids", []):
             return self.state(run_id)
         if action["kind"] == "retry":
-            self.db.update_run(run_id, status="processing")
+            self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
         result: dict[str, Any] = self.graph.invoke(Command(resume=action), thread_config(run_id))
         return result
 
@@ -203,7 +221,13 @@ class Pipeline:
         g.add_conditional_edges(
             "apply_action",
             self._after_action,
-            {"wait": "wait_for_reviewer", "route": "route", "extract": "extract", "end": END},
+            {
+                "wait": "wait_for_reviewer",
+                "preprocess": "preprocess",
+                "route": "route",
+                "extract": "extract",
+                "end": END,
+            },
         )
         return g.compile(checkpointer=self.checkpointer)
 
@@ -379,9 +403,13 @@ class Pipeline:
         return {"action": action}
 
     @staticmethod
-    def _after_action(state: RunState) -> Literal["wait", "route", "extract", "end"]:
+    def _after_action(
+        state: RunState,
+    ) -> Literal["wait", "preprocess", "route", "extract", "end"]:
         if state["status"] == "done":
             return "end"
+        if state["status"] == "processing" and not state.get("pages"):
+            return "preprocess"  # processing failed before the pages were read
         if state["status"] == "processing":  # retry: run the step that failed again
             return (
                 "extract" if state.get("route", {}).get("doc_type") == "trade_licence" else "route"
@@ -472,8 +500,9 @@ class Pipeline:
         """The reason the field was flagged, to group captured corrections for the eval set."""
         source = SOURCES[form_field]
         for r in state.get("rule_results", []):
-            if source in r["fields"] and r["outcome"] in ("failed", "could_not_run"):
-                return str(r["reason_code"])
+            rule = RuleResult.model_validate(r)
+            if source in rule.fields and rule.counts_as_failed:
+                return str(rule.reason_code)
         return "reviewer_correction"
 
     def _apply_submit(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
@@ -506,10 +535,7 @@ class Pipeline:
             return {"status": "done", "submission": record, "applied_ids": applied}
         # The stored record differs: the run goes back to review with a new form version,
         # so the reviewer must approve again before the next submit (FR-028).
-        reasons = [
-            *state.get("reasons", []),
-            {"code": "verification_failed", "field": None, "rule_id": None},
-        ]
+        reasons = [*state.get("reasons", []), reason_entry("verification_failed")]
         return {
             "status": "awaiting_review",
             "submission": record,
