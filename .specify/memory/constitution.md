@@ -1,23 +1,19 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.0 → 2.1.0 (MINOR: Development Workflow adds the per-story local visual check)
-- Earlier: 1.1.0 → 2.0.0 (MAJOR)
-  - Principle X was redefined.
-  - The Branching and Releases rules were redefined: one branch per unit of work, release and back-merge through pull requests, and no required human approval while there is one maintainer.
-  - Under this file's Governance rules, redefining a principle or a rule is a MAJOR change.
-  - Pre-commit drafts 1.2.0 to 1.2.x are folded into this version.
-- Modified principles:
-  - X. Simplicity: the ban covers version numbers and "MVP" used as scope labels. Spec Kit's structural headings are allowed.
+- Version change: 2.1.0 → 2.2.0 (MINOR: Technology Constraints add provider-neutral model calls)
+- Earlier: 2.0.0 → 2.1.0 (MINOR: Development Workflow adds the per-story local visual check)
+- Earlier: 1.1.0 → 2.0.0 (MAJOR: Principle X and the Branching and Releases rules were redefined)
+- Modified principles: none
 - Modified sections:
-  - Branching and Releases: branch slugs; release and hotfix through two pull requests; required checks replace required approval while solo; CODEOWNERS only requests reviewers.
-  - Engineering Standards: the CI gate list matches docs/engineering-practices.md; frontend tests added; ADRs are immutable after they merge to `develop`.
-  - Development Workflow: stories start in priority order, and may run in parallel when their dependencies are met.
+  - Technology Constraints: "the official anthropic SDK for every model call" becomes "one injectable client; Claude via the official SDK by default; other providers only through the OpenAI-compatible transport, chosen by configuration". Eval reports name the models they measured.
 - Added sections: none
 - Removed sections: none
 - Templates and documents:
-  ✅ .specify/templates/*: no edit needed
-  ✅ docs/engineering-practices.md, plan.md, tasks.md: updated
-- Deferred TODOs: create `main` and `develop` with the first commit; this needs the owner's approval
+  ✅ .specify/templates/plan-template.md, spec-template.md, tasks-template.md: no provider-specific rule, no edit needed
+  ✅ specs/001-licence-to-kyb/plan.md: Technical Context and Constitution Check X updated
+  ✅ README.md: stack line updated
+  ✅ docs/decisions/ADR-004: records the decision
+- Deferred TODOs: none
 -->
 
 # licence-to-kyb Constitution
@@ -103,7 +99,11 @@ Sync Impact Report
 
 ## Technology Constraints
 
-- **Backend:** Python 3.12, LangGraph for orchestration, the official `anthropic` SDK for every model call (through one injectable client), Pydantic, FastAPI, SQLite.
+- **Backend:** Python 3.12, LangGraph for orchestration, Pydantic, FastAPI, SQLite.
+- **Model calls:** every call goes through one injectable client (`LLMClient`).
+  - Claude through the official `anthropic` SDK is the default provider.
+  - Other providers, including an open-weight model on the developer's machine, are allowed only through the OpenAI-compatible transport. They are chosen by configuration (model profiles), never by code changes in the nodes ([ADR-004](../../docs/decisions/ADR-004-provider-neutral-model-calls.md), FR-044).
+  - Every eval report MUST name the models it measured. Numbers from one model are never reported as another model's.
 - **Frontend:** React 19, Vite, TypeScript and the Astryx design system. API types are generated from the backend's OpenAPI schema.
 - **Data:** only synthetic documents, plus one public licence that is downloaded at eval time and never committed. Real private documents are not permitted in the repository.
 
@@ -187,4 +187,4 @@ These standards are non-negotiable. The detail, tooling and sources are in `docs
   - PATCH: wording only.
 - Every plan and review MUST check compliance. A violation is allowed only with a written justification in the plan's Complexity Tracking table.
 
-**Version**: 2.1.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-21
+**Version**: 2.2.0 | **Ratified**: 2026-11-21 | **Last Amended**: 2026-11-22

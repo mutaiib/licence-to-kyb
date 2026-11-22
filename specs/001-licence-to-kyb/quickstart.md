@@ -43,6 +43,7 @@ make demo                         # docker compose up; UI on http://localhost:51
 | US2 | Stop the stack while a run waits for review, start it again, and open the run. | Same flagged fields. |
 | US3 | Upload `data/generated/expired_001.pdf` (expiry corroborated). | Route "reject", reason code `expired`. |
 | US3 | Upload `data/generated/expired_uncertain_001.pdf`. | Route "needs review", reason code `expiry_uncertain`. |
+| Providers | `make local-model`, then `MODEL_PROFILE=local make dev`. Upload `data/generated/clean_001.pdf`. | The run finishes with real readings from the local model; the trace names the local model; the cost is 0. |
 | US2 | Reopen the rejected run with a reason. | Status "awaiting review". The audit shows the reopen event and its reason. |
 | US4 | Upload `data/generated/scans_003.jpg`. | The trace shows a resolver span, and the expiry date matches the ground truth. |
 | US5 | Open a trace and the daily summary, and search each page for an owner's name. | The name is masked. The summary shows the refusal, fallback and review rates. |

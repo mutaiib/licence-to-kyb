@@ -22,6 +22,27 @@ Both calls go through `LLMClient` and use structured outputs: `client.messages.p
 - **Schema failure:** if the reply fails Pydantic validation, there is one retry. Its user message names each failing field and the error. A second failure goes to review.
 - **Recording:** each call records a span with the model, effort, tokens, cache reads, latency and prompt hash.
 
+## Providers (FR-044, ADR-004)
+
+`MODEL_PROFILE` picks a profile in `config/models.yaml`. The rules above apply to every profile, with these differences for an OpenAI-compatible profile:
+
+| Anthropic request | OpenAI-compatible request |
+|---|---|
+| `system` blocks with `cache_control` | one `system` message (no caching) |
+| `messages.parse(output_format=Model)` | `response_format: {type: json_schema, json_schema: {name, schema, strict: true}}`; the reply text is parsed as JSON |
+| image blocks | `image_url` data URLs when the profile has `vision: true`; otherwise left out (the OCR text is in the prompt) |
+| `tools`, `tool_use`, `tool_result` | `tools` (function), assistant `tool_calls`, `tool` messages |
+| `output_config.effort`, `fallbacks` | not sent |
+
+| OpenAI `finish_reason` | Recorded `stop_reason` |
+|---|---|
+| `stop` | `end_turn` |
+| `length` | `max_tokens` |
+| `tool_calls` | `tool_use` |
+| `content_filter` | `refusal` |
+
+The serving model is the profile's model name. A server error, a timeout or a reply that is not JSON follows the same paths as on the Anthropic API: retry, then `processing_failed`.
+
 ## Route
 
 | Item | Value |
