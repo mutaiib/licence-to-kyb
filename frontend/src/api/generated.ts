@@ -476,7 +476,7 @@ export interface components {
             /** Duration Ms */
             duration_ms: number;
             /** Route */
-            route: string | null;
+            route: ("ready" | "needs_review" | "reject") | null;
             /** Run Id */
             run_id: string;
             /**

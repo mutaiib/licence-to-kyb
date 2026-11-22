@@ -11,6 +11,7 @@ export const copy = {
   'app.title': 'Trade licence to KYB',
   'app.loading': 'Loading',
   'nav.upload': 'Upload a licence',
+  'nav.runs': 'Runs',
 
   // Sign-in
   'signin.title': 'Sign in',
@@ -245,6 +246,17 @@ export const copy = {
   'trace.column.latency': 'Duration',
   'trace.column.cost': 'Cost',
   'trace.masked': 'The system hides personal data on this page.',
+  'runs.trace.link': 'Trace',
+  'runs.empty': 'There are no runs. Upload a licence.',
+  'runStatus.received': 'Received',
+  'runStatus.processing': 'Processing',
+  'runStatus.rejected': 'Rejected',
+  'runStatus.awaiting_review': 'Needs examination',
+  'runStatus.awaiting_submit': 'Ready to submit',
+  'runStatus.submitted': 'Submitted',
+  'runStatus.done': 'Done',
+  'trace.tokens.value': '{input} in, {output} out',
+  'trace.back': 'Back to the form',
 
   // Glossary tooltips
   'glossary.label': 'Meaning of the abbreviation',

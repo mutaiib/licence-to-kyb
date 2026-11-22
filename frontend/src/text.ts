@@ -9,6 +9,7 @@ import type {
   FormPerson,
   ReasonCode,
   Route,
+  RunStatus,
   StepView,
 } from './api/client';
 import { copy, format, hasCopy, type CopyKey } from './copy';
@@ -143,4 +144,9 @@ export function isFlagged(field: FormFieldView): boolean {
 /** A flagged field that has no decision yet. The form cannot be approved while one remains. */
 export function isUndecided(field: FormFieldView): boolean {
   return field.state === 'flagged' || field.state === 'needs_examination';
+}
+
+/** A run's status as words, for the runs list. */
+export function runStatusText(status: RunStatus): string {
+  return copy[`runStatus.${status}` as CopyKey];
 }

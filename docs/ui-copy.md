@@ -302,6 +302,18 @@ The key in `copy.ts` is `reason.<code>`. Each failure states the condition, then
 | `trace.column.latency` | Duration |
 | `trace.column.cost` | Cost |
 | `trace.masked` | The system hides personal data on this page. |
+| `nav.runs` | Runs |
+| `runs.trace.link` | Trace |
+| `runs.empty` | There are no runs. Upload a licence. |
+| `runStatus.received` | Received |
+| `runStatus.processing` | Processing |
+| `runStatus.rejected` | Rejected |
+| `runStatus.awaiting_review` | Needs examination |
+| `runStatus.awaiting_submit` | Ready to submit |
+| `runStatus.submitted` | Submitted |
+| `runStatus.done` | Done |
+| `trace.tokens.value` | {input} in, {output} out |
+| `trace.back` | Back to the form |
 
 ### Glossary tooltips
 

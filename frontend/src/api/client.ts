@@ -26,6 +26,9 @@ export type Route = NonNullable<RunView['route']>;
 export type FieldState = FormFieldView['state'];
 type SessionOut = paths['/api/session']['post']['responses'][200]['content']['application/json'];
 type RunList = paths['/api/runs']['get']['responses'][200]['content']['application/json'];
+export type RunListItem = RunList['runs'][number];
+export type Summary = Schemas['SummaryOut'];
+export type SpanView = Schemas['SpanView'];
 
 /** API error codes plus `network`, which the client uses when the server cannot be reached. */
 export type ErrorCode = string;
@@ -133,6 +136,14 @@ export async function signOut(): Promise<Result<null>> {
 
 export async function listRuns(): Promise<Result<RunList>> {
   return toResult(await send('GET', '/api/runs'), [200]);
+}
+
+export async function getSummary(): Promise<Result<Summary>> {
+  return toResult(await send('GET', '/api/metrics/summary'), [200]);
+}
+
+export async function getTrace(runId: string): Promise<Result<{ spans: SpanView[] }>> {
+  return toResult(await send('GET', `/api/runs/${encodeURIComponent(runId)}/trace`), [200]);
 }
 
 export async function getRun(runId: string): Promise<Result<RunView>> {

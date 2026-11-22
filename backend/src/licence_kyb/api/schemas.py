@@ -120,7 +120,7 @@ class RunSummary(BaseModel):
     run_id: str
     created_at: str
     applicant_name: str
-    route: str | None
+    route: Route | None
     status: RunStatus
     cost_usd: float
     duration_ms: int
