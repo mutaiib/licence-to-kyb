@@ -3,7 +3,7 @@
   "authority": null,
   "case_id": "unclear_002",
   "document": "data/generated/unclear_002.pdf",
-  "document_sha256": "16359abadd2e364d27ff7cce324ed9f64b6ec8c709e43805c0232b99f4c3537a",
+  "document_sha256": "d6fcb3d553158427b2ad40169e9e71e5afe58ac1f06662acbbd317d1096dc994",
   "expected_reason_codes": [
     "unclear_document"
   ],

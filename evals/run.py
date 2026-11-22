@@ -37,7 +37,14 @@ from evals.graders import (
 )
 from evals.runner import Case, load_cases, run_each
 from licence_kyb.clock import FixedClock
-from licence_kyb.config import DATA_DIR, REPO_ROOT, Settings, active_profile, active_profile_name
+from licence_kyb.config import (
+    DATA_DIR,
+    REPO_ROOT,
+    Settings,
+    active_profile,
+    active_profile_name,
+    profile_name,
+)
 from licence_kyb.llm.client import DailyBudget, LLMClient, ModelRequest, ModelResponse, Transport
 from licence_kyb.llm.select import profile_transport
 from licence_kyb.pipeline import Deps, Pipeline
@@ -47,6 +54,8 @@ from licence_kyb.testdata.answers import LabelDemoTransport
 
 CASES = REPO_ROOT / "evals" / "cases" / "synthetic"
 PUBLIC = REPO_ROOT / "evals" / "cases" / "public"
+TWINS = REPO_ROOT / "evals" / "cases" / "twins"
+"""Synthetic twins of approved reviewer corrections (scripts/make_twin.py)."""
 """Real licences their companies publish: downloaded at eval time, never committed."""
 REPORTS = REPO_ROOT / "evals" / "reports"
 MIX = {"clean": 0.7, "scans_and_photos": 0.2, "problem": 0.1}
@@ -78,7 +87,20 @@ class CountingTransport:
         return response
 
 
-def grade(case: Case, state: dict[str, Any], pipeline: Pipeline) -> dict[str, Any]:
+def field_correct(fields: dict[str, bool], name: str) -> bool | None:
+    """Whether a field was read right. A list field (``people[0]``, ``people[1]``...) is right
+    only when every element is. None when the case has no label for the field."""
+    if name in fields:
+        return fields[name]
+    elements = [ok for key, ok in fields.items() if key.startswith(f"{name}[")]
+    return all(elements) if elements else None
+
+
+def grade(
+    case: Case, state: dict[str, Any], pipeline: Pipeline, *, source: str = "scripted"
+) -> dict[str, Any]:
+    """``source``: what read the document (a model profile, or ``scripted``); written into
+    each signal row so that calibration refuses scripted readings."""
     route = state.get("decision", {}).get("route")
     codes = {r["code"] for r in state.get("reasons", [])}
     grades = field_grades(case.expected_values or {}, state.get("extraction", {}))
@@ -103,12 +125,19 @@ def grade(case: Case, state: dict[str, Any], pipeline: Pipeline) -> dict[str, An
     }
     cost, _ = pipeline.tracer.run_totals(run_id)
     signals = [
-        {"field": f, "split": case.split, "signals": c["signals"], "correct": fields.get(f, False)}
+        {
+            "field": f,
+            "split": case.split,
+            "signals": c["signals"],
+            "correct": correct,
+            "source": source,
+        }
         for f, c in state.get("confidence", {}).items()
-        if f in fields
+        if (correct := field_correct(fields, f)) is not None
     ]
     return {
         "route": route,
+        "expected_route": list(case.expected_route),
         "route_ok": route_correct(case.expected_route, route),
         "reason_codes": sorted(codes),
         "reasons_ok": reasons_correct(case.expected_reason_codes, codes),
@@ -123,7 +152,9 @@ def grade(case: Case, state: dict[str, Any], pipeline: Pipeline) -> dict[str, An
     }
 
 
-def run_cases(cases: list[Case], transport: Transport, *, resolver: bool) -> dict[str, Any]:
+def run_cases(
+    cases: list[Case], transport: Transport, *, resolver: bool, source: str = "scripted"
+) -> dict[str, Any]:
     """Run each case to its first pause, in its own clean directory, and grade it."""
     key = Fernet.generate_key().decode()
 
@@ -141,7 +172,7 @@ def run_cases(cases: list[Case], transport: Transport, *, resolver: bool) -> dic
         data = (REPO_ROOT / case.document).read_bytes()
         run_id = pipeline.upload(data, applicant_name=case.applicant_name).run_id
         assert run_id is not None  # noqa: S101 - every catalogue document passes intake
-        return grade(case, pipeline.process(run_id), pipeline)
+        return grade(case, pipeline.process(run_id), pipeline, source=source)
 
     return run_each(cases, run_one)
 
@@ -154,7 +185,10 @@ def p95(values: list[int]) -> int:
 
 def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
     cases = [g for g in graded.values() if "error" not in g and g["split"] == split]
+    errored = [g for g in graded.values() if "error" in g and g.get("split") == split]
     n = len(cases)
+    # An errored case is a failure, not a missing case: it counts in the denominators.
+    attempted = n + len(errored)
     field_results: dict[str, list[bool]] = {}
     for g in cases:
         for name, ok in g["fields"].items():
@@ -170,9 +204,9 @@ def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
     ) / (sum(MIX[b] for b, gs in by_bucket.items() if gs) or 1)
     return {
         "cases": n,
-        "errors": sum("error" in g for g in graded.values()),
-        "route_accuracy": sum(g["route_ok"] for g in cases) / n if n else 0.0,
-        "reason_accuracy": sum(g["reasons_ok"] for g in cases) / n if n else 0.0,
+        "errors": len(errored),
+        "route_accuracy": sum(g["route_ok"] for g in cases) / attempted if attempted else 0.0,
+        "reason_accuracy": sum(g["reasons_ok"] for g in cases) / attempted if attempted else 0.0,
         "field_accuracy": {f: sum(v) / len(v) for f, v in sorted(field_results.items())},
         "ready_precision": {
             "ready": len(ready),
@@ -180,6 +214,8 @@ def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
             "wilson_95": [round(low, 4), round(high, 4)],
         },
         "review_rate_mixed": round(review_rate, 4),
+        # The mix is renormalised over the buckets present; name the missing ones.
+        "missing_mix_buckets": [b for b, gs in by_bucket.items() if not gs],
         "cost_per_document_usd": round(sum(g["cost_usd"] for g in cases) / n, 4) if n else 0.0,
         "p95_ms": {
             s: p95([g["stages_ms"][s] for g in cases if s in g["stages_ms"]])
@@ -189,6 +225,11 @@ def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
         # Reason accuracy allows extra codes, so a run that stopped in processing still
         # scores 100% there. Count those runs on their own.
         "processing_failures": sum("processing_failed" in g["reason_codes"] for g in cases),
+        # SC-004 at the first pause: a document labelled for review or rejection routed ready.
+        "bad_documents_ready": sum(
+            g["route"] == "ready" and "ready" not in g.get("expected_route", ["ready"])
+            for g in cases
+        ),
     }
 
 
@@ -226,6 +267,11 @@ def write_report(
         *(f"- Model, {step}: {model}" for step, model in meta["models"].items()),
         f"- Resolver: {'on' if meta['resolver'] else 'off'}",
         f"- Split: {meta['split']} ({summary['cases']} cases, {summary['errors']} errors)",
+        *(
+            [f"- Skipped, no document: {', '.join(meta['skipped_no_document'])}"]
+            if meta.get("skipped_no_document")
+            else []
+        ),
         "",
         "| Metric | Value |",
         "|---|---|",
@@ -234,10 +280,18 @@ def write_report(
         f"| `ready` precision (critical fields) | {summary['ready_precision']['correct']}/"
         f"{summary['ready_precision']['ready']}, Wilson 95% "
         f"{summary['ready_precision']['wilson_95']} |",
-        f"| Review rate, realistic mix | {summary['review_rate_mixed']:.1%} |",
+        f"| Review rate, realistic mix | {summary['review_rate_mixed']:.1%}"
+        + (
+            f" (no {', '.join(summary['missing_mix_buckets'])} cases)"
+            if summary["missing_mix_buckets"]
+            else ""
+        )
+        + " |",
         f"| Cost per document | ${summary['cost_per_document_usd']:.4f} |",
         f"| `max_tokens` stops | {meta['max_token_stops']} of {meta['model_calls']} calls |",
-        f"| Safety violations | {summary['safety_violations']} |",
+        f"| Bad documents routed `ready` (SC-004) | {summary['bad_documents_ready']} |",
+        f"| Submits without approval (none happen before the first pause) | "
+        f"{summary['safety_violations']} |",
         f"| Runs stopped in processing | {summary['processing_failures']} |",
         "",
         "| Field | Accuracy |",
@@ -274,22 +328,24 @@ def main() -> None:
     args = parser.parse_args()
 
     # Signal rows from both splits feed calibration; the metrics use the chosen split only.
-    cases = [
-        c
-        for c in load_cases(
-            PUBLIC if args.public else CASES, groups=set(args.groups) if args.groups else None
-        )
-        if (REPO_ROOT / c.document).exists()
-    ]
+    groups = set(args.groups) if args.groups else None
+    folders = [PUBLIC] if args.public else [CASES, *([TWINS] if TWINS.exists() else [])]
+    labelled = [c for folder in folders for c in load_cases(folder, groups=groups)]
+    cases = [c for c in labelled if (REPO_ROOT / c.document).exists()]
+    # A case whose document is missing is reported, never dropped silently.
+    skipped = [c.case_id for c in labelled if c not in cases]
+    if skipped:
+        print(f"skipped {len(skipped)} cases with no document: {', '.join(skipped)}")
     if args.limit:  # a slow model: the first cases of the chosen split only
         cases = [c for c in cases if c.split == args.split][: args.limit]
     inner: Transport = (
-        LabelDemoTransport(CASES)
+        LabelDemoTransport(CASES, TWINS)
         if args.model == "scripted"
         else profile_transport(active_profile(), Settings())
     )
     transport = CountingTransport(inner)
-    graded = run_cases(cases, transport, resolver=not args.no_resolver)
+    source = "scripted" if args.model == "scripted" else profile_name()
+    graded = run_cases(cases, transport, resolver=not args.no_resolver, source=source)
     meta: dict[str, Any] = {
         "name": args.name,
         "date": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -297,12 +353,16 @@ def main() -> None:
         "models": models_measured(args.model),
         "resolver": not args.no_resolver,
         "split": args.split,
+        "skipped_no_document": skipped,
         "model_calls": transport.calls,
         "max_token_stops": transport.max_token_stops,
     }
     if args.pass3:
         subset = [c for c in cases if c.split == args.split][:PASS3_CASES]
-        runs = [run_cases(subset, transport, resolver=not args.no_resolver) for _ in range(3)]
+        runs = [
+            run_cases(subset, transport, resolver=not args.no_resolver, source=source)
+            for _ in range(3)
+        ]
         meta["pass3"] = {
             "cases": len(subset),
             "all_three": sum(all(r[c.case_id].get("route_ok") for r in runs) for c in subset),

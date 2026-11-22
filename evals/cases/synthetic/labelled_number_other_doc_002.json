@@ -3,7 +3,7 @@
   "authority": null,
   "case_id": "labelled_number_other_doc_002",
   "document": "data/generated/labelled_number_other_doc_002.pdf",
-  "document_sha256": "bac9c71ee661e66e683e2385b3678d90864534efccd6734dbf31eb4e9402129c",
+  "document_sha256": "836cd4c34f602ad5842b60165d4c061840837fd4647ea3fa50fe7b3f01b203a2",
   "expected_reason_codes": [
     "unclear_document"
   ],
@@ -17,6 +17,6 @@
   "mix_bucket": "problem",
   "seed": 20260602601,
   "source": "synthetic",
-  "split": "test",
+  "split": "calibration",
   "twin_of": null
 }

@@ -1,18 +1,19 @@
 {
   "meta": {
     "name": "scripted-baseline",
-    "date": "2026-11-22T09:30:08+00:00",
+    "date": "2026-11-22T13:51:41+00:00",
     "profile": "scripted",
     "models": {
       "all steps": "scripted (labels): checks routing and rules, not reading"
     },
     "resolver": true,
     "split": "test",
+    "skipped_no_document": [],
     "model_calls": 300,
     "max_token_stops": 0
   },
   "summary": {
-    "cases": 45,
+    "cases": 50,
     "errors": 0,
     "route_accuracy": 1.0,
     "reason_accuracy": 1.0,
@@ -31,23 +32,26 @@
       "trade_name_en": 1.0
     },
     "ready_precision": {
-      "ready": 15,
-      "correct": 15,
+      "ready": 14,
+      "correct": 14,
       "wilson_95": [
-        0.7961,
+        0.7847,
         1.0
       ]
     },
-    "review_rate_mixed": 0.2818,
+    "review_rate_mixed": 0.2769,
+    "missing_mix_buckets": [],
     "cost_per_document_usd": 0.0,
     "p95_ms": {
-      "preprocess": 1743,
-      "route": 3,
-      "extract": 7,
-      "validate": 1,
-      "resolve": 24
+      "preprocess": 1851,
+      "route": 5,
+      "extract": 10,
+      "validate": 2,
+      "resolve": 179
     },
-    "safety_violations": 0
+    "safety_violations": 0,
+    "processing_failures": 0,
+    "bad_documents_ready": 0
   },
   "cases": {
     "applicant_name_mismatch_001": {
@@ -133,6 +137,7 @@
         "licence_number": true,
         "people[0]": true,
         "people[1]": true,
+        "trade_name_ar": true,
         "trade_name_en": true
       }
     },
@@ -153,6 +158,7 @@
         "legal_form": true,
         "licence_number": true,
         "people[0]": true,
+        "trade_name_ar": true,
         "trade_name_en": true
       }
     },
@@ -174,6 +180,7 @@
         "licence_number": true,
         "people[0]": true,
         "people[1]": true,
+        "trade_name_ar": true,
         "trade_name_en": true
       }
     },
@@ -1100,23 +1107,23 @@
       }
     },
     "out_of_scope_001": {
-      "route": "needs_review",
+      "route": "reject",
       "reason_codes": [
-        "unclear_document"
+        "out_of_scope"
       ],
       "fields": {}
     },
     "out_of_scope_002": {
-      "route": "needs_review",
+      "route": "reject",
       "reason_codes": [
-        "unclear_document"
+        "out_of_scope"
       ],
       "fields": {}
     },
     "out_of_scope_003": {
-      "route": "needs_review",
+      "route": "reject",
       "reason_codes": [
-        "unclear_document"
+        "out_of_scope"
       ],
       "fields": {}
     },

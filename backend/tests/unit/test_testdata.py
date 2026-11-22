@@ -19,7 +19,9 @@ from tests.builders import first_case
 SMALL = tuple(
     g for g in GROUPS if g.name in {"clean", "injected", "registry_not_found", "out_of_scope"}
 )
-SMALL = tuple(g if g.name != "clean" else type(g)(**{**g.__dict__, "count": 4}) for g in SMALL)
+SMALL = tuple(
+    type(g)(**{**g.__dict__, "count": 4}) if g.name in {"clean", "injected"} else g for g in SMALL
+)
 
 
 @pytest.fixture(scope="module")
@@ -106,3 +108,32 @@ def test_a_wrong_format_number_matches_no_authority_pattern() -> None:
         for _ in range(200):
             number = _wrong_number(authority, rng)
             assert not any(p.match(number) for p in patterns), (authority, number)
+
+
+def test_each_group_is_split_evenly_between_calibration_and_test(
+    built: tuple[Path, list[dict[str, object]]],
+) -> None:
+    """Every group appears in the test report; none is fitted on and never reported."""
+    _, cases = built
+    by_group: dict[str, list[str]] = {}
+    for case in cases:
+        by_group.setdefault(str(case["group"]), []).append(str(case["split"]))
+    for group, splits in by_group.items():
+        assert "test" in splits, group
+        assert abs(splits.count("test") - splits.count("calibration")) <= 1, group
+
+
+def test_an_injected_case_is_in_the_same_split_as_its_clean_twin(
+    built: tuple[Path, list[dict[str, object]]],
+) -> None:
+    _, cases = built
+    split_of = {c["case_id"]: c["split"] for c in cases}
+    for case in cases:
+        if case["twin_of"]:
+            assert case["split"] == split_of[case["twin_of"]], case["case_id"]
+
+
+def test_no_two_cases_share_a_document(built: tuple[Path, list[dict[str, object]]]) -> None:
+    _, cases = built
+    hashes = [c["document_sha256"] for c in cases]
+    assert len(hashes) == len(set(hashes))

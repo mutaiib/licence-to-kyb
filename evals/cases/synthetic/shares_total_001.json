@@ -60,6 +60,6 @@
   "mix_bucket": "problem",
   "seed": 20260601600,
   "source": "synthetic",
-  "split": "calibration",
+  "split": "test",
   "twin_of": null
 }

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from licence_kyb.config import STEPS, load_model_profile
 from licence_kyb.llm.client import ModelRequest
 from licence_kyb.schemas.licence import RouteResult
@@ -86,3 +88,32 @@ def test_a_demo_answer_reports_no_tokens_and_the_demo_profile_names_no_real_mode
     assert response.usage.billed_tokens == 0
     assert response.serving_model == request.model
     assert {getattr(profile.steps, s).model for s in STEPS} == {"demo-labels"}
+
+
+@pytest.mark.parametrize(
+    ("title", "doc_type"),
+    [
+        ("Memorandum of Association", "moa"),
+        ("Resident Identity Card", "emirates_id"),
+        ("PASSPORT", "passport"),
+        ("Renewal Confirmation", "other"),
+        ("", "unclear"),
+    ],
+)
+def test_demo_mode_names_a_document_that_is_not_a_licence_by_its_title(
+    tmp_path: Path, title: str, doc_type: str
+) -> None:
+    """With no licence number to match, the demo reads the title, as a model would."""
+    request = ModelRequest(
+        step="route",
+        model="demo-labels",
+        effort="low",
+        max_tokens=100,
+        system="s",
+        messages=[{"role": "user", "content": [{"type": "text", "text": f"{title}\nPage 1"}]}],
+        output_model=RouteResult,
+    )
+
+    response = LabelDemoTransport(tmp_path).send(request)
+
+    assert response.parsed_as(RouteResult).doc_type == doc_type

@@ -93,3 +93,25 @@ def test_the_wilson_interval_matches_known_values() -> None:
     assert low == pytest.approx(0.8882, abs=1e-3)
     assert high == pytest.approx(0.9785, abs=1e-3)
     assert wilson_interval(0, 0) == (0.0, 1.0)
+
+
+def test_a_value_read_where_the_licence_has_none_is_wrong() -> None:
+    """A label of None means the field is not on the licence: an invented value is wrong."""
+    [grade] = field_grades({"trade_name_ar": None}, {"trade_name_ar": read("شركة")})
+
+    assert grade.correct is False
+
+
+def test_an_invented_owner_is_wrong_even_when_the_real_one_is_right() -> None:
+    labels = {"people": [{"name": "Ana Ruiz", "share_pct": 100.0}]}
+    extraction = {"people": read([person("Ana Ruiz", 100.0), person("Invented Person", 0.0)])}
+
+    grades = field_grades(labels, extraction)
+
+    assert [g.correct for g in grades] == [True, False]
+
+
+def test_a_list_that_should_be_empty_is_graded() -> None:
+    grades = field_grades({"people": []}, {"people": read([person("Invented Person", 50.0)])})
+
+    assert [g.correct for g in grades] == [False]

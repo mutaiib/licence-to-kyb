@@ -157,6 +157,16 @@ def active_profile_name() -> str | None:
     return os.environ.get("MODEL_PROFILE") or None
 
 
+def default_profile_name() -> str:
+    """The profile used when MODEL_PROFILE is not set (``default:`` in models.yaml)."""
+    return str(load_yaml("models.yaml")["default"])
+
+
+def profile_name() -> str:
+    """The name of the profile in use: MODEL_PROFILE, else the default."""
+    return active_profile_name() or default_profile_name()
+
+
 def active_profile() -> ModelProfile:
     return load_model_profile(active_profile_name())
 

@@ -31,6 +31,11 @@ DOCUMENT_FAULTS = {
 }
 
 
+def seed_for(capture_key: str) -> int:
+    """A stable seed per correction, so two twins never get the same invented people."""
+    return int(hashlib.sha256(capture_key.encode()).hexdigest()[:8], 16)
+
+
 def make_twin(correction: dict[str, Any], *, out_dir: Path, seed: int) -> dict[str, Any]:
     """Write the twin's PDF and case file to ``out_dir``, and return the case."""
     fault_group = str(correction["fault_group"])
@@ -55,7 +60,8 @@ def make_twin(correction: dict[str, Any], *, out_dir: Path, seed: int) -> dict[s
         "fault_group": fault_group,
         "corrected_field": correction["field"],
         "split": "test",
-        "mix_bucket": "problem",
+        # A reading fault of the model leaves the document clean: it goes in that bucket.
+        "mix_bucket": "problem" if faults else "clean",
         "twin_of": None,
         "seed": seed,
     }

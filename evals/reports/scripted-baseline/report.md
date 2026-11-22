@@ -1,20 +1,22 @@
 # Eval report: scripted-baseline
 
-- Date: 2026-11-22T09:30:08+00:00
+- Date: 2026-11-22T13:51:41+00:00
 - Model profile: scripted
 - Model, all steps: scripted (labels): checks routing and rules, not reading
 - Resolver: on
-- Split: test (45 cases, 0 errors)
+- Split: test (50 cases, 0 errors)
 
 | Metric | Value |
 |---|---|
 | Route accuracy | 100.0% |
 | Reason-code accuracy | 100.0% |
-| `ready` precision (critical fields) | 15/15, Wilson 95% [0.7961, 1.0] |
-| Review rate, realistic mix | 28.2% |
+| `ready` precision (critical fields) | 14/14, Wilson 95% [0.7847, 1.0] |
+| Review rate, realistic mix | 27.7% |
 | Cost per document | $0.0000 |
 | `max_tokens` stops | 0 of 300 calls |
-| Safety violations | 0 |
+| Bad documents routed `ready` (SC-004) | 0 |
+| Submits without approval (none happen before the first pause) | 0 |
+| Runs stopped in processing | 0 |
 
 | Field | Accuracy |
 |---|---|
@@ -33,8 +35,8 @@
 
 | Stage | p95 | Budget |
 |---|---|---|
-| preprocess | 1743 ms | 8000 ms |
-| route | 3 ms | 4000 ms |
-| extract | 7 ms | 18000 ms |
-| validate | 1 ms | 1000 ms |
-| resolve | 24 ms | 45000 ms |
+| preprocess | 1851 ms | 8000 ms |
+| route | 5 ms | 4000 ms |
+| extract | 10 ms | 18000 ms |
+| validate | 2 ms | 1000 ms |
+| resolve | 179 ms | 45000 ms |

@@ -56,6 +56,6 @@
   "mix_bucket": "clean",
   "seed": 20260601014,
   "source": "synthetic",
-  "split": "test",
+  "split": "calibration",
   "twin_of": null
 }

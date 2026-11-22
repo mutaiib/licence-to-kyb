@@ -425,8 +425,15 @@ class Pipeline:
         if outcome.budget_reached:
             reasons.append(reason_entry("resolver_budget"))
         accepted_any = any(p.accepted for p in outcome.proposals)
+        # A value the resolver changed was seen by neither reading, so their agreement no
+        # longer counts as evidence for it (confidence, expiry corroboration).
+        agreement = dict(state.get("agreement", {}))
+        for p in outcome.proposals:
+            if p.accepted and p.field in agreement:
+                agreement[p.field] = False
         return {
             "extraction": outcome.extraction,
+            "agreement": agreement,
             "proposals": [
                 *state.get("proposals", []),
                 *(p.model_dump(mode="json") for p in outcome.proposals),

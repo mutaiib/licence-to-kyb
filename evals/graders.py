@@ -57,7 +57,8 @@ def _same(expected: Any, read: Any) -> bool:
 
 def _element_grades(name: str, expected: list[dict[str, Any]], read: Any) -> list[FieldGrade]:
     """Each labelled element is right when a read element has the same key and the same
-    value for every other labelled part."""
+    value for every other labelled part. Each read element beyond the labelled count (an
+    invented owner or activity) is one more wrong grade; a misread one is counted once."""
     key = LIST_KEYS[name]
     read_elements = [{k: _read(v) for k, v in e.items()} for e in (read or [])]
     grades = []
@@ -67,15 +68,18 @@ def _element_grades(name: str, expected: list[dict[str, Any]], read: Any) -> lis
             _same(v, match.get(k)) for k, v in want.items() if v is not None
         )
         grades.append(FieldGrade(name, correct, element=i))
+    for n in range(len(expected), len(read_elements)):
+        grades.append(FieldGrade(name, False, element=n))
     return grades
 
 
 def field_grades(labels: dict[str, Any], extraction: dict[str, Any]) -> list[FieldGrade]:
     grades: list[FieldGrade] = []
     for name, expected in labels.items():
-        if expected is None:
-            continue
         read = _read(extraction.get(name))
+        if expected is None:  # the licence has no such value: reading one is wrong
+            grades.append(FieldGrade(name, read is None))
+            continue
         if name in LIST_KEYS:
             grades += _element_grades(name, expected, read)
         else:

@@ -14,7 +14,7 @@ import argparse
 import json
 from pathlib import Path
 
-from evals.twins import make_twin
+from evals.twins import make_twin, seed_for
 
 from licence_kyb.config import REPO_ROOT, Settings
 from licence_kyb.graph import thread_config
@@ -30,7 +30,7 @@ DOCUMENTS = REPO_ROOT / "data" / "generated" / "twins"
 def main() -> None:
     parser = argparse.ArgumentParser(description="Turn an approved correction into a twin.")
     parser.add_argument("capture_key")
-    parser.add_argument("--seed", type=int, default=20260601)
+    parser.add_argument("--seed", type=int, help="default: a seed from the capture key")
     args = parser.parse_args()
 
     settings = Settings()
@@ -51,7 +51,8 @@ def main() -> None:
     if authority == "unknown":
         raise SystemExit("the run has no known authority, so a twin cannot copy its layout")
 
-    case = make_twin({**capture, "authority": authority}, out_dir=DOCUMENTS, seed=args.seed)
+    seed = args.seed if args.seed is not None else seed_for(args.capture_key)
+    case = make_twin({**capture, "authority": authority}, out_dir=DOCUMENTS, seed=seed)
     case["document"] = f"data/generated/twins/{case['document']}"
     CASES.mkdir(parents=True, exist_ok=True)
     (CASES / f"{case['case_id']}.json").write_text(json.dumps(case, ensure_ascii=False, indent=2))

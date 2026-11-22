@@ -251,6 +251,9 @@ def render_other(kind: str, number_hint: str = "1234567") -> bytes:
     """Non-licence documents: out-of-scope and unclear cases."""
     buf = io.BytesIO()
     c = _canvas(buf)
+    # Every document must differ, even a blank page: two identical files would be one
+    # document in two eval cases (and could sit in both splits).
+    c.setSubject(f"synthetic document {number_hint}")
     _watermark(c)
     _logo(c, 22 * mm, HEIGHT - 22 * mm)
     c.setFont("Sans-Bold", 15)
