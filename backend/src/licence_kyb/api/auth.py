@@ -14,6 +14,7 @@ import hmac
 import secrets
 import time
 from collections import defaultdict, deque
+from typing import Literal
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
@@ -30,11 +31,7 @@ WINDOW_SECONDS = 60.0
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 
 
-class ApiError(Exception):
-    def __init__(self, status: int, code: str) -> None:
-        super().__init__(code)
-        self.status = status
-        self.code = code
+SignInResult = Literal["ok", "invalid", "rate_limited"]
 
 
 def error_response(status: int, code: str) -> JSONResponse:
@@ -56,11 +53,11 @@ class Auth:
             q.popleft()
         return q
 
-    def check_password(self, username: str, password: str, ip: str) -> bool:
+    def check_password(self, username: str, password: str, ip: str) -> SignInResult:
         now = time.monotonic()
         keys = (f"user:{username}", f"ip:{ip}")
         if any(len(self._recent(k, now)) >= MAX_FAILURES for k in keys):
-            raise ApiError(429, "rate_limited")
+            return "rate_limited"
         stored = self.settings.reviewer_accounts.get(username)
         try:
             ok = stored is not None and self._hasher.verify(stored.get_secret_value(), password)
@@ -69,7 +66,8 @@ class Auth:
         if not ok:
             for k in keys:
                 self._recent(k, now).append(now)
-        return ok
+            return "invalid"
+        return "ok"
 
     # ---------------------------------------------------------------- sessions
     def _sign(self, payload: str) -> str:

@@ -9,6 +9,7 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 
+from licence_kyb.api.auth import error_response
 from licence_kyb.api.schemas import (
     ErrorOut,
     RunCreated,
@@ -103,7 +104,7 @@ def list_runs(request: Request) -> RunList:
 def get_run(run_id: str, request: Request) -> RunView | JSONResponse:
     view = build_run_view(_pipeline(request), run_id)
     if view is None:
-        return JSONResponse({"code": "not_found"}, status_code=404)
+        return error_response(404, "not_found")
     return view
 
 
@@ -115,7 +116,7 @@ def get_page(run_id: str, page: int, request: Request) -> Response:
     try:
         png = _pipeline(request).page_png(run_id, page)
     except FileNotFoundError:
-        return JSONResponse({"code": "not_found"}, status_code=404)
+        return error_response(404, "not_found")
     return Response(
         content=png, media_type="image/png", headers={"Cache-Control": "private, no-store"}
     )
