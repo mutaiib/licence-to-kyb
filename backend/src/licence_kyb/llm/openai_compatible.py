@@ -13,6 +13,7 @@ Reading order: ``send`` builds the body (``_body``), posts it, and reads the rep
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 
 import httpx
@@ -25,6 +26,8 @@ FINISH_TO_STOP = {
     "tool_calls": "tool_use",
     "content_filter": "refusal",
 }
+RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
+"""A busy or failing server: tried again after a short wait."""
 
 
 class OpenAICompatibleTransport:
@@ -34,14 +37,17 @@ class OpenAICompatibleTransport:
         client: httpx.Client,
         vision: bool,
         prices: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        retry_delays: tuple[float, ...] = (1.0, 4.0),
     ) -> None:
         """``client`` carries the base URL (ending in ``/v1``), any API key header and the
         timeout. ``vision``: whether the model reads images; if not, page images are left
         out (the OCR text is in every prompt). ``prices``: USD per million input, output and
-        cached tokens."""
+        cached tokens. ``retry_delays``: seconds to wait before each new try after a busy or
+        failing server; one try more than there are delays."""
         self._client = client
         self._vision = vision
         self._prices = prices
+        self._retry_delays = retry_delays
 
     @classmethod
     def for_url(
@@ -58,12 +64,18 @@ class OpenAICompatibleTransport:
         return cls(client=client, vision=vision, prices=prices)
 
     def send(self, req: ModelRequest) -> ModelResponse:
-        try:
-            http = self._client.post("/chat/completions", json=self._body(req))
-            http.raise_for_status()
-        except httpx.HTTPError as exc:
-            raise LLMError(f"the model server failed: {exc}") from exc
-        return self._response(req, http.json())
+        body = self._body(req)
+        for delay in (*self._retry_delays, None):
+            try:
+                http = self._client.post("/chat/completions", json=body)
+                if http.status_code in RETRY_STATUSES and delay is not None:
+                    time.sleep(delay)
+                    continue
+                http.raise_for_status()
+            except httpx.HTTPError as exc:
+                raise LLMError(f"the model server failed: {exc}") from exc
+            return self._response(req, http.json())
+        raise AssertionError("unreachable: the last try returns or raises")
 
     # ------------------------------------------------------------------ request
     def _body(self, req: ModelRequest) -> dict[str, Any]:
@@ -80,7 +92,7 @@ class OpenAICompatibleTransport:
                 "type": "json_schema",
                 "json_schema": {
                     "name": req.output_model.__name__,
-                    "schema": req.output_model.model_json_schema(),
+                    "schema": strict_schema(req.output_model.model_json_schema()),
                     "strict": True,
                 },
             }
@@ -138,6 +150,8 @@ class OpenAICompatibleTransport:
         choice = data["choices"][0]
         message = choice["message"]
         stop_reason = FINISH_TO_STOP.get(choice.get("finish_reason") or "stop", "end_turn")
+        if message.get("refusal"):  # the model declined: a refusal, not a broken reply
+            stop_reason = "refusal"
         text = message.get("content") or ""
         content: list[dict[str, Any]] = [{"type": "text", "text": text}] if text else []
         for call in message.get("tool_calls") or []:
@@ -158,6 +172,7 @@ class OpenAICompatibleTransport:
                 # that is not JSON means the server is not doing that: stop, do not guess.
                 raise LLMError("the model reply is not JSON") from exc
         usage = data.get("usage") or {}
+        cached = (usage.get("prompt_tokens_details") or {}).get("cached_tokens", 0)
         return ModelResponse(
             content=content,
             parsed=parsed,
@@ -166,9 +181,25 @@ class OpenAICompatibleTransport:
             usage=Usage(
                 input_tokens=int(usage.get("prompt_tokens", 0)),
                 output_tokens=int(usage.get("completion_tokens", 0)),
+                cache_read_tokens=int(cached or 0),
             ),
             prices=self._prices,
         )
+
+
+def strict_schema(schema: Any) -> Any:
+    """The schema as a strict server needs it: every object lists all its properties as
+    required and allows no others. An optional property already allows null, so making it
+    required changes nothing for our replies. Defaults are dropped (strict mode rejects them)."""
+    if isinstance(schema, list):
+        return [strict_schema(item) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    out = {k: strict_schema(v) for k, v in schema.items() if k != "default"}
+    if "properties" in out:
+        out["required"] = list(out["properties"])
+        out["additionalProperties"] = False
+    return out
 
 
 def _tool(tool: dict[str, Any]) -> dict[str, Any]:

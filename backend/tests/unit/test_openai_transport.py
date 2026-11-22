@@ -63,7 +63,7 @@ def transport(answer: Any, *, vision: bool = False) -> tuple[OpenAICompatibleTra
         return httpx.Response(200, json=answer)
 
     client = httpx.Client(base_url="http://model.test/v1", transport=httpx.MockTransport(handle))
-    return OpenAICompatibleTransport(client=client, vision=vision), seen
+    return OpenAICompatibleTransport(client=client, vision=vision, retry_delays=(0.0, 0.0)), seen
 
 
 def test_a_structured_request_sends_the_schema_and_parses_the_reply() -> None:
@@ -179,3 +179,67 @@ def test_a_failure_raises_a_model_error_so_the_run_goes_to_review(failure: Any) 
 
     with pytest.raises(LLMError):
         t.send(request())
+
+
+class WithOptional(BaseModel):
+    value: str
+    note: str | None = None
+    inner: Answer | None = None
+
+
+def objects(schema: Any) -> list[dict[str, Any]]:
+    """Every object node of a JSON schema, nested ones and $defs included."""
+    found: list[dict[str, Any]] = []
+    if isinstance(schema, dict):
+        if "properties" in schema:
+            found.append(schema)
+        for value in schema.values():
+            found += objects(value)
+    elif isinstance(schema, list):
+        for value in schema:
+            found += objects(value)
+    return found
+
+
+def test_a_strict_schema_requires_every_property_and_forbids_others() -> None:
+    """A strict server (OpenAI) refuses a schema with optional properties: every request
+    would fail."""
+    t, seen = transport(reply('{"value": "x", "note": null, "inner": null}'))
+
+    t.send(request(output_model=WithOptional))
+
+    schema = seen[0]["response_format"]["json_schema"]["schema"]
+    for node in objects(schema):
+        assert node["additionalProperties"] is False
+        assert set(node["required"]) == set(node["properties"])
+
+
+def test_a_refusal_is_reported_as_a_refusal() -> None:
+    answer = reply(content=None)
+    answer["choices"][0]["message"]["refusal"] = "I cannot help with that."
+    t, _ = transport(answer)
+
+    assert t.send(request()).stop_reason == "refusal"
+
+
+def test_a_busy_server_is_tried_again() -> None:
+    answers = [httpx.Response(429, text="busy"), httpx.Response(200, json=reply())]
+    seen: list[Any] = []
+
+    def handle(req: httpx.Request) -> httpx.Response:
+        seen.append(req)
+        return answers.pop(0)
+
+    client = httpx.Client(base_url="http://model.test/v1", transport=httpx.MockTransport(handle))
+    t = OpenAICompatibleTransport(client=client, vision=False, retry_delays=(0.0, 0.0))
+
+    assert t.send(request()).parsed == {"value": "x"}
+    assert len(seen) == 2
+
+
+def test_cached_prompt_tokens_are_counted() -> None:
+    answer = reply()
+    answer["usage"]["prompt_tokens_details"] = {"cached_tokens": 100}
+    t, _ = transport(answer)
+
+    assert t.send(request()).usage.cache_read_tokens == 100
