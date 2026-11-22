@@ -2,6 +2,16 @@ services:
   backend:
     build: ./backend
     env_file: backend/.env
+    # `environment` wins over `env_file`: these keep a backend/.env made for local runs
+    # (DATA_DIR=var, TESSDATA_PREFIX=../var/tessdata) from pointing the container at paths
+    # that do not exist on its read-only filesystem.
+    environment:
+      DATA_DIR: /data
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
+      # Trust X-Forwarded-For from any peer: the backend publishes no port, so the only peer
+      # is the frontend's nginx on this compose network. The sign-in rate limit then counts
+      # each reviewer's own address, not nginx's.
+      FORWARDED_ALLOW_IPS: "*"
     volumes: [appdata:/data]
     read_only: true
     tmpfs: [/tmp]

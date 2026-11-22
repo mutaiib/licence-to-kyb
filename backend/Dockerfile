@@ -23,5 +23,6 @@ ENV PATH="/app/.venv/bin:$PATH" DATA_DIR=/data PYTHONUNBUFFERED=1
 RUN mkdir -p /data && chown app:app /data
 USER app
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD curl -fsS http://127.0.0.1:8000/healthz || exit 1
+# /readyz checks the database and the checkpoints; /healthz only says the process answers.
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD curl -fsS http://127.0.0.1:8000/readyz || exit 1
 CMD ["uvicorn", "licence_kyb.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
