@@ -2,7 +2,15 @@
  * Map API codes and values to interface text. Every string comes from copy.ts.
  * The template-literal keys make the type checker prove that each API code has a string.
  */
-import type { FieldState, FormFieldView, ReasonCode, Route, StepView } from './api/client';
+import type {
+  FieldState,
+  FormActivity,
+  FormFieldView,
+  FormPerson,
+  ReasonCode,
+  Route,
+  StepView,
+} from './api/client';
 import { copy, format, hasCopy, type CopyKey } from './copy';
 
 export function reasonText(
@@ -73,46 +81,34 @@ export function stepStateText(state: StepView['state']): string {
   return copy[STEP_STATE_KEYS[state]];
 }
 
-function isEmpty(value: unknown): boolean {
-  return (
-    value === null ||
-    value === undefined ||
-    value === '' ||
-    (Array.isArray(value) && value.length === 0)
-  );
+/** A person as "Name (60%)", or just the name when the licence prints no share. */
+function personText(person: FormPerson): string {
+  if (person.name === '') return '';
+  if (person.share_pct === undefined || person.share_pct === null) return person.name;
+  return `${person.name} (${String(person.share_pct)}%)`;
 }
 
-function scalar(value: unknown): string | null {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return null;
-}
-
-function describeItem(value: unknown): string {
-  const plain = scalar(value);
-  if (plain !== null) return plain;
-  if (typeof value !== 'object' || value === null) return '';
-  const record = value as Record<string, unknown>;
-  const name = scalar(record.name);
-  if (name !== null) {
-    const share = scalar(record.share_pct);
-    return share === null ? name : `${name} (${share}%)`;
+/** An activity as "code description", leaving out the parts that are missing. */
+function activityText(activity: FormActivity): string {
+  const parts: string[] = [];
+  if (activity.code !== null && activity.code !== '') parts.push(activity.code);
+  if (activity.description !== null && activity.description !== '') {
+    parts.push(activity.description);
   }
-  return [record.code, record.description]
-    .map(scalar)
-    .filter((part): part is string => part !== null && part !== '')
-    .join(' ');
+  return parts.join(' ');
+}
+
+function itemText(item: FormPerson | FormActivity): string {
+  return 'name' in item ? personText(item) : activityText(item);
 }
 
 /** The field value as text, or null when the licence has no value for the field. */
-export function valueText(value: unknown): string | null {
-  if (isEmpty(value)) return null;
-  if (Array.isArray(value)) {
-    const parts = value.map(describeItem).filter((part) => part !== '');
-    return parts.length === 0 ? null : parts.join('; ');
-  }
-  const text = describeItem(value);
-  return text === '' ? null : text;
+export function valueText(value: FormFieldView['value']): string | null {
+  if (value === null || value === '') return null;
+  if (typeof value === 'string') return value;
+  const items: (FormPerson | FormActivity)[] = value;
+  const parts = items.map(itemText).filter((part) => part !== '');
+  return parts.length === 0 ? null : parts.join('; ');
 }
 
 /**

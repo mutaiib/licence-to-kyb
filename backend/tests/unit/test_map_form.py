@@ -8,7 +8,7 @@ from typing import Any
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from licence_kyb.nodes.map_form import build_form
+from licence_kyb.nodes.map_form import build_form, read_values
 from licence_kyb.schemas.results import RuleResult
 from tests.builders import extraction, field, person
 
@@ -139,3 +139,17 @@ def test_mapping_the_same_extraction_twice_gives_identical_forms() -> None:
     assert build_form(ex, [], authority="DET", version=1) == build_form(
         ex, [], authority="DET", version=1
     )
+
+
+def test_the_read_values_list_every_person_in_the_same_shape_as_the_form() -> None:
+    people = [person("A", share=60.0), person("M", role="manager", share=None)]
+
+    values = read_values(extraction(people=field(people)))
+
+    owners = values["beneficial_owners"]
+    assert isinstance(owners, tuple)
+    assert [(p.name, p.roles, p.share_pct) for p in owners] == [
+        ("A", ("owner",), 60.0),
+        ("M", ("manager",), None),
+    ]
+    assert values["controllers"] == owners

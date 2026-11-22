@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel
 
-from licence_kyb.schemas.kyb_form import FieldState
+from licence_kyb.schemas.kyb_form import FieldState, FormValue
 from licence_kyb.schemas.licence import Origin, Status
 from licence_kyb.schemas.results import Outcome, ReasonCode, Route, Severity
 
@@ -47,9 +47,12 @@ class ReasonView(BaseModel):
     """Values for the reason's UI string, e.g. ``{"days": "10"}``."""
 
 
+StepState = Literal["done", "running", "pending", "skipped"]
+
+
 class StepView(BaseModel):
     name: str
-    state: Literal["done", "running", "pending", "skipped"]
+    state: StepState
     duration_ms: int | None = None
 
 
@@ -77,7 +80,8 @@ class ConfidenceView(BaseModel):
 
 
 class FormFieldView(BaseModel):
-    value: Any
+    value: FormValue
+    """The form value. A field without one shows the value as read from the document."""
     state: FieldState
     status: Status
     """Whether the document shows the field, does not show it, or shows it unreadably."""

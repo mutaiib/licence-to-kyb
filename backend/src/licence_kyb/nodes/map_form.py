@@ -15,6 +15,7 @@ from licence_kyb.schemas.kyb_form import (
     FieldState,
     FormActivity,
     FormPerson,
+    FormValue,
     KYBOnboardingForm,
     RequiredDocumentItem,
 )
@@ -52,6 +53,13 @@ def _person(p: Person) -> FormPerson:
         nationality=present(p.nationality),
         roles=(present(p.role) or "other",),
         share_pct=share,
+    )
+
+
+def _activities(ex: TradeLicenceExtraction) -> tuple[FormActivity, ...]:
+    return tuple(
+        FormActivity(code=present(a.code), description=present(a.description_en))
+        for a in present(ex.activities) or []
     )
 
 
@@ -126,10 +134,7 @@ def build_form(
         return value if usable or source in approved else None
 
     ubos, controllers, shares_printed = _owners_and_controllers(ex)
-    activities = tuple(
-        FormActivity(code=present(a.code), description=present(a.description_en))
-        for a in present(ex.activities) or []
-    )
+    activities = _activities(ex)
     form = KYBOnboardingForm(
         version=version,
         legal_name_en=take("legal_name_en", present(ex.trade_name_en)),
@@ -154,3 +159,28 @@ def build_form(
             update={"field_states": {**form.field_states, "beneficial_owners": "needs_examination"}}
         )
     return form
+
+
+def read_values(ex: TradeLicenceExtraction) -> dict[str, FormValue]:
+    """Each form field's value as read from the document, before any rule decides on it.
+
+    The review page shows this value for a field that has no form value, because a reviewer
+    must see what the licence says. Both owner fields list every person on the licence.
+    """
+    people = present(ex.people)
+    everyone = None if people is None else tuple(_person(p) for p in people)
+    activities = None if present(ex.activities) is None else _activities(ex)
+    return {
+        "legal_name_en": present(ex.trade_name_en),
+        "legal_name_ar": present(ex.trade_name_ar),
+        "legal_form": present(ex.legal_form),
+        "licence_number": present(ex.licence_number),
+        "issuing_authority": present(ex.issuing_authority),
+        "issue_date": present(ex.issue_date),
+        "expiry_date": present(ex.expiry_date),
+        "activities": activities,
+        "registered_address": present(ex.address),
+        "beneficial_owners": everyone,
+        "controllers": everyone,
+        "chamber_number": present(ex.chamber_number),
+    }

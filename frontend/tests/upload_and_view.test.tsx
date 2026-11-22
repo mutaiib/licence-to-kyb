@@ -503,7 +503,7 @@ describe('review page', () => {
   });
 });
 
-describe('legal form value', () => {
+describe('field value text', () => {
   it('shows the legal form as words, not as its code', () => {
     const field = {
       value: 'llc',
@@ -513,5 +513,28 @@ describe('legal form value', () => {
       rule_results: [],
     };
     expect(fieldValueText(field, 'legal_form')).toBe(copy['legalForm.llc']);
+  });
+
+  it('shows people with their share and activities with their code', () => {
+    const base = {
+      state: 'passed' as const,
+      status: 'present' as const,
+      origin: 'read' as const,
+      rule_results: [],
+    };
+    const owners = {
+      ...base,
+      value: [
+        { name: 'Amy Hawkins', nationality: 'India', roles: ['owner'], share_pct: 60 },
+        { name: 'Ian Shaw', nationality: null, roles: ['manager'], share_pct: null },
+      ],
+    };
+    const activities = {
+      ...base,
+      value: [{ code: '6201.01', description: 'Computer Programming' }],
+    };
+
+    expect(fieldValueText(owners, 'beneficial_owners')).toBe('Amy Hawkins (60%); Ian Shaw');
+    expect(fieldValueText(activities, 'activities')).toBe('6201.01 Computer Programming');
   });
 });

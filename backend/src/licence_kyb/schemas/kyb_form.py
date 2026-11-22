@@ -56,3 +56,7 @@ class KYBOnboardingForm(StrictModel):
     chamber_number: str | None
     required_documents: tuple[RequiredDocumentItem, ...]
     field_states: dict[str, FieldState]
+
+
+FormValue = str | date | tuple[FormPerson, ...] | tuple[FormActivity, ...] | None
+"""The value of one form field: text, a date, a list of people or a list of activities."""
