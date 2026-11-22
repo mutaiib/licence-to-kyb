@@ -188,7 +188,7 @@ def test_an_unreadable_owners_table_is_unclear_and_flagged(catalogue: Any, tmp_p
     case = next(c for c in cases.values() if c["group"] == "clean")
 
     state, _ = run_case(
-        root, case, tmp_path, ScriptedTransport(case["expected_values"], faults={"people_unclear"})
+        root, case, tmp_path, ScriptedTransport(case["expected_values"], faults={"owners_unclear"})
     )
 
     assert state["extraction"]["people"]["status"] == "unclear"
