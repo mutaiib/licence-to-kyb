@@ -53,7 +53,12 @@ class Case:
         )
 
 
-class Pipeline(Protocol):
+class CasePipeline(Protocol):
+    """What the runner needs from a pipeline: start a case and resume it after a pause.
+
+    This is not ``licence_kyb.pipeline.Pipeline``, which has no ``start`` or ``resume``.
+    """
+
     def start(self, case: Case) -> dict[str, Any]: ...
 
     def resume(self, case: Case, payload: dict[str, Any]) -> dict[str, Any]: ...
@@ -87,7 +92,7 @@ def load_cases(
 class CaseRunner:
     def __init__(
         self,
-        pipeline_factory: Callable[[Path], Pipeline],
+        pipeline_factory: Callable[[Path], CasePipeline],
         reviewer: Reviewer,
         *,
         workroot: Path | None = None,
@@ -116,5 +121,6 @@ class CaseRunner:
         except Exception as exc:
             return CaseResult(case, {}, 0, error=type(exc).__name__)
         finally:
+            # A caller-given workroot is kept for inspection; a temporary one is removed.
             if self.workroot is None:
                 shutil.rmtree(workdir, ignore_errors=True)
