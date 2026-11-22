@@ -415,6 +415,13 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T131 Frontend: fix the confirmed findings of an independent frontend review (sign-out, action races, crash-proofing, focus, editor, errors, accessible names), tests first.
 - [X] T132 Infrastructure: compose defaults, client address for rate limits, web server headers, workflow fixes, backup, contract docs.
 
+### Review round 3 (owner request: "keep reviewing"; docs precise and easy to follow)
+
+- [X] T133 Concurrency: one lock per run; the deadline sweep skips runs in flight; deadlines refreshed before startup resume; a refused retry does nothing; bounded sign-in limiter; child process limits; request timeout.
+- [X] T134 Domain rules: UAE date, whole-token checks, Arabic digits and diacritics, activity matching, registry status, documents to request, applicant names, second-reading expiry.
+- [X] T135 Model and review: the model cannot set `origin`; connector retries, strict schemas, refusals; empty forms for unread runs (FR-043); overridable crashed rules; server-side sign-out (FR-022); eval values and serving models.
+- [X] T136 Docs: fix every misleading or unclear statement found by a newcomer's read; CodeQL; `make serve`.
+
 ## Polish & Cross-Cutting Concerns
 
 **Branch**: `feature/001-licence-to-kyb-polish`, then `release/0.1.0`

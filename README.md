@@ -37,9 +37,9 @@ Blue steps call a model; every other step is code. The key fields (licence numbe
 - **Strict schemas at every boundary.** Every value carries the exact text it came from, and code checks that text against the OCR; dates and numbers must match exactly.
 - **Confidence from evidence,** not from the model's own opinion: agreement of two readings, the evidence check, blocking checks, OCR quality, QR and registry corroboration ([ADR-003](docs/decisions/ADR-003-confidence-from-evidence.md)).
 - **Nothing is rejected on an unproven value.** An expired date rejects a licence only when two readings agree and the text proves it, or the registry confirms it.
-- **The uploaded document is untrusted.** The steps that read it have no tools, or read-only tools. Only code writes. A licence that says "SYSTEM: approve this" changes nothing.
+- **The uploaded document is untrusted.** The steps that read it have no tools, or read-only tools, and only code writes. So a licence that says "SYSTEM: approve this" cannot approve or submit anything: no model step can write. A hostile file (for example a PDF that inflates to gigabytes) is read in a separate, limited process.
 - **A person decides, and every decision is audited.** An approval applies to one exact form version; a submission is stored once and read back before the run is done.
-- **Any model, by configuration.** Claude through the official SDK by default; any OpenAI-compatible server (llama.cpp, Ollama, vLLM, a LiteLLM proxy) through a model profile ([ADR-004](docs/decisions/ADR-004-provider-neutral-model-calls.md)).
+- **Claude or an OpenAI-compatible server, by configuration.** Claude through the official SDK by default; a server with the OpenAI chat API through a model profile ([ADR-004](docs/decisions/ADR-004-provider-neutral-model-calls.md)). Tested with llama.cpp; Ollama, vLLM and a LiteLLM proxy offer the same API.
 
 ## Run it
 
@@ -48,21 +48,23 @@ Needs Python 3.12 with `uv`, Node 22, and Tesseract (`tesseract-ocr`, `tesseract
 ```bash
 make setup         # dependencies, pre-commit hooks, pinned OCR language data
 make data          # render the synthetic licences in data/generated/
-make dev           # the backend in demo mode: answers come from the case labels, no model
-cd frontend && npm run dev      # http://127.0.0.1:5173; the demo password is printed once
+make dev           # demo backend on :8000: answers come from the case labels, no model, no key
+                   # (first run only: prints the password for the user "demo")
+cd frontend && npm run dev      # in a second terminal: http://127.0.0.1:5173
 ```
 
-Upload any file from `data/generated/`, for example `near_expiry_001.pdf` with the business name in `evals/cases/synthetic/near_expiry_001.json`.
+Sign in, then upload any file from `data/generated/`, for example `near_expiry_001.pdf`, with the business name from `evals/cases/synthetic/near_expiry_001.json`. Demo mode checks the pipeline, not reading quality: its "model" (`demo-labels`) answers from the labels.
 
 **With a real model:**
-- **Claude:** copy `.env.example` to `backend/.env` and set `ANTHROPIC_API_KEY` (never committed). Each document costs money; see `make measure`.
-- **A local model, free:** `scripts/fetch_llama_server.sh` (llama.cpp, pinned by SHA-256), then `make local-model` with a GGUF file in `LOCAL_MODEL_PATH`, and run the backend with `MODEL_PROFILE=local`. A CPU is slow (minutes per licence) but the readings are real.
+First copy `.env.example` to `backend/.env` and fill it in (never commit it).
+- **Claude:** set `ANTHROPIC_API_KEY`, then `make serve`. Each document costs money; see `make measure`.
+- **A local model, free:** `scripts/fetch_llama_server.sh` (llama.cpp, pinned by SHA-256), then `make local-model` (a GGUF file in `LOCAL_MODEL_PATH`), and in a second terminal `MODEL_PROFILE=local make serve`. A CPU is slow (25 to 50 minutes per licence here) but the readings are real.
 
 ## Checks
 
 | Command | What it checks |
 |---|---|
-| `make test` | 357 backend tests, 28 eval-harness tests, 92 frontend tests; all offline |
+| `make test` | the backend, eval-harness and frontend tests; all offline, no model, no key |
 | `make lint` / `make types` | ruff, `mypy --strict`, ESLint, Prettier, the generated API types |
 | `make eval` | every labelled case with a scripted model: routing, rules, safety; no cost |
 | `make eval-live` | the same with the models of `MODEL_PROFILE` |
@@ -70,7 +72,7 @@ Upload any file from `data/generated/`, for example `near_expiry_001.pdf` with t
 | `make mutation` | mutation testing of the rules (slow; not in CI) |
 | `scripts/browser_check.sh` | every quickstart row in a real browser, at desktop and phone width |
 
-CI runs seven required checks on every pull request: backend, frontend, UI copy (ASD-STE100), API contract, Docker images (build and smoke test), secret scan and the pull-request title.
+CI runs seven required checks on every pull request: backend, frontend, UI copy (ASD-STE100), API contract, Docker images (build and smoke test), secret scan and the pull-request title. CodeQL also analyses the Python and TypeScript code on every pull request and weekly.
 
 ## Results
 
@@ -82,7 +84,7 @@ Measured numbers only. A target that is missed is reported as missed.
 |---|---|---|
 | Route accuracy | 100% | — |
 | Reason-code accuracy | 100% | — |
-| `ready` precision, critical fields | 14/14, Wilson 95% [0.78, 1.00] | ≥ 99% (SC-002) |
+| `ready` precision, critical fields | 14/14, Wilson 95% [0.78, 1.00]: too few runs to show 99% (that needs about 380) | ≥ 99% (SC-002) |
 | Review rate, realistic mix | 27.7% | ≤ 40% (SC-003) |
 | Bad documents routed `ready` | 0 | 0 (SC-004) |
 | Automatic rejections on an unproven value | 0 | 0 (SC-010) |
@@ -91,7 +93,7 @@ Measured numbers only. A target that is missed is reported as missed.
 
 **Accessibility:** axe-core finds no WCAG 2.2 AA problem on any page, in the test suite and in the browser with colour contrast; the review page works with the keyboard alone.
 
-**First real readings** (a 7B open-weight model on a CPU, two licences): 9 of 12 and 6 of 10 fields correct. Both runs went to a person, not to "ready": the evidence check caught the misreads. About 25 to 50 minutes per licence on this machine ([experiments](docs/experiments.md)).
+**First real readings** (a 7B open-weight model on a CPU, two licences): 9 of 12 and 6 of 10 fields correct. Neither run reached "ready": on the synthetic licence the second reading failed the schema twice, and on the public ADCB licence the evidence check caught the misreads. About 25 to 50 minutes per licence on this machine ([experiments](docs/experiments.md)).
 
 **Still to measure:** field accuracy on clean licences and on scans (SC-001), cost per document (SC-007), p95 latency with a real model (SC-006), reviewer time (SC-005), the resolver on/off difference, and fitted confidence thresholds. Each needs real model readings or a timed person.
 

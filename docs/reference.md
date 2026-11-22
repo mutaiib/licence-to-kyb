@@ -67,7 +67,7 @@ also needs the CSRF token.
 | Variable | Meaning |
 |---|---|
 | `ANTHROPIC_API_KEY` | Key for the `anthropic` profile |
-| `MODEL_PROFILE` | `anthropic` (default) or `local`; see `backend/config/models.yaml` |
+| `MODEL_PROFILE` | `anthropic` (default), `local`, or `demo` (set by `make dev`); see `backend/config/models.yaml` |
 | `MODEL_API_KEY` | Key for an OpenAI-compatible server, if it needs one |
 | `FERNET_KEYS` | Encryption keys for files and stored data. The first key encrypts; every key decrypts. To rotate, put the new key first and keep the old ones for at least the retention period: data is not re-encrypted, so removing a key that open runs still use makes them unreadable |
 | `SESSION_SECRET` | Signs the session cookie |

@@ -32,7 +32,7 @@ A model's self-rated confidence is unreliable until it is calibrated. So score c
 - **Evidence fields:** `evidence_quote` and `page` on every value ([data model](../../specs/001-licence-to-kyb/data-model.md)).
 - **The signals and calibration:** [architecture §8](../architecture.md#8-confidence-and-the-gate), [ADR-003](../decisions/ADR-003-confidence-from-evidence.md).
 - **Corroborated rejection:** FR-037 and the `expiry_uncertain` reason ([spec](../../specs/001-licence-to-kyb/spec.md)).
-- **Statistics:** the 50/50 split, the Wilson bound and the 400-ready-run precision set ([research R8a](../../specs/001-licence-to-kyb/research.md), [test cases](../../specs/001-licence-to-kyb/test-cases.md)).
+- **Statistics:** each group split evenly between calibration and test (93 cases: 43 and 50), the Wilson bound, and the planned precision set of at least 400 `ready` runs with a real model ([research R8a](../../specs/001-licence-to-kyb/research.md), [test cases](../../specs/001-licence-to-kyb/test-cases.md)).
 
 ## Mistakes to avoid
 

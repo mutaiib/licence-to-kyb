@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted.
+Accepted. Note (status, not a change to the decision): the resolver on/off and one-reading/two-readings comparisons below have not run on real readings yet; they wait for the full eval (T101, [status](../status.md)).
 
 ## Context
 

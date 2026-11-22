@@ -1,11 +1,11 @@
 # Experiments
 
-Each experiment changes one thing, runs the full eval suite, and records the measured result. Results replace the "pending" entries below.
+Each experiment changes one thing and records the measured result. Most need the full eval suite with a real model. Results replace the "pending" entries below.
 
 | Experiment | Question | Compared | Result |
 |---|---|---|---|
 | Throughput probe (T034) | What output speed and latency do the planned calls get? | SDK probe, planned prompt sizes and efforts | pending |
-| Resolver on vs. off | Does the agent improve accuracy or review rate enough to justify its cost? | full pipeline vs. resolver disabled | Scripted model: 0 cases change (a model that reads from labels never needs a re-read). Needs real readings on the full suite: a local CPU model takes 25 to 50 minutes per licence (see below), so this waits for the API or a GPU. |
+| Resolver on vs. off | Does the agent improve accuracy or review rate enough to justify its cost? | full pipeline vs. resolver disabled | Scripted model: 0 cases change. Scripted readings are right by construction, so this says nothing about a real model. Needs real readings on the full suite: a local CPU model takes 25 to 50 minutes per licence (see below), so this waits for the API or a GPU. |
 | Router model | Does a smaller model route as well? | `claude-haiku-5-5` vs. `claude-opus-5-5` at low effort | pending |
 | Second extraction pass | Does pass agreement improve `ready` precision? | two passes vs. one pass on critical fields | pending |
 | OCR text in the extract prompt | Does adding OCR text to the images improve field accuracy? | images + OCR vs. images only | pending |
@@ -20,13 +20,13 @@ Each experiment changes one thing, runs the full eval suite, and records the mea
 | Case | Fields correct | Route | Reasons | Time |
 |---|---|---|---|---|
 | `clean_002` (synthetic, clean) | 9 of 12 | needs review (label: ready) | `processing_failed`: the second reading failed the schema twice | 49 min |
-| ADCB licence (public, real) | 6 of 10 | needs review (accepted) | `evidence_mismatch`, `resolver_budget`, `arabic_name_missing`, `ubo_needs_examination` | 27 min |
+| ADCB licence (public, real) | 6 of 10 | needs review (the label accepts ready or needs review) | `evidence_mismatch`, `resolver_budget`, `arabic_name_missing`, `ubo_needs_examination` | 27 min |
 
 **What it shows:**
 - **A weak model sends work to a person; it does not submit wrong values.** Neither run reached "ready". On ADCB the evidence check caught the misread values and the resolver ran out of budget, as designed. No safety violations.
 - **The misses are mostly the hard fields.** On both licences the model read the licence number, the legal form, the English trade name, and the issue and expiry dates correctly. It missed the activities on both; the Arabic name and the issuing authority on `clean_002`; and the people, the chamber number and the establishment date on ADCB. Lists and bilingual fields fail most.
 - **The report hid one failure.** Reason accuracy allows extra codes, so `processing_failed` on a clean case still scored 100% there. The report now counts runs that stopped in processing.
-- **Speed rules out the full suite on this machine.** At 25 to 50 minutes per licence, the 45 test cases would take 19 to 37 hours. The full eval (T101), the resolver on/off comparison and fitted thresholds need the Claude API or a GPU.
+- **Speed rules out the full suite on this machine.** At 25 to 50 minutes per licence, the 93 labelled cases (50 test, 43 calibration) would take 39 to 78 hours. The full eval (T101), the resolver on/off comparison and fitted thresholds need the Claude API or a GPU.
 
 ## Eval baseline: scripted model (2026-11-22)
 
@@ -40,7 +40,7 @@ flow), not the model's reading.** Real reading quality needs `--model profile`.
 | Reason-code accuracy | 100% |
 | `ready` precision (critical fields) | 14/14, Wilson 95% [0.78, 1.00] |
 | Review rate, realistic mix | 27.7% |
-| Field accuracy | 100% for every field |
+| Field accuracy | 100% for every field (by construction: the answers are the labels) |
 | Bad documents routed `ready` (SC-004) | 0 |
 | p95 per stage | preprocess 1.9 s (a child process reads the pages); every other stage well inside its budget |
 

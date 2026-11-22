@@ -31,7 +31,9 @@ A repository looks mature when its standards are **enforced**: branch rules, a C
 - the copy check
 - the secret scan
 - the dependency audit
+- the Docker images: build, start as a non-root user, smoke test
 - the pull request title check
+- CodeQL static analysis (on every pull request and weekly)
 
 ### Supply chain
 

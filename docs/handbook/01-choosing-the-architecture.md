@@ -31,7 +31,7 @@ Choose the simplest design that does the job. In order:
 
 - **Design:** a fixed LangGraph workflow. Three steps use a model: route, extract and resolve. Only resolve is an agent ([architecture §3](../architecture.md#3-why-a-workflow-with-one-agent), [ADR-001](../decisions/ADR-001-workflow-with-one-agent.md)).
 - **The agent's job:** it repairs values that failed a check. That is the only step where the investigation cannot be scripted ([spec, User Story 4](../../specs/001-licence-to-kyb/spec.md)).
-- **Proof of value:** experiments measure the resolver on vs. off, and one extraction pass vs. two ([experiments](../experiments.md)).
+- **Proof of value:** experiments will measure the resolver on vs. off, and one reading vs. two, once real readings exist (T101, [experiments](../experiments.md)).
 - **Design record:** all nine worksheet rows, including topology "one agent, no reason for more" ([design worksheet](../design-worksheet.md)).
 
 ## Mistakes to avoid

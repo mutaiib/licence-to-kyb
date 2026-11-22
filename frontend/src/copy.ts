@@ -44,7 +44,7 @@ export const copy = {
   'progress.route': 'Document type',
   'progress.extract': 'Field reading',
   'progress.validate': 'Value checks',
-  'progress.resolve': 'Second reading of flagged fields',
+  'progress.resolve': 'The system reads the flagged fields again',
   'progress.gate': 'Route',
   'progress.form': 'Draft form',
   'progress.status.waiting': 'Waiting',

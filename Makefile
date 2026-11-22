@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-live eval-compare approve-capture measure demo dev backup local-model mutation
+.PHONY: setup data lint test types eval eval-live eval-compare approve-capture measure demo dev serve backup local-model mutation
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -47,8 +47,11 @@ measure:           ## paid: throughput probe (task T034)
 demo:
 	docker compose up --build
 
-dev:               ## local demo backend (label answers, no model key); run `npm run dev` in frontend/
+dev:               ## demo backend: answers from the case labels, no model, no key; prints the password on first run
 	scripts/dev_demo.sh
+
+serve:             ## backend with a real model: MODEL_PROFILE (anthropic or local) and backend/.env
+	cd backend && uv run uvicorn licence_kyb.api.main:app --host 127.0.0.1 --port 8000
 
 # The databases live in DATA_DIR: var/demo/data for `make dev`; set it for another stack.
 DATA_DIR ?= var/demo/data
@@ -56,7 +59,7 @@ backup:            ## consistent copies of the databases in DATA_DIR; fails when
 	python3 scripts/backup.py "$(DATA_DIR)" var/backups
 
 # An open-weight model on this machine (ADR-004). Run scripts/fetch_llama_server.sh once,
-# then `make local-model` in one terminal and `MODEL_PROFILE=local make dev` in another.
+# then `make local-model` in one terminal and `MODEL_PROFILE=local make serve` in another.
 LOCAL_MODEL_PATH ?= $(HOME)/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
 local-model:
 	var/llama.cpp/llama-server -m "$(LOCAL_MODEL_PATH)" --alias local-model --jinja \

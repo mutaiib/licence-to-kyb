@@ -30,7 +30,7 @@ These are the mistakes most worth remembering. Each one is written as the mistak
 |---|---|---|
 | The cost target ($0.15) ignored thinking tokens, which cannot be turned off and bill as output. | Re-estimate at about $0.23 per typical run, set the target below $0.40, and list cheaper setups as experiments. | Do the arithmetic before you set the target. ([10](10-observability-cost-latency.md)) |
 | The latency budget needed about 220 tokens per second. The resolver had 25 s for up to 12 calls. | Mark the budgets provisional, run a throughput probe first, and split SC-006 into 60 s and 90 s. | Measure before you limit. ([04](04-agent-loop-and-budgets.md)) |
-| A 99% precision target was set on about 20 `ready` cases. | Use a held-out split and a Wilson bound, plus a precision set of at least 400 `ready` runs. | Report intervals, and size the data to the claim. ([09](09-evaluation.md)) |
+| A 99% precision target was set on about 20 `ready` cases. | Use a held-out split and a Wilson bound, plus a planned precision set of at least 400 `ready` runs with a real model (not built yet: T101). | Report intervals, and size the data to the claim. ([09](09-evaluation.md)) |
 | The resolver limits were restated in four files, and they drifted apart. | Keep one normative table and link to it. | One source for each fact. ([11](11-spec-driven-development.md)) |
 
 ## Process and governance
