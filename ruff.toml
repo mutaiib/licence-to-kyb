@@ -34,4 +34,3 @@ ignore = [
 
 [lint.mccabe]
 max-complexity = 10
-

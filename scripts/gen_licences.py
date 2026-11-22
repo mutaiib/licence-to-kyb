@@ -22,7 +22,8 @@ def main() -> None:
     args = parser.parse_args()
     result = build(ROOT, seed=args.seed)
     print(
-        f"wrote {len(result.cases)} cases and {sum(map(len, result.registry.values()))} registry entries"
+        f"wrote {len(result.cases)} cases and "
+        f"{sum(map(len, result.registry.values()))} registry entries"
     )
 
 

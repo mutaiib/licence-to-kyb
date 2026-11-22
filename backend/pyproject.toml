@@ -36,6 +36,7 @@ dev = [
   "mypy",
   "types-PyYAML",
   "pip-audit",
+  "pre-commit",
 ]
 data = [
   "reportlab",
