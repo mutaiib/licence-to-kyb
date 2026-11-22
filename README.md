@@ -33,7 +33,7 @@ flowchart LR
 
 Blue steps call a model; every other step is code. The key fields (licence number, names, legal form, expiry date, owners) are read twice, independently: when the two readings agree, that is evidence the value is right; when they differ, the field goes to a person. The exact graph, the agent loop with its limits, and the run states are diagrams in [architecture](docs/architecture.md#as-built).
 
-- **A workflow with one bounded agent.** Three steps use a model: identify, copy, and the resolver that re-reads failed values. Every other step is plain code ([ADR-001](docs/decisions/ADR-001-workflow-with-one-agent.md)).
+- **A workflow with one bounded agent.** Three steps use a model: identify the document, read the fields, and the resolver that re-reads failed values. Every other step is plain code ([ADR-001](docs/decisions/ADR-001-workflow-with-one-agent.md)).
 - **Strict schemas at every boundary.** Every value carries the exact text it came from, and code checks that text against the OCR; dates and numbers must match exactly.
 - **Confidence from evidence,** not from the model's own opinion: agreement of two readings, the evidence check, blocking checks, OCR quality, QR and registry corroboration ([ADR-003](docs/decisions/ADR-003-confidence-from-evidence.md)).
 - **Nothing is rejected on an unproven value.** An expired date rejects a licence only when two readings agree and the text proves it, or the registry confirms it.
