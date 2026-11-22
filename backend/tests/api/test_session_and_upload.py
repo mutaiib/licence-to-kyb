@@ -13,14 +13,11 @@ from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
 from licence_kyb.api.app import create_app
-from licence_kyb.clock import FixedClock
 from licence_kyb.config import Settings
-from licence_kyb.llm.client import DailyBudget, LLMClient, ModelRequest, ModelResponse
-from licence_kyb.pipeline import Deps, Pipeline
-from licence_kyb.registry import MockRegistry
-from licence_kyb.security import Cipher
+from licence_kyb.llm.client import ModelRequest, ModelResponse
 from licence_kyb.testdata.answers import ScriptedTransport
 from licence_kyb.testdata.catalogue import GROUPS, build
+from tests.builders import first_case, make_pipeline
 
 PASSWORD = "correct horse battery staple"  # noqa: S105 - test-only reviewer account
 FERNET_KEY = Fernet.generate_key().decode()  # one key, so a restarted app reads earlier runs
@@ -49,18 +46,13 @@ def make_client(
         session_secret="s" * 32,  # type: ignore[arg-type]
         cookie_secure=False,
     )
-    deps = Deps(
-        data_dir=tmp_path / "var",
-        cipher=Cipher([FERNET_KEY]),
-        llm=LLMClient(
-            transport or ScriptedTransport(case["expected_values"]), DailyBudget(1_000_000)
-        ),
-        clock=FixedClock(),
-        registry=MockRegistry(root / "data" / "registry_mock.json"),
+    pipeline = make_pipeline(
+        tmp_path / "var",
+        transport or ScriptedTransport(case["expected_values"]),
+        registry_path=root / "data" / "registry_mock.json",
+        fernet_key=FERNET_KEY,
     )
-    return TestClient(
-        create_app(data_dir=tmp_path / "var", settings=settings, pipeline=Pipeline(deps))
-    )
+    return TestClient(create_app(data_dir=tmp_path / "var", settings=settings, pipeline=pipeline))
 
 
 def sign_in(client: TestClient) -> str:
@@ -153,7 +145,7 @@ def test_uploading_a_clean_licence_gives_a_run_with_a_draft_form(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "clean")
+    case = first_case(cases, "clean")
     client = make_client(tmp_path, root, case)
     csrf = sign_in(client)
 
@@ -175,7 +167,7 @@ def test_a_flagged_field_shows_its_value_state_reason_and_evidence_box(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "near_expiry")
+    case = first_case(cases, "near_expiry")
     client = make_client(tmp_path, root, case)
     csrf = sign_in(client)
 
@@ -244,7 +236,7 @@ def test_reasons_carry_their_values_and_fields_report_their_document_status(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "near_expiry")
+    case = first_case(cases, "near_expiry")
     client = make_client(tmp_path, root, case)
     csrf = sign_in(client)
 
@@ -277,9 +269,13 @@ def test_a_run_left_processing_before_a_restart_is_processed_at_startup(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "clean")
-    before = make_client(tmp_path, root, case, transport=BrokenTransport(None))
-    pipeline: Pipeline = before.app.state.pipeline  # type: ignore[attr-defined]
+    case = first_case(cases, "clean")
+    pipeline = make_pipeline(
+        tmp_path / "var",
+        ScriptedTransport(case["expected_values"]),
+        registry_path=root / "data" / "registry_mock.json",
+        fernet_key=FERNET_KEY,
+    )
     upload_result = pipeline.upload(
         (root / case["document"]).read_bytes(), applicant_name=case["applicant_name"]
     )

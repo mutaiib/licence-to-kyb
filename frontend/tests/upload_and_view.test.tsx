@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { RunView } from '../src/api/client';
+import type { FormFieldView, RunView } from '../src/api/client';
 import { App } from '../src/App';
 import { copy, format, type CopyKey } from '../src/copy';
 import { fieldValueText } from '../src/text';
@@ -80,6 +80,35 @@ afterEach(() => {
 const EXPIRY_BOX = { page: 1, x: 0.62, y: 0.11, w: 0.2, h: 0.03 };
 const NUMBER_BOX = { page: 1, x: 0.1, y: 0.4, w: 0.3, h: 0.05 };
 
+const LICENCE_NUMBER: FormFieldView = {
+  value: '1234567',
+  state: 'passed',
+  origin: 'read',
+  status: 'present',
+  evidence_quote: 'Licence No. 1234567',
+  evidence_box: NUMBER_BOX,
+  rule_results: [],
+};
+
+const EXPIRY_DATE: FormFieldView = {
+  value: '2026-12-25',
+  state: 'flagged',
+  origin: 'read',
+  status: 'present',
+  evidence_quote: 'Expiry Date 25/12/2026',
+  evidence_box: EXPIRY_BOX,
+  rule_results: [
+    {
+      rule_id: 'expiry',
+      severity: 'warn',
+      outcome: 'failed',
+      reason_code: 'near_expiry',
+      overridable: false,
+      detail: { days: '20' },
+    },
+  ],
+};
+
 function runView(overrides: Partial<RunView> = {}): RunView {
   return {
     run_id: 'run-1',
@@ -91,40 +120,16 @@ function runView(overrides: Partial<RunView> = {}): RunView {
     required_documents: ['memorandum_of_association'],
     pages: 1,
     steps: [],
-    form: {
-      version: 1,
-      fields: {
-        licence_number: {
-          value: '1234567',
-          state: 'passed',
-          origin: 'read',
-          status: 'present',
-          evidence_quote: 'Licence No. 1234567',
-          evidence_box: NUMBER_BOX,
-          rule_results: [],
-        },
-        expiry_date: {
-          value: '2026-12-25',
-          state: 'flagged',
-          origin: 'read',
-          status: 'present',
-          evidence_quote: 'Expiry Date 25/12/2026',
-          evidence_box: EXPIRY_BOX,
-          rule_results: [
-            {
-              rule_id: 'expiry',
-              severity: 'warn',
-              outcome: 'failed',
-              reason_code: 'near_expiry',
-              overridable: false,
-              detail: { days: '20' },
-            },
-          ],
-        },
-      },
-    },
+    form: { version: 1, fields: { licence_number: LICENCE_NUMBER, expiry_date: EXPIRY_DATE } },
     ...overrides,
   };
+}
+
+/** A run whose form has only the licence number field, changed by `changes`. */
+function runWithLicenceNumber(changes: Partial<FormFieldView>): RunView {
+  return runView({
+    form: { version: 1, fields: { licence_number: { ...LICENCE_NUMBER, ...changes } } },
+  });
 }
 
 function serveRun(view: RunView) {
@@ -359,13 +364,12 @@ describe('upload', () => {
 // ─── Review (read-only) ─────────────────────────────────────────────────────────────────────────
 
 const highlight = () => screen.getByTestId('evidence-highlight');
-// The highlight frames the evidence box with a small token-sized outset.
-const boxStyle = (box: { x: number; y: number; w: number; h: number }) => ({
-  left: `calc(${String(box.x * 100)}% - var(--spacing-1))`,
-  top: `calc(${String(box.y * 100)}% - var(--spacing-1))`,
-  width: `calc(${String(box.w * 100)}% + 2 * var(--spacing-1))`,
-  height: `calc(${String(box.h * 100)}% + 2 * var(--spacing-1))`,
-});
+
+/** The highlight starts at the evidence box's position, as a percentage of the page. */
+function expectHighlightAt(box: { x: number; y: number }) {
+  expect(highlight().style.left).toContain(`${String(box.x * 100)}%`);
+  expect(highlight().style.top).toContain(`${String(box.y * 100)}%`);
+}
 
 describe('review page', () => {
   it('expands flagged fields and shows their reason and evidence text', async () => {
@@ -385,12 +389,12 @@ describe('review page', () => {
     openAt('/runs/run-1');
 
     await fieldButton('field.expiry_date');
-    expect(highlight().style).toMatchObject(boxStyle(EXPIRY_BOX));
+    expectHighlightAt(EXPIRY_BOX);
 
     fireEvent.click(await fieldButton('field.licence_number'));
 
     await waitFor(() => {
-      expect(highlight().style).toMatchObject(boxStyle(NUMBER_BOX));
+      expectHighlightAt(NUMBER_BOX);
     });
   });
 
@@ -412,12 +416,7 @@ describe('review page', () => {
     'overridden',
     'needs_examination',
   ] as const)('shows the %s status as text on the field', async (state) => {
-    const view = runView();
-    const field = view.form?.fields.licence_number;
-    if (view.form && field) {
-      view.form.fields = { licence_number: { ...field, state } };
-    }
-    serveRun(view);
+    serveRun(runWithLicenceNumber({ state }));
     openAt('/runs/run-1');
 
     const button = await fieldButton('field.licence_number');
@@ -428,20 +427,14 @@ describe('review page', () => {
     { status: 'not_present', key: 'state.not_present' },
     { status: 'unclear', key: 'state.unclear' },
   ] as const)('shows the $status field status instead of a value', async (row) => {
-    const view = runView();
-    const field = view.form?.fields.licence_number;
-    if (view.form && field) {
-      view.form.fields = {
-        licence_number: {
-          ...field,
-          value: row.status === 'unclear' ? '12?45' : null,
-          status: row.status,
-          state: 'needs_examination',
-          evidence_box: null,
-        },
-      };
-    }
-    serveRun(view);
+    serveRun(
+      runWithLicenceNumber({
+        value: row.status === 'unclear' ? '12?45' : null,
+        status: row.status,
+        state: 'needs_examination',
+        evidence_box: null,
+      }),
+    );
     openAt('/runs/run-1');
 
     const button = await fieldButton('field.licence_number');

@@ -69,6 +69,8 @@ def result(results: list[RuleResult], rule_id: str) -> RuleResult:
 
 
 def outcome(results: list[RuleResult], rule_id: str) -> tuple[str, str | None, str | None]:
+    """(outcome, severity, reason code) of one rule, as the Checks table in test-cases.md
+    writes it. The table gives no severity for a passed rule, so it is None here too."""
     r = result(results, rule_id)
     return (r.outcome, r.severity if r.outcome != "passed" else None, r.reason_code)
 
