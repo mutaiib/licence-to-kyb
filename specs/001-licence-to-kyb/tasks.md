@@ -277,7 +277,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T108 Move `config/models.yaml` to profiles (`anthropic`, `local`) with `vision`, `price_per_mtok` and `deadline_seconds`; load the profile in `config.py`; build the transport in `api/main.py`; use the profile price in `ModelResponse.cost_usd`. The profile's `deadline_seconds` overrides the default in `budgets.yaml`. `confidence.load_config` reads `thresholds.<profile>.yaml` when it exists, else `thresholds.yaml`; `scripts/calibrate.py` writes the active profile's file.
 - [X] T109 Leave page images out of requests when the profile has no vision. Done once, in the transport (`llm/openai_compatible.py`), so the route and extract nodes do not change.
 - [X] T110 Add `scripts/fetch_llama_server.sh` (pinned release and SHA-256) and `make local-model`, which starts `llama-server` with the model file from `LOCAL_MODEL_PATH`.
-- [ ] T111 Run the quickstart "Providers" row on the local model, record the result and timings in `docs/experiments.md`, and open the pull request.
+- [X] T111 Run the quickstart "Providers" row on the local model, record the result and timings in `docs/experiments.md`, and open the pull request.
 
 ---
 
