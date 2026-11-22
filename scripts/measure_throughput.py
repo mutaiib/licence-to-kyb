@@ -12,10 +12,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
+import io
 import statistics
 import sys
-from pathlib import Path
 
 from licence_kyb.config import models_config
 from licence_kyb.llm.client import (
@@ -23,22 +22,19 @@ from licence_kyb.llm.client import (
     DailyBudget,
     LLMClient,
     ModelRequest,
+    image_block,
 )
 from licence_kyb.testdata.degrade import rasterise
 from licence_kyb.testdata.render import render_licence
 from licence_kyb.testdata.spec import make_spec
 
-ROOT = Path(__file__).resolve().parents[1]
 
-
-def page_image_b64() -> str:
-    import io  # noqa: PLC0415 - local to the probe
-
+def page_png() -> bytes:
     spec = make_spec("probe", "DET", "A", set(), seed=1)
     img = rasterise(render_licence(spec), dpi=150)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
+    return buf.getvalue()
 
 
 def main() -> int:
@@ -51,13 +47,9 @@ def main() -> int:
         return 2
 
     models = models_config()
-    image = page_image_b64()
     client = LLMClient(AnthropicTransport(), DailyBudget(limit_tokens=2_000_000))
     content = [
-        {
-            "type": "image",
-            "source": {"type": "base64", "media_type": "image/png", "data": image},
-        },
+        image_block(page_png()),
         {
             "type": "text",
             "text": "Transcribe every field on this licence as plain text lines.",

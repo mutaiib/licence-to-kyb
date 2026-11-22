@@ -104,10 +104,8 @@ def evidence_rule(ctx: RuleContext) -> list[RuleResult]:
         f: Field[Any] = getattr(ctx.extraction, name)
         if f.status != "present" or f.origin == "entered_by_reviewer":
             results.append(not_applicable("evidence", name, severity="warn"))
-        elif ocr is None:
-            results.append(failed("evidence", name, severity="warn", reason="evidence_mismatch"))
-        elif _grounded(name, f, ocr):
+        elif ocr is not None and _grounded(name, f, ocr):
             results.append(passed("evidence", name, severity="warn"))
-        else:
+        else:  # no OCR text, or the value is not on the document
             results.append(failed("evidence", name, severity="warn", reason="evidence_mismatch"))
     return results

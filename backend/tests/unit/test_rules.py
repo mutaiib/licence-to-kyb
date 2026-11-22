@@ -69,6 +69,8 @@ def result(results: list[RuleResult], rule_id: str) -> RuleResult:
 
 
 def outcome(results: list[RuleResult], rule_id: str) -> tuple[str, str | None, str | None]:
+    """(outcome, severity, reason code) of one rule, as the Checks table in test-cases.md
+    writes it. The table gives no severity for a passed rule, so it is None here too."""
     r = result(results, rule_id)
     return (r.outcome, r.severity if r.outcome != "passed" else None, r.reason_code)
 
@@ -89,6 +91,28 @@ def test_expiry(expiry: str, expected: tuple[str, str | None, str | None]) -> No
         registry=registry(expiry=expiry),
     )
     assert outcome(run_rules(ctx), "expiry") == expected
+
+
+# ---------------------------------------------------------------- date order
+@pytest.mark.parametrize(
+    ("establishment", "issue", "expiry", "expected"),
+    [
+        ("2020-01-15", "2026-03-01", "2027-03-01", ("passed", None, None)),
+        ("2020-01-15", "2027-03-01", "2027-03-01", ("failed", "block", "date_order")),
+        ("2020-01-15", "2027-04-01", "2027-03-01", ("failed", "block", "date_order")),
+        ("2026-04-01", "2026-03-01", "2027-03-01", ("failed", "block", "date_order")),
+    ],
+)
+def test_date_order(
+    establishment: str, issue: str, expiry: str, expected: tuple[str, str | None, str | None]
+) -> None:
+    ex = extraction(
+        establishment_date=field(establishment),
+        issue_date=field(issue),
+        expiry_date=field(expiry),
+    )
+    ctx = context(extraction=ex, registry=registry(expiry=expiry))
+    assert outcome(run_rules(ctx), "date_order") == expected
 
 
 # ---------------------------------------------------------------- number format

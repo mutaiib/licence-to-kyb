@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from licence_kyb.schemas.licence import StrictModel
 
 ReasonCode = Literal[
     # file
@@ -53,6 +55,7 @@ FILE_REASONS: frozenset[str] = frozenset(
     {"invalid_type", "too_large", "too_many_pages", "image_too_large", "unreadable_file"}
 )
 
+# Used from User Story 2: the review API answers with these codes.
 ErrorCode = Literal[
     "invalid_credentials",
     "session_expired",
@@ -78,11 +81,7 @@ Outcome = Literal["passed", "failed", "could_not_run", "not_applicable"]
 Route = Literal["ready", "needs_review", "reject"]
 
 
-class _Frozen(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-class RuleResult(_Frozen):
+class RuleResult(StrictModel):
     rule_id: str
     fields: tuple[str, ...] = ()
     severity: Severity
@@ -97,18 +96,32 @@ class RuleResult(_Frozen):
         return self.outcome in ("failed", "could_not_run")
 
 
-class Reason(_Frozen):
+class Reason(StrictModel):
     code: ReasonCode
     field: str | None = None
     rule_id: str | None = None
+    detail: dict[str, str] = Field(default_factory=dict)
 
 
-class Decision(_Frozen):
+def reason_entry(
+    code: ReasonCode,
+    *,
+    field: str | None = None,
+    rule_id: str | None = None,
+    detail: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """A reason as the run state and ``runs.reasons_json`` store it."""
+    return Reason(code=code, field=field, rule_id=rule_id, detail=detail or {}).model_dump()
+
+
+# Used from User Story 3 (the gate node).
+class Decision(StrictModel):
     route: Route
     reasons: tuple[Reason, ...] = ()
 
 
-class ProposedFix(_Frozen):
+# Used from User Story 4 (the resolver).
+class ProposedFix(StrictModel):
     field: str
     new_value: str
     evidence_quote: str
@@ -117,7 +130,8 @@ class ProposedFix(_Frozen):
     accepted: bool = False
 
 
-class FieldConfidence(_Frozen):
+# Used from User Story 3 (confidence and routing).
+class FieldConfidence(StrictModel):
     score: float = Field(ge=0, le=1)
     signals: dict[str, float]
     threshold: float = Field(ge=0, le=1)

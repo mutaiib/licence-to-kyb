@@ -1,13 +1,24 @@
-"""Test data builders: a valid clean DET licence, with any field overridden by name.
+"""Test data builders: a valid clean DET licence, with any field overridden by name, a
+pipeline for tests, and a way to pick a case from the synthetic catalogue.
 
 Builders keep tests short and make each test state only the values it is about.
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from datetime import date
+from pathlib import Path
 from typing import Any
 
+from cryptography.fernet import Fernet
+
+from licence_kyb.clock import FixedClock
+from licence_kyb.llm.client import DailyBudget, LLMClient, Transport
+from licence_kyb.pipeline import Deps, Pipeline
+from licence_kyb.registry import MockRegistry
 from licence_kyb.schemas.licence import TradeLicenceExtraction
+from licence_kyb.security import Cipher
 
 
 def field(
@@ -40,9 +51,11 @@ def _quote(value: Any) -> str:
             _quote(v["value"]) for v in value.values() if isinstance(v, dict) and v.get("value")
         )
     text = str(value)
-    if len(text) == 10 and text[4] == "-" and text[7] == "-":  # ISO date → printed DD/MM/YYYY
-        return f"{text[8:10]}/{text[5:7]}/{text[0:4]}"
-    return text
+    try:
+        printed_date = date.fromisoformat(text)
+    except ValueError:
+        return text
+    return printed_date.strftime("%d/%m/%Y")  # licences print dates as DD/MM/YYYY
 
 
 def person(
@@ -82,3 +95,39 @@ def extraction(**overrides: Any) -> TradeLicenceExtraction:
     }
     data.update(overrides)
     return TradeLicenceExtraction.model_validate(data)
+
+
+def make_pipeline(
+    data_dir: Path,
+    transport: Transport,
+    *,
+    registry_path: Path,
+    budget: int = 1_000_000,
+    fernet_key: str | None = None,
+) -> Pipeline:
+    """A pipeline with the fixed clock, the given model transport and the given mock register.
+
+    Each pipeline gets a new encryption key unless ``fernet_key`` is given.
+    """
+    key = fernet_key or Fernet.generate_key().decode()
+    deps = Deps(
+        data_dir=data_dir,
+        cipher=Cipher([key]),
+        llm=LLMClient(transport, DailyBudget(limit_tokens=budget)),
+        clock=FixedClock(),
+        registry=MockRegistry(registry_path),
+    )
+    return Pipeline(deps)
+
+
+def first_case(
+    cases: Iterable[dict[str, Any]], group: str, authority: str | None = None
+) -> dict[str, Any]:
+    """The first catalogue case of ``group``, and of ``authority`` when it is given."""
+    for case in cases:
+        if case["group"] != group:
+            continue
+        if authority is not None and case["authority"] != authority:
+            continue
+        return case
+    raise LookupError(f"no {group} case for authority {authority}")

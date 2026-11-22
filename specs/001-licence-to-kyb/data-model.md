@@ -52,11 +52,11 @@ The wrapper for every extracted value, list fields included.
 | `address` | `Field[str]` | yes | |
 
 **Validation inside the model:**
-- `issue_date < expiry_date` when both are present.
-- `establishment_date <= issue_date` when both are present.
 - `0 <= share_pct <= 100`.
 - Every `Field` obeys its own rules.
 - **An unreadable owners table is `people.status = unclear`, never an empty list.**
+
+Date order (`issue_date < expiry_date`, `establishment_date <= issue_date`) is not checked inside the model. It is the `date_order` business rule, so a licence with dates in the wrong order reaches a reviewer with that reason code instead of failing validation.
 
 ## ExtractionPasses
 

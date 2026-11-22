@@ -187,8 +187,8 @@ Each layer answers a different question. A value that passes one layer can still
 | Layer | Question | Mechanism | Example failure it catches |
 |---|---|---|---|
 | 1 API | Is the reply the right shape? | Structured outputs (`client.messages.parse(output_format=Model)`) for route and extract. `strict: true` tools with `additionalProperties: false` for the resolver. | A missing field, or a string where a list is required. |
-| 2 Pydantic | Are the types and local rules valid? | Enums, DD/MM/YYYY date parsing, `0 ≤ share_pct ≤ 100`, `issue_date < expiry_date`. | Expiry date before issue date. |
-| 3 Business rules | Are the values correct for this licence? | Plain-code rules (see [test cases](../specs/001-licence-to-kyb/test-cases.md)). | Expired licence, wrong number format for the authority, shares that do not sum to 100. |
+| 2 Pydantic | Are the types and local rules valid? | Enums, DD/MM/YYYY date parsing, `0 ≤ share_pct ≤ 100`. | A share of 120%, or the date 31/02/2026. |
+| 3 Business rules | Are the values correct for this licence? | Plain-code rules (see [test cases](../specs/001-licence-to-kyb/test-cases.md)). | Expired licence, expiry date before issue date, wrong number format for the authority, shares that do not sum to 100. |
 | 4 Grounding | Did the document really say this? | The `evidence_quote` must appear in the OCR text (fuzzy match ≥ 0.85), and the value must appear in its quote. | A value that the model invented or misread. |
 
 **Design rules for the schema:**

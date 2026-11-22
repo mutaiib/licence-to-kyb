@@ -10,6 +10,7 @@ import pdfplumber
 import pytest
 
 from licence_kyb.testdata.catalogue import GROUPS, build
+from tests.builders import first_case
 
 SMALL = tuple(
     g for g in GROUPS if g.name in {"clean", "injected", "registry_not_found", "out_of_scope"}
@@ -48,7 +49,7 @@ def test_a_licence_pdf_has_a_text_layer_with_its_number_and_the_synthetic_notice
     built: tuple[Path, list[dict[str, object]]],
 ) -> None:
     root, cases = built
-    case = next(c for c in cases if c["group"] == "clean")
+    case = first_case(cases, "clean")
     pdf = (root / str(case["document"])).read_bytes()
 
     with pdfplumber.open(io.BytesIO(pdf)) as doc:

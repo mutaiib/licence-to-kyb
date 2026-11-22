@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel
 
-from licence_kyb.schemas.results import ReasonCode
+from licence_kyb.schemas.kyb_form import FieldState, FormValue
+from licence_kyb.schemas.licence import Origin, Status
+from licence_kyb.schemas.results import Outcome, ReasonCode, Route, Severity
 
 RunStatus = Literal[
     "received", "processing", "rejected", "awaiting_review", "awaiting_submit", "submitted", "done"
-]
-FieldViewState = Literal[
-    "passed", "flagged", "approved", "corrected", "overridden", "needs_examination"
 ]
 
 
@@ -48,9 +47,12 @@ class ReasonView(BaseModel):
     """Values for the reason's UI string, e.g. ``{"days": "10"}``."""
 
 
+StepState = Literal["done", "running", "pending", "skipped"]
+
+
 class StepView(BaseModel):
     name: str
-    state: Literal["done", "running", "pending", "skipped"]
+    state: StepState
     duration_ms: int | None = None
 
 
@@ -64,13 +66,14 @@ class EvidenceBox(BaseModel):
 
 class RuleView(BaseModel):
     rule_id: str
-    severity: Literal["block", "warn"]
-    outcome: Literal["passed", "failed", "could_not_run", "not_applicable"]
+    severity: Severity
+    outcome: Outcome
     reason_code: ReasonCode | None
     overridable: bool
     detail: dict[str, str] = {}
 
 
+# Used from User Story 3 (confidence and routing).
 class ConfidenceView(BaseModel):
     score: float
     threshold: float
@@ -78,13 +81,15 @@ class ConfidenceView(BaseModel):
 
 
 class FormFieldView(BaseModel):
-    value: Any
-    state: FieldViewState
-    status: Literal["present", "not_present", "unclear"]
+    value: FormValue
+    """The form value. A field without one shows the value as read from the document."""
+    state: FieldState
+    status: Status
     """Whether the document shows the field, does not show it, or shows it unreadably."""
-    origin: Literal["read", "entered_by_reviewer"] = "read"
+    origin: Origin = "read"
     evidence_quote: str | None = None
     evidence_box: EvidenceBox | None = None
+    # Used from User Story 3; model_rationale from User Story 4.
     confidence: ConfidenceView | None = None
     rule_results: list[RuleView] = []
     model_rationale: str | None = None
@@ -99,7 +104,7 @@ class RunView(BaseModel):
     run_id: str
     status: RunStatus
     steps: list[StepView]
-    route: Literal["ready", "needs_review", "reject"] | None
+    route: Route | None
     reasons: list[ReasonView]
     form: FormView | None
     required_documents: list[str]

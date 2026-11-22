@@ -18,14 +18,14 @@ from pathlib import Path
 import pypdfium2 as pdfium
 from PIL import Image
 
-from licence_kyb.schemas.results import ReasonCode
+from licence_kyb.nodes.preprocess import POINTS_PER_INCH, RENDER_DPI
+from licence_kyb.schemas.results import ReasonCode, reason_entry
 from licence_kyb.security import Cipher
 from licence_kyb.store.db import Database
 
 MAX_BYTES = 10 * 1024 * 1024
 MAX_PAGES = 5
 MAX_MEGAPIXELS = 50.0
-RENDER_DPI = 200
 Image.MAX_IMAGE_PIXELS = int(MAX_MEGAPIXELS * 1_000_000)  # PIL refuses larger images outright
 
 SIGNATURES: tuple[tuple[bytes, str], ...] = (
@@ -57,7 +57,7 @@ def measure(data: bytes, mime: str) -> tuple[int, float]:
             worst = 0.0
             for i in range(min(pages, MAX_PAGES + 1)):
                 width, height = doc[i].get_size()  # points
-                worst = max(worst, width * height * (RENDER_DPI / 72) ** 2 / 1e6)
+                worst = max(worst, width * height * (RENDER_DPI / POINTS_PER_INCH) ** 2 / 1e6)
         finally:
             doc.close()
         return pages, worst
@@ -91,20 +91,22 @@ class IntakeService:
         if run.status != "received" or self.stored_path(run.run_id).exists():
             return IntakeResult(run.run_id, duplicate=True, mime=mime, page_count=pages)
         if reason is not None:
-            reasons = [{"code": reason, "field": None, "rule_id": None}]
+            reasons = [reason_entry(reason)]
             self.db.update_run(
                 run.run_id, status="rejected", route="reject", reasons_json=json.dumps(reasons)
             )
             return IntakeResult(run.run_id, reason_code=reason, mime=mime)
+        assert mime is not None  # noqa: S101 - a file of unknown type is refused above
         path = self.stored_path(run.run_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(self.cipher.encrypt(data))
-        with self.db.connect() as conn:
-            conn.execute(
-                "INSERT OR IGNORE INTO files (run_id, mime, page_count, megapixels, "
-                "encrypted_path) VALUES (?, ?, ?, ?, ?)",
-                (run.run_id, mime, pages, megapixels, str(path)),
-            )
+        self.db.record_file(
+            run_id=run.run_id,
+            mime=mime,
+            page_count=pages,
+            megapixels=megapixels,
+            encrypted_path=str(path),
+        )
         return IntakeResult(run.run_id, mime=mime, page_count=pages)
 
     def _check(self, data: bytes) -> tuple[ReasonCode | None, str | None, int, float]:

@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
 
+from licence_kyb.config import APPLICANT_NAME_THRESHOLD
 from licence_kyb.profiles import AuthorityProfile, load_profile
 from licence_kyb.rules.activity import activity_rule
 from licence_kyb.rules.applicant import applicant_rule
@@ -44,7 +45,7 @@ class RuleContext:
     qr_payload: str | None
     registry: RegistryLookup
     applicant_name: str
-    applicant_threshold: float = 0.85
+    applicant_threshold: float = APPLICANT_NAME_THRESHOLD
     extra: dict[str, object] = field(default_factory=dict)
 
     @property

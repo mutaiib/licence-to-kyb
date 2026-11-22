@@ -96,14 +96,13 @@ def test_valid_licence_record_is_accepted() -> None:
     assert record.expiry_date.value == date(2026, 12, 25)
 
 
-def test_issue_date_equal_to_expiry_date_is_rejected_naming_both_fields() -> None:
+def test_dates_in_the_wrong_order_are_a_valid_record_for_the_rules_to_flag() -> None:
     data = added_licence()
     data["issue_date"] = present("25/12/2026")
 
-    with pytest.raises(ValidationError) as exc:
-        TradeLicenceExtraction.model_validate(data)
+    record = TradeLicenceExtraction.model_validate(data)
 
-    assert {"issue_date", "expiry_date"} <= error_fields(exc.value)
+    assert record.issue_date.value == record.expiry_date.value
 
 
 @pytest.mark.parametrize("share", [120.0, -1.0])

@@ -16,7 +16,14 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
-CONFIG_DIR = Path(__file__).resolve().parents[2] / "config"
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_DIR.parent
+CONFIG_DIR = BACKEND_DIR / "config"
+DATA_DIR = REPO_ROOT / "data"
+"""Versioned reference data: activity lists, high-risk activities and the mock register."""
+
+APPLICANT_NAME_THRESHOLD = 0.85
+"""How close the application's business name must be to the licence's trade name (0 to 1)."""
 
 Effort = Literal["low", "medium", "high", "xhigh", "max"]
 
@@ -31,13 +38,13 @@ class Settings(BaseSettings):
 
     daily_token_budget: int = Field(default=2_000_000, ge=0)
     retention_days: int = Field(default=30, ge=1)
-    applicant_name_threshold: float = Field(default=0.85, ge=0, le=1)
+    applicant_name_threshold: float = Field(default=APPLICANT_NAME_THRESHOLD, ge=0, le=1)
     data_dir: Path = Path("var")
     session_hours: int = Field(default=8, ge=1)
     demo_answers_dir: Path | None = None
+    """Local demo only: answer from synthetic case labels instead of a model."""
     demo_today: date | None = None
     """Local demo only: the fixed date the synthetic catalogue was generated for."""
-    """Local demo only: answer from synthetic case labels instead of a model."""
     session_secret: SecretStr | None = None
     """HMAC key for session cookies. Required in production; set it in the environment."""
     cookie_secure: bool = True
@@ -69,10 +76,12 @@ class ModelsConfig(BaseModel):
     route: StepModel
     extract_primary: StepModel
     extract_secondary: StepModel
+    # resolve and reread_vision: used from User Story 4 (the resolver).
     resolve: StepModel
     reread_vision: StepModel
 
 
+# Used from User Story 4 (the resolver).
 class ResolverBudget(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     soft_turns: int
@@ -105,3 +114,7 @@ def models_config() -> ModelsConfig:
 
 def budgets_config() -> BudgetsConfig:
     return BudgetsConfig.model_validate(load_yaml("budgets.yaml"))
+
+
+def processing_deadline_seconds() -> float:
+    return budgets_config().processing_deadline_seconds

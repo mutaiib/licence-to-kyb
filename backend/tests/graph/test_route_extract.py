@@ -9,15 +9,11 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from cryptography.fernet import Fernet
 
-from licence_kyb.clock import FixedClock
-from licence_kyb.llm.client import DailyBudget, LLMClient
-from licence_kyb.pipeline import Deps, Pipeline
-from licence_kyb.registry import MockRegistry
-from licence_kyb.security import Cipher
+from licence_kyb.pipeline import Pipeline
 from licence_kyb.testdata.answers import ScriptedTransport
 from licence_kyb.testdata.catalogue import GROUPS, build
+from tests.builders import first_case, make_pipeline
 
 WANTED = {
     "clean",
@@ -45,15 +41,12 @@ def run_case(
     transport: ScriptedTransport,
     budget: int = 1_000_000,
 ) -> tuple[dict[str, Any], Pipeline]:
-    cipher = Cipher([Fernet.generate_key().decode()])
-    deps = Deps(
-        data_dir=tmp_path / "var",
-        cipher=cipher,
-        llm=LLMClient(transport, DailyBudget(limit_tokens=budget)),
-        clock=FixedClock(),
-        registry=MockRegistry(root / "data" / "registry_mock.json"),
+    pipeline = make_pipeline(
+        tmp_path / "var",
+        transport,
+        registry_path=root / "data" / "registry_mock.json",
+        budget=budget,
     )
-    pipeline = Pipeline(deps)
     upload = pipeline.upload(
         (root / case["document"]).read_bytes(), applicant_name=case["applicant_name"]
     )
@@ -77,7 +70,7 @@ def test_a_clean_det_licence_routes_ready_with_the_labelled_values(
     catalogue: Any, tmp_path: Path
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean" and c["authority"] == "DET")
+    case = first_case(cases.values(), "clean", "DET")
 
     state, _ = run_case(root, case, tmp_path, ScriptedTransport(case["expected_values"]))
 
@@ -91,7 +84,7 @@ def test_a_clean_det_licence_routes_ready_with_the_labelled_values(
 
 def test_a_clean_added_licence_has_a_cn_licence_number(catalogue: Any, tmp_path: Path) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean" and c["authority"] == "ADDED")
+    case = first_case(cases.values(), "clean", "ADDED")
 
     state, _ = run_case(root, case, tmp_path, ScriptedTransport(case["expected_values"]))
 
@@ -99,12 +92,15 @@ def test_a_clean_added_licence_has_a_cn_licence_number(catalogue: Any, tmp_path:
     assert state["decision"]["route"] == "ready", codes(state)
 
 
-@pytest.mark.parametrize(("doc_type", "index"), [("moa", 0), ("emirates_id", 1)])
+# The out_of_scope group renders its document kinds in turn: moa first, then emirates_id.
+@pytest.mark.parametrize(
+    ("doc_type", "case_id"), [("moa", "out_of_scope_001"), ("emirates_id", "out_of_scope_002")]
+)
 def test_a_non_licence_without_a_licence_number_is_rejected_as_out_of_scope(
-    catalogue: Any, tmp_path: Path, doc_type: str, index: int
+    catalogue: Any, tmp_path: Path, doc_type: str, case_id: str
 ) -> None:
     root, cases = catalogue
-    case = cases[f"out_of_scope_{index + 1:03d}"]
+    case = cases[case_id]
     transport = ScriptedTransport(None, doc_type=doc_type, authority="unknown")
 
     state, _ = run_case(root, case, tmp_path, transport)
@@ -145,7 +141,7 @@ def test_an_authority_that_contradicts_the_printed_number_becomes_unknown(
     catalogue: Any, tmp_path: Path
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean" and c["authority"] == "ADDED")
+    case = first_case(cases.values(), "clean", "ADDED")
 
     state, _ = run_case(
         root, case, tmp_path, ScriptedTransport(case["expected_values"], authority="DMCC")
@@ -160,7 +156,7 @@ def test_an_injected_document_has_the_same_outcome_as_its_clean_twin(
     catalogue: Any, tmp_path: Path
 ) -> None:
     root, cases = catalogue
-    injected = next(c for c in cases.values() if c["group"] == "injected")
+    injected = first_case(cases.values(), "injected")
     twin = cases[injected["twin_of"]]
 
     a, _ = run_case(root, injected, tmp_path / "a", ScriptedTransport(injected["expected_values"]))
@@ -175,7 +171,7 @@ def test_a_licence_without_an_arabic_name_reports_it_not_present(
     catalogue: Any, tmp_path: Path
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "arabic_name_missing")
+    case = first_case(cases.values(), "arabic_name_missing")
 
     state, _ = run_case(root, case, tmp_path, ScriptedTransport(case["expected_values"]))
 
@@ -185,10 +181,10 @@ def test_a_licence_without_an_arabic_name_reports_it_not_present(
 
 def test_an_unreadable_owners_table_is_unclear_and_flagged(catalogue: Any, tmp_path: Path) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean")
+    case = first_case(cases.values(), "clean")
 
     state, _ = run_case(
-        root, case, tmp_path, ScriptedTransport(case["expected_values"], faults={"people_unclear"})
+        root, case, tmp_path, ScriptedTransport(case["expected_values"], faults={"owners_unclear"})
     )
 
     assert state["extraction"]["people"]["status"] == "unclear"
@@ -208,7 +204,7 @@ def test_model_failures_never_crash_and_never_route_ready(
     catalogue: Any, tmp_path: Path, fault: str, code: str
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean")
+    case = first_case(cases.values(), "clean")
 
     state, pipeline = run_case(
         root, case, tmp_path, ScriptedTransport(case["expected_values"], faults={fault})
@@ -223,7 +219,7 @@ def test_model_failures_never_crash_and_never_route_ready(
 
 def test_one_malformed_reply_is_retried_and_then_succeeds(catalogue: Any, tmp_path: Path) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean")
+    case = first_case(cases.values(), "clean")
     transport = ScriptedTransport(case["expected_values"], faults={"malformed_once"})
 
     state, _ = run_case(root, case, tmp_path, transport)
@@ -234,7 +230,7 @@ def test_one_malformed_reply_is_retried_and_then_succeeds(catalogue: Any, tmp_pa
 
 def test_an_exhausted_daily_budget_makes_no_model_call(catalogue: Any, tmp_path: Path) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean")
+    case = first_case(cases.values(), "clean")
     transport = ScriptedTransport(case["expected_values"])
 
     state, _ = run_case(root, case, tmp_path, transport, budget=10)
@@ -248,7 +244,7 @@ def test_checkpoints_on_disk_never_contain_document_values_in_plain_text(
     catalogue: Any, tmp_path: Path
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases.values() if c["group"] == "clean")
+    case = first_case(cases.values(), "clean")
 
     run_case(root, case, tmp_path, ScriptedTransport(case["expected_values"]))
 

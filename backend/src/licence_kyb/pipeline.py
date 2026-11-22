@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
@@ -23,7 +23,12 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from licence_kyb.clock import Clock, SystemClock
-from licence_kyb.config import ModelsConfig, models_config
+from licence_kyb.config import (
+    APPLICANT_NAME_THRESHOLD,
+    ModelsConfig,
+    models_config,
+    processing_deadline_seconds,
+)
 from licence_kyb.graph import thread_config
 from licence_kyb.llm.client import LLMClient, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import prompt_hash
@@ -31,16 +36,23 @@ from licence_kyb.nodes.extract import build_extract_request, extract_licence
 from licence_kyb.nodes.intake import IntakeResult, IntakeService
 from licence_kyb.nodes.map_form import build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
-from licence_kyb.nodes.route import build_route_request, decide_route, route_document
+from licence_kyb.nodes.route import build_route_request, route_document
+from licence_kyb.ops import Operations
 from licence_kyb.profiles import load_profile
 from licence_kyb.registry import MockRegistry
 from licence_kyb.rules import RuleContext, run_rules
 from licence_kyb.schemas.licence import CriticalFields, TradeLicenceExtraction
-from licence_kyb.schemas.results import FILE_REASONS, RuleResult
+from licence_kyb.schemas.results import FILE_REASONS, RuleResult, reason_entry
 from licence_kyb.security import Cipher
 from licence_kyb.state import RunState
 from licence_kyb.store.db import Database
-from licence_kyb.tracing import Tracer
+from licence_kyb.tracing import Span, Tracer
+
+STATUS_FOR_ROUTE = {
+    "reject": "rejected",
+    "needs_review": "awaiting_review",
+    "ready": "awaiting_submit",
+}
 
 
 class FernetCheckpointCipher:
@@ -66,7 +78,8 @@ class Deps:
     clock: Clock = field(default_factory=SystemClock)
     registry: MockRegistry = field(default_factory=MockRegistry)
     models: ModelsConfig = field(default_factory=models_config)
-    applicant_threshold: float = 0.85
+    applicant_threshold: float = APPLICANT_NAME_THRESHOLD
+    deadline_seconds: float = field(default_factory=processing_deadline_seconds)
 
     @property
     def files_dir(self) -> Path:
@@ -81,6 +94,9 @@ class Pipeline:
         self.db.migrate()
         self.tracer = Tracer(self.db, deps.cipher)
         self.intake = IntakeService(self.db, deps.cipher, deps.files_dir)
+        self.ops = Operations(
+            self.db, deps.clock, deadline_seconds=deps.deadline_seconds, files_dir=deps.files_dir
+        )
         conn = sqlite3.connect(deps.data_dir / "checkpoints.sqlite3", check_same_thread=False)
         self.checkpointer = SqliteSaver(
             conn, serde=EncryptedSerializer(FernetCheckpointCipher(deps.cipher))
@@ -96,11 +112,19 @@ class Pipeline:
         if run is None:
             raise KeyError(run_id)
         applicant = self.deps.cipher.decrypt_text(run["applicant_name"])
-        self.db.update_run(run_id, status="processing")
+        self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
         state: dict[str, Any] = self.graph.invoke(
             {"run_id": run_id, "applicant_name": applicant}, thread_config(run_id)
         )
         return state
+
+    def mark_failed(self, run_id: str) -> None:
+        """Send a run whose processing raised an error to review (FR-039)."""
+        run = self.db.get_run(run_id)
+        if run is not None:
+            self.ops.send_to_review(
+                run, event="processing_error", note="processing raised an error"
+            )
 
     def page_png(self, run_id: str, page: int) -> bytes:
         return self.deps.cipher.decrypt(
@@ -135,11 +159,7 @@ class Pipeline:
         run_id = state["run_id"]
         with self.tracer.span("step", "preprocess", run_id=run_id):
             data = self.intake.read_original(run_id)
-            with self.db.connect() as conn:
-                mime = conn.execute(
-                    "SELECT mime FROM files WHERE run_id = ?", (run_id,)
-                ).fetchone()["mime"]
-            pages = preprocess_file(data, mime)
+            pages = preprocess_file(data, self.db.file_mime(run_id))
             folder = self.deps.files_dir / run_id
             for n, png in enumerate(pages.images, start=1):
                 (folder / f"page-{n}.png.enc").write_bytes(self.deps.cipher.encrypt(png))
@@ -148,28 +168,29 @@ class Pipeline:
                 "page_count": pages.page_count,
                 "qr_payload": pages.qr_payload,
                 "source": pages.source,
-                "words": [w.__dict__ for w in pages.words],
+                "words": [asdict(w) for w in pages.words],
             }
         }
 
     def _pages(self, state: RunState) -> PageSet:
-        p = state["pages"]
-        words = [Word(w["page"], w["text"], tuple(w["bbox"]), w["conf"]) for w in p["words"]]
-        return PageSet(page_count=p["page_count"], words=words, qr_payload=p["qr_payload"])
+        stored = state["pages"]
+        return PageSet(
+            page_count=stored["page_count"],
+            words=[Word.from_dict(w) for w in stored["words"]],
+            qr_payload=stored["qr_payload"],
+        )
 
     def _route(self, state: RunState) -> dict[str, Any]:
-        run_id, pages = state["run_id"], self._pages(state)
-        cfg = self.deps.models.route
-        request = build_route_request(
-            self.page_png(run_id, 1), pages.text, cfg.model, cfg.effort, cfg.max_tokens
-        )
+        run_id = state["run_id"]
+        pages = self._pages(state)
+        request = build_route_request(self.page_png(run_id, 1), pages.text, self.deps.models.route)
         with self.tracer.span("step", "route", run_id=run_id) as step:
             outcome = route_document(self.deps.llm, request, pages.text)
             if outcome.response is not None:
-                self._trace_call(run_id, step, request, outcome.response, "route")
+                self._trace_call(run_id, step, request, outcome.response)
         return {
             "route": {"doc_type": outcome.doc_type, "authority": outcome.authority},
-            "reasons": [{"code": c, "field": None, "rule_id": None} for c in outcome.reasons],
+            "reasons": [reason_entry(code) for code in outcome.reasons],
         }
 
     @staticmethod
@@ -177,41 +198,34 @@ class Pipeline:
         return "extract" if state["route"]["doc_type"] == "trade_licence" else "decide"
 
     def _extract(self, state: RunState) -> dict[str, Any]:
-        run_id, pages = state["run_id"], self._pages(state)
+        run_id = state["run_id"]
+        pages = self._pages(state)
         authority = state["route"]["authority"]
         profile = load_profile(authority)
         images = [self.page_png(run_id, n) for n in range(1, pages.page_count + 1)]
-        m = self.deps.models
         primary = build_extract_request(
             step="extract_primary",
-            prompt="extract_primary",
             output=TradeLicenceExtraction,
             pages_png=images,
             ocr_text=pages.text,
             profile=profile,
-            model=m.extract_primary.model,
-            effort=m.extract_primary.effort,
-            max_tokens=m.extract_primary.max_tokens,
+            cfg=self.deps.models.extract_primary,
         )
         secondary = build_extract_request(
             step="extract_secondary",
-            prompt="extract_secondary",
             output=CriticalFields,
             pages_png=images,
             ocr_text=pages.text,
             profile=profile,
-            model=m.extract_secondary.model,
-            effort=m.extract_secondary.effort,
-            max_tokens=m.extract_secondary.max_tokens,
+            cfg=self.deps.models.extract_secondary,
         )
         with self.tracer.span("step", "extract", run_id=run_id) as step:
             out = extract_licence(self.deps.llm, primary, secondary)
             for req, resp in out.responses:
-                self._trace_call(run_id, step, req, resp, req.step.removesuffix("_retry"))
-        reasons = [
-            *state.get("reasons", []),
-            *({"code": c, "field": None, "rule_id": None} for c in out.reasons),
-        ]
+                self._trace_call(run_id, step, req, resp)
+        reasons = list(state.get("reasons", []))
+        for code in out.reasons:
+            reasons.append(reason_entry(code))
         return {
             "extraction": out.primary.model_dump(mode="json") if out.primary else {},
             "secondary": out.secondary.model_dump(mode="json") if out.secondary else {},
@@ -252,17 +266,23 @@ class Pipeline:
         """User Story 1 routing: file and corroborated out-of-scope reasons reject; any other
         reason or failed rule goes to review; otherwise ready. US3 adds confidence."""
         reasons = list(state.get("reasons", []))
-        for r in state.get("rule_results", []):
-            if r["outcome"] in ("failed", "could_not_run"):
-                for f in r["fields"] or [None]:
-                    reasons.append(
-                        {
-                            "code": r["reason_code"],
-                            "field": f,
-                            "rule_id": r["rule_id"],
-                            "detail": r.get("detail", {}),
-                        }
+        results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
+        for result in results:
+            if not result.counts_as_failed:
+                continue
+            assert result.reason_code is not None  # noqa: S101 - a failed rule always has a code
+            # One reason per field, so the review page can show it next to each field.
+            # A rule about the whole document (no fields) gives one reason with no field.
+            fields: list[str | None] = list(result.fields) or [None]
+            for field_name in fields:
+                reasons.append(
+                    reason_entry(
+                        result.reason_code,
+                        field=field_name,
+                        rule_id=result.rule_id,
+                        detail=result.detail,
                     )
+                )
         codes = {r["code"] for r in reasons}
         if codes & (FILE_REASONS | {"out_of_scope"}):
             route = "reject"
@@ -273,12 +293,9 @@ class Pipeline:
         return {"decision": {"route": route}, "reasons": reasons}
 
     def _persist(self, state: RunState) -> dict[str, Any]:
-        run_id, route = state["run_id"], state["decision"]["route"]
-        status = {
-            "reject": "rejected",
-            "needs_review": "awaiting_review",
-            "ready": "awaiting_submit",
-        }[route]
+        run_id = state["run_id"]
+        route = state["decision"]["route"]
+        status = STATUS_FOR_ROUTE[route]
         version = state.get("form", {}).get("version", 0)
         self.db.update_run(
             run_id,
@@ -297,24 +314,16 @@ class Pipeline:
         return {"status": status}
 
     def _trace_call(
-        self, run_id: str, parent: Any, req: ModelRequest, resp: ModelResponse, prompt: str
+        self, run_id: str, parent: Span, req: ModelRequest, resp: ModelResponse
     ) -> None:
         with self.tracer.span("model_call", req.step, run_id=run_id, parent=parent) as span:
-            span.requested_model, span.serving_model, span.effort = (
-                req.model,
-                resp.serving_model,
-                req.effort,
-            )
-            span.input_tokens, span.output_tokens = (
-                resp.usage.input_tokens,
-                resp.usage.output_tokens,
-            )
-            span.thinking_tokens, span.cache_read_tokens = (
-                resp.usage.thinking_tokens,
-                resp.usage.cache_read_tokens,
-            )
+            span.requested_model = req.model
+            span.serving_model = resp.serving_model
+            span.effort = req.effort
+            span.input_tokens = resp.usage.input_tokens
+            span.output_tokens = resp.usage.output_tokens
+            span.thinking_tokens = resp.usage.thinking_tokens
+            span.cache_read_tokens = resp.usage.cache_read_tokens
             span.cost_usd = resp.cost_usd()
-            span.prompt_hash = prompt_hash(prompt)
-
-
-__all__ = ["CriticalFields", "Deps", "FernetCheckpointCipher", "Pipeline", "decide_route"]
+            # A retry uses the prompt of the step it retries ("extract_primary_retry").
+            span.prompt_hash = prompt_hash(req.step.removesuffix("_retry"))

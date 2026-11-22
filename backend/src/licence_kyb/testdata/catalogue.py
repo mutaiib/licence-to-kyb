@@ -15,11 +15,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
+from licence_kyb.profiles import AUTHORITIES
 from licence_kyb.testdata.degrade import Degradation, degrade
 from licence_kyb.testdata.render import render_licence, render_other
 from licence_kyb.testdata.spec import LicenceSpec, make_spec
 
-AUTHORITIES = ("DET", "ADDED", "DMCC", "IFZA")
+DEFAULT_SEED = 20260601  # the fixed "today" of test-cases.md, as a number
 MixBucket = Literal["clean", "scans_and_photos", "problem"]
 
 
@@ -32,7 +33,8 @@ class Group:
     faults: tuple[str, ...] = ()
     degradations: tuple[tuple[Degradation, ...], ...] = ((),)
     authorities: tuple[str, ...] = AUTHORITIES
-    other_kind: str | None = None
+    other_kinds: tuple[str, ...] = ()
+    """Document kinds for a group of documents that are not licences, used in turn."""
     bucket: MixBucket = "problem"
 
 
@@ -129,15 +131,21 @@ GROUPS: tuple[Group, ...] = (
         faults=("applicant_name_mismatch",),
     ),
     Group("injected", 6, ("ready",), faults=("injected_text",)),
-    Group("out_of_scope", 3, ("reject",), ("out_of_scope",), other_kind="moa|emirates_id|passport"),
+    Group(
+        "out_of_scope",
+        3,
+        ("reject",),
+        ("out_of_scope",),
+        other_kinds=("moa", "emirates_id", "passport"),
+    ),
     Group(
         "labelled_number_other_doc",
         2,
         ("needs_review",),
         ("unclear_document",),
-        other_kind="renewal_letter|moa_with_licence_no",
+        other_kinds=("renewal_letter", "moa_with_licence_no"),
     ),
-    Group("unclear", 2, ("needs_review",), ("unclear_document",), other_kind="blank|blank"),
+    Group("unclear", 2, ("needs_review",), ("unclear_document",), other_kinds=("blank",)),
 )
 
 
@@ -152,83 +160,116 @@ def _split(group: str, index: int, seed: int) -> str:
     return "calibration" if digest[0] % 2 == 0 else "test"
 
 
-def build(root: Path, seed: int = 20260601, groups: tuple[Group, ...] = GROUPS) -> BuildResult:
+def _case_seed(seed: int, group_index: int, index: int) -> int:
+    """One seed per case. Each group has room for 100 cases, so two cases never share a seed."""
+    return seed * 1000 + group_index * 100 + index
+
+
+@dataclass(frozen=True)
+class _Document:
+    data: bytes
+    mime: str
+    spec: LicenceSpec | None  # None for a document that is not a licence
+    twin_of: str | None = None  # for an injected case: the clean case it copies
+
+
+def _other_document(group: Group, index: int, case_seed: int) -> _Document:
+    kind = group.other_kinds[index % len(group.other_kinds)]
+    number = random.Random(case_seed).randint(1_000_000, 9_999_999)
+    return _Document(render_other(kind, number_hint=str(number)), "application/pdf", spec=None)
+
+
+def _licence_spec(
+    group: Group,
+    index: int,
+    case_id: str,
+    case_seed: int,
+    clean_specs: list[tuple[LicenceSpec, int]],
+) -> tuple[LicenceSpec, str | None]:
+    """The spec of one licence and, for an injected case, the ID of the clean case it copies."""
+    if group.name == "injected":
+        base, base_seed = clean_specs[index % len(clean_specs)]
+        spec = make_spec(case_id, base.authority, base.layout, {"injected_text"}, base_seed)
+        return spec, base.case_id
+    authority = group.authorities[index % len(group.authorities)]
+    # Each authority gets layout A, then layout B on its next turn, and so on.
+    layout: Literal["A", "B"] = "A" if (index // len(group.authorities)) % 2 == 0 else "B"
+    return make_spec(case_id, authority, layout, set(group.faults), case_seed), None
+
+
+def _licence_document(
+    spec: LicenceSpec, group: Group, index: int, case_seed: int, twin_of: str | None
+) -> _Document:
+    pdf = render_licence(spec)
+    steps = list(group.degradations[index % len(group.degradations)])
+    if not steps:
+        return _Document(pdf, "application/pdf", spec, twin_of)
+    image, mime = degrade(pdf, steps, case_seed)
+    return _Document(image, mime, spec, twin_of)
+
+
+def _case_record(
+    group: Group, document: _Document, *, index: int, case_id: str, case_seed: int, seed: int
+) -> dict[str, Any]:
+    spec = document.spec
+    ext = _extension(document.mime)
+    return {
+        "case_id": case_id,
+        "source": "synthetic",
+        "group": group.name,
+        "document": f"data/generated/{case_id}{ext}",
+        "document_sha256": hashlib.sha256(document.data).hexdigest(),
+        "mime": document.mime,
+        "applicant_name": spec.applicant_name if spec else "Sample Holder Trading LLC",
+        "expected_route": list(group.expected_route),
+        "expected_reason_codes": list(group.reason_codes),
+        "expected_values": spec.ground_truth() if spec else None,
+        "authority": spec.authority if spec else None,
+        "faults": list(spec.faults) if spec else [],
+        "split": _split(group.name, index, seed),
+        "mix_bucket": group.bucket,
+        "twin_of": document.twin_of,
+        "seed": case_seed,
+    }
+
+
+def _extension(mime: str) -> str:
+    return ".pdf" if mime == "application/pdf" else ".jpg"
+
+
+def _write_json(path: Path, data: object) -> None:
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", "utf-8")
+
+
+def build(root: Path, seed: int = DEFAULT_SEED, groups: tuple[Group, ...] = GROUPS) -> BuildResult:
     generated = root / "data" / "generated"
     cases_dir = root / "evals" / "cases" / "synthetic"
     generated.mkdir(parents=True, exist_ok=True)
     cases_dir.mkdir(parents=True, exist_ok=True)
     result = BuildResult()
-    clean_specs: list[tuple[LicenceSpec, int]] = []
+    clean_specs: list[tuple[LicenceSpec, int]] = []  # the injected group copies these
 
-    for gi, group in enumerate(groups):
-        for i in range(group.count):
-            case_seed = seed * 1000 + gi * 100 + i
-            case_id = f"{group.name}_{i + 1:03d}"
-            if group.other_kind:
-                kinds = group.other_kind.split("|")
-                kind = kinds[i % len(kinds)]
-                document, mime = (
-                    render_other(
-                        kind,
-                        number_hint=f"{random.Random(case_seed).randint(1_000_000, 9_999_999)}",
-                    ),
-                    "application/pdf",
-                )
-                spec: LicenceSpec | None = None
-                twin_of = None
+    for group_index, group in enumerate(groups):
+        for index in range(group.count):
+            case_seed = _case_seed(seed, group_index, index)
+            case_id = f"{group.name}_{index + 1:03d}"
+            if group.other_kinds:
+                document = _other_document(group, index, case_seed)
             else:
-                if group.name == "injected":
-                    base, base_seed = clean_specs[i % len(clean_specs)]
-                    spec = make_spec(
-                        case_id, base.authority, base.layout, {"injected_text"}, base_seed
-                    )
-                    twin_of = base.case_id
-                else:
-                    authority = group.authorities[i % len(group.authorities)]
-                    layout: Literal["A", "B"] = (
-                        "A" if (i // len(group.authorities)) % 2 == 0 else "B"
-                    )
-                    spec = make_spec(case_id, authority, layout, set(group.faults), case_seed)
-                    twin_of = None
-                    if group.name == "clean":
-                        clean_specs.append((spec, case_seed))
-                pdf = render_licence(spec)
-                steps = list(group.degradations[i % len(group.degradations)])
-                document, mime = (
-                    degrade(pdf, steps, case_seed) if steps else (pdf, "application/pdf")
-                )
+                spec, twin_of = _licence_spec(group, index, case_id, case_seed, clean_specs)
+                if group.name == "clean":
+                    clean_specs.append((spec, case_seed))
+                document = _licence_document(spec, group, index, case_seed, twin_of)
                 _register(result.registry, spec)
-
-            ext = ".pdf" if mime == "application/pdf" else ".jpg"
-            doc_path = generated / f"{case_id}{ext}"
-            doc_path.write_bytes(document)
-            case = {
-                "case_id": case_id,
-                "source": "synthetic",
-                "group": group.name,
-                "document": f"data/generated/{case_id}{ext}",
-                "document_sha256": hashlib.sha256(document).hexdigest(),
-                "mime": mime,
-                "applicant_name": spec.applicant_name if spec else "Sample Holder Trading LLC",
-                "expected_route": list(group.expected_route),
-                "expected_reason_codes": list(group.reason_codes),
-                "expected_values": spec.ground_truth() if spec else None,
-                "authority": spec.authority if spec else None,
-                "faults": list(spec.faults) if spec else [],
-                "split": _split(group.name, i, seed),
-                "mix_bucket": group.bucket,
-                "twin_of": twin_of,
-                "seed": case_seed,
-            }
-            (cases_dir / f"{case_id}.json").write_text(
-                json.dumps(case, ensure_ascii=False, indent=2, sort_keys=True) + "\n", "utf-8"
+            (generated / f"{case_id}{_extension(document.mime)}").write_bytes(document.data)
+            case = _case_record(
+                group, document, index=index, case_id=case_id, case_seed=case_seed, seed=seed
             )
+            _write_json(cases_dir / f"{case_id}.json", case)
             result.cases.append(case)
 
     _register_public(result.registry, root / "evals" / "cases" / "public")
-    (root / "data" / "registry_mock.json").write_text(
-        json.dumps(result.registry, ensure_ascii=False, indent=2, sort_keys=True) + "\n", "utf-8"
-    )
+    _write_json(root / "data" / "registry_mock.json", result.registry)
     return result
 
 

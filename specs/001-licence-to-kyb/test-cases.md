@@ -12,7 +12,7 @@ These value-driven tables feed the tests. Each row is one parametrised case, so 
 | Input | Expected outcome |
 |---|---|
 | Hand-labelled synthetic ADDED licence JSON | Valid extraction. `licence_number = CN-1002016`, `legal_form = public_joint_stock`. |
-| Same JSON with `issue_date` = `expiry_date` | Rejected. The error names `issue_date` and `expiry_date`. |
+| Same JSON with `issue_date` = `expiry_date` | Valid. Date order is a business rule (see Checks), so a reviewer sees it as `date_order`. |
 | A person with `share_pct = 120` | Rejected. The error names `share_pct`. |
 | `expiry_date` with `status = not_present`, `value = null` | Valid. |
 | `people` with `status = unclear`, `value = null` | Valid. |
@@ -69,6 +69,8 @@ Today is 2026-06-01 (fixed clock).
 | expiry 2026-06-01 | Expiry | `failed`, `block`, `expired` (the licence must be valid after today) |
 | expiry 2026-06-30 (29 days) | Expiry | `failed`, `warn`, `near_expiry` |
 | expiry 2026-07-01 (30 days) | Expiry | `passed` |
+| issue 2027-03-01, expiry 2027-03-01 | Date order | `failed`, `block`, `date_order` |
+| establishment 2026-04-01, issue 2026-03-01 | Date order | `failed`, `block`, `date_order` |
 | ADDED, `CN-1002016` | Number format | `passed` |
 | ADDED, `CN-100201` | Number format | `failed`, `block`, `number_format` |
 | DET, `1234567` | Number format | `passed` |

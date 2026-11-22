@@ -18,6 +18,7 @@ from typing import Any, Literal
 from licence_kyb.security import Cipher
 from licence_kyb.store.db import Database
 
+# "tool_call" is used from User Story 4 (the resolver's tools).
 SpanKind = Literal["step", "model_call", "tool_call"]
 
 
@@ -38,11 +39,13 @@ class Span:
     cost_usd: float = 0.0
     prompt_hash: str | None = None
     error_code: str | None = None
+    # Used from User Story 4: raw tool results and the text the model saw.
     raw_result: Any = None
     model_view: Any = None
     latency_ms: int = 0
     attributes: dict[str, Any] = field(default_factory=dict)
 
+    # Used from User Story 5 (the trace page) and a later OTLP export.
     def otel_attributes(self) -> dict[str, Any]:
         """The span as OpenTelemetry GenAI attributes."""
         attrs: dict[str, Any] = {
@@ -127,6 +130,7 @@ class Tracer:
                 ),
             )
 
+    # Used from User Story 5 (the trace API).
     def spans_for(self, run_id: str) -> list[dict[str, Any]]:
         """Spans for the trace API. Only non-personal columns are selected; raw tool results and
         model views are never returned, so the response cannot contain personal data."""

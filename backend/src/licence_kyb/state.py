@@ -23,13 +23,16 @@ class RunState(TypedDict, total=False):
     agreement: dict[str, bool]
     serving_models: list[str]
     rule_results: list[dict[str, Any]]
+    # proposals and resolver_rounds: used from User Story 4 (the resolver).
     proposals: list[dict[str, Any]]
     resolver_rounds: int
     # confidence / gate / form
+    # Used from User Story 3 (confidence and routing).
     confidence: dict[str, dict[str, Any]]
     decision: dict[str, Any]
     form: dict[str, Any]
     # review / submit
+    # pending_decisions and submission: used from User Story 2 (review and submission).
     pending_decisions: dict[str, Any]
     submission: dict[str, Any]
     reasons: list[dict[str, Any]]

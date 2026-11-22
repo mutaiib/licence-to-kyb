@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
-from licence_kyb.api.auth import ApiError, Auth
+from licence_kyb.api.auth import Auth, error_response
 from licence_kyb.api.schemas import ErrorOut, SessionIn, SessionOut
 
 router = APIRouter(prefix="/api/session", tags=["session"])
@@ -17,12 +17,11 @@ router = APIRouter(prefix="/api/session", tags=["session"])
 def sign_in(body: SessionIn, request: Request, response: Response) -> SessionOut | JSONResponse:
     auth: Auth = request.app.state.auth
     ip = request.client.host if request.client else "unknown"
-    try:
-        ok = auth.check_password(body.username, body.password, ip)
-    except ApiError as err:
-        return JSONResponse({"code": err.code}, status_code=err.status)
-    if not ok:
-        return JSONResponse({"code": "invalid_credentials"}, status_code=401)
+    result = auth.check_password(body.username, body.password, ip)
+    if result == "rate_limited":
+        return error_response(429, "rate_limited")
+    if result == "invalid":
+        return error_response(401, "invalid_credentials")
     auth.issue(response, body.username)
     return SessionOut(reviewer=body.username)
 

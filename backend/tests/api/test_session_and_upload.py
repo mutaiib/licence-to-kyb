@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -12,16 +13,14 @@ from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
 from licence_kyb.api.app import create_app
-from licence_kyb.clock import FixedClock
 from licence_kyb.config import Settings
-from licence_kyb.llm.client import DailyBudget, LLMClient
-from licence_kyb.pipeline import Deps, Pipeline
-from licence_kyb.registry import MockRegistry
-from licence_kyb.security import Cipher
+from licence_kyb.llm.client import ModelRequest, ModelResponse
 from licence_kyb.testdata.answers import ScriptedTransport
 from licence_kyb.testdata.catalogue import GROUPS, build
+from tests.builders import first_case, make_pipeline
 
 PASSWORD = "correct horse battery staple"  # noqa: S105 - test-only reviewer account
+FERNET_KEY = Fernet.generate_key().decode()  # one key, so a restarted app reads earlier runs
 
 
 @pytest.fixture(scope="module")
@@ -32,22 +31,28 @@ def catalogue(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, list[dict
     return root, build(root, seed=5, groups=groups).cases
 
 
-def make_client(tmp_path: Path, root: Path, case: dict[str, Any]) -> TestClient:
+class BrokenTransport(ScriptedTransport):
+    """A model transport that fails in a way the pipeline does not expect."""
+
+    def send(self, req: ModelRequest) -> ModelResponse:
+        raise RuntimeError("the transport broke")
+
+
+def make_client(
+    tmp_path: Path, root: Path, case: dict[str, Any], transport: ScriptedTransport | None = None
+) -> TestClient:
     settings = Settings(
         reviewer_accounts={"reviewer1": PasswordHasher().hash(PASSWORD)},  # type: ignore[dict-item]
         session_secret="s" * 32,  # type: ignore[arg-type]
         cookie_secure=False,
     )
-    deps = Deps(
-        data_dir=tmp_path / "var",
-        cipher=Cipher([Fernet.generate_key().decode()]),
-        llm=LLMClient(ScriptedTransport(case["expected_values"]), DailyBudget(1_000_000)),
-        clock=FixedClock(),
-        registry=MockRegistry(root / "data" / "registry_mock.json"),
+    pipeline = make_pipeline(
+        tmp_path / "var",
+        transport or ScriptedTransport(case["expected_values"]),
+        registry_path=root / "data" / "registry_mock.json",
+        fernet_key=FERNET_KEY,
     )
-    return TestClient(
-        create_app(data_dir=tmp_path / "var", settings=settings, pipeline=Pipeline(deps))
-    )
+    return TestClient(create_app(data_dir=tmp_path / "var", settings=settings, pipeline=pipeline))
 
 
 def sign_in(client: TestClient) -> str:
@@ -140,7 +145,7 @@ def test_uploading_a_clean_licence_gives_a_run_with_a_draft_form(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "clean")
+    case = first_case(cases, "clean")
     client = make_client(tmp_path, root, case)
     csrf = sign_in(client)
 
@@ -162,7 +167,7 @@ def test_a_flagged_field_shows_its_value_state_reason_and_evidence_box(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "near_expiry")
+    case = first_case(cases, "near_expiry")
     client = make_client(tmp_path, root, case)
     csrf = sign_in(client)
 
@@ -231,7 +236,7 @@ def test_reasons_carry_their_values_and_fields_report_their_document_status(
     tmp_path: Path, catalogue: Any
 ) -> None:
     root, cases = catalogue
-    case = next(c for c in cases if c["group"] == "near_expiry")
+    case = first_case(cases, "near_expiry")
     client = make_client(tmp_path, root, case)
     csrf = sign_in(client)
 
@@ -244,3 +249,53 @@ def test_reasons_carry_their_values_and_fields_report_their_document_status(
     # The synthetic licences print no unified licence number, so the API must say so.
     statuses = {name: f["status"] for name, f in view["form"]["fields"].items()}
     assert set(statuses.values()) <= {"present", "not_present", "unclear"}
+
+
+def test_a_run_whose_processing_crashes_goes_to_review_with_processing_failed(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    root, cases = catalogue
+    client = make_client(tmp_path, root, cases[0], transport=BrokenTransport(None))
+    csrf = sign_in(client)
+
+    run_id = upload(client, csrf, root, cases[0]).json()["run_id"]
+    view = client.get(f"/api/runs/{run_id}").json()
+
+    assert view["status"] == "awaiting_review"
+    assert "processing_failed" in [r["code"] for r in view["reasons"]]
+
+
+def test_a_run_left_processing_before_a_restart_is_processed_at_startup(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    root, cases = catalogue
+    case = first_case(cases, "clean")
+    pipeline = make_pipeline(
+        tmp_path / "var",
+        ScriptedTransport(case["expected_values"]),
+        registry_path=root / "data" / "registry_mock.json",
+        fernet_key=FERNET_KEY,
+    )
+    upload_result = pipeline.upload(
+        (root / case["document"]).read_bytes(), applicant_name=case["applicant_name"]
+    )
+    assert upload_result.run_id is not None
+    pipeline.db.update_run(upload_result.run_id, status="processing")
+
+    with make_client(tmp_path, root, case) as after:
+        sign_in(after)
+        status = wait_for_status(after, upload_result.run_id, until={"awaiting_submit"})
+
+    assert status == "awaiting_submit"
+
+
+def wait_for_status(client: TestClient, run_id: str, *, until: set[str]) -> str:
+    """Poll the run until its status is one of ``until``, for at most 20 seconds."""
+    deadline = time.monotonic() + 20
+    status = ""
+    while time.monotonic() < deadline:
+        status = client.get(f"/api/runs/{run_id}").json()["status"]
+        if status in until:
+            return status
+        time.sleep(0.1)
+    return status

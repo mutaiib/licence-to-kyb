@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 
+from licence_kyb.api.auth import error_response
 from licence_kyb.api.schemas import (
     ErrorOut,
     RunCreated,
@@ -20,6 +22,8 @@ from licence_kyb.api.views import build_run_view
 from licence_kyb.nodes.intake import MAX_BYTES
 from licence_kyb.pipeline import Pipeline
 
+RUN_LIST_LIMIT = 200
+
 router = APIRouter(prefix="/api/runs", tags=["runs"])
 log = logging.getLogger(__name__)
 
@@ -29,11 +33,30 @@ def _pipeline(request: Request) -> Pipeline:
     return pipeline
 
 
-def _process(pipeline: Pipeline, run_id: str) -> None:
+def process_in_background(pipeline: Pipeline, run_id: str) -> None:
+    """Process a run. An error sends the run to review, so it never stays stuck (FR-039)."""
     try:
         pipeline.process(run_id)
-    except Exception:  # the deadline sweep moves the run to review (FR-039)
+    except Exception:  # any error: the reviewer takes over
         log.exception("processing failed", extra={"run_id": run_id})
+        pipeline.mark_failed(run_id)
+
+
+def resume_unfinished_runs(pipeline: Pipeline) -> threading.Thread:
+    """After a restart, process again every run left in received or processing (FR-030).
+
+    A background thread does the work, so the API answers requests at once.
+    """
+
+    def resume(run_id: str) -> None:
+        process_in_background(pipeline, run_id)
+
+    def resume_all() -> None:
+        pipeline.ops.resume_on_startup(resume)
+
+    thread = threading.Thread(target=resume_all, name="resume-runs", daemon=True)
+    thread.start()
+    return thread
 
 
 @router.post(
@@ -62,32 +85,26 @@ async def create_run(
         return JSONResponse(
             {"run_id": result.run_id, "status": status, "duplicate": True}, status_code=200
         )
-    background.add_task(_process, pipeline, result.run_id)
+    background.add_task(process_in_background, pipeline, result.run_id)
     return RunCreated(run_id=result.run_id, status="processing")
 
 
 @router.get("", response_model=RunList)
 def list_runs(request: Request) -> RunList:
     pipeline = _pipeline(request)
-    with pipeline.db.connect() as conn:
-        rows = conn.execute(
-            "SELECT run_id, created_at, applicant_name, route, status, cost_usd, duration_ms "
-            "FROM runs ORDER BY created_at DESC LIMIT 200"
-        ).fetchall()
     cipher = pipeline.deps.cipher
-    return RunList(
-        runs=[
-            RunSummary(**{**dict(r), "applicant_name": cipher.decrypt_text(r["applicant_name"])})
-            for r in rows
-        ]
-    )
+    summaries: list[RunSummary] = []
+    for row in pipeline.db.list_runs(limit=RUN_LIST_LIMIT):
+        row["applicant_name"] = cipher.decrypt_text(row["applicant_name"])
+        summaries.append(RunSummary(**row))
+    return RunList(runs=summaries)
 
 
 @router.get("/{run_id}", response_model=RunView, responses={404: {"model": ErrorOut}})
 def get_run(run_id: str, request: Request) -> RunView | JSONResponse:
     view = build_run_view(_pipeline(request), run_id)
     if view is None:
-        return JSONResponse({"code": "not_found"}, status_code=404)
+        return error_response(404, "not_found")
     return view
 
 
@@ -99,7 +116,7 @@ def get_page(run_id: str, page: int, request: Request) -> Response:
     try:
         png = _pipeline(request).page_png(run_id, page)
     except FileNotFoundError:
-        return JSONResponse({"code": "not_found"}, status_code=404)
+        return error_response(404, "not_found")
     return Response(
         content=png, media_type="image/png", headers={"Cache-Control": "private, no-store"}
     )

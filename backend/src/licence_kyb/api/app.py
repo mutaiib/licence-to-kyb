@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
@@ -20,11 +21,24 @@ PUBLIC = {("POST", "/api/session")}
 def create_app(
     *, data_dir: Path, settings: Settings | None = None, pipeline: Pipeline | None = None
 ) -> FastAPI:
+    """The API app. ``main.py`` always passes a pipeline.
+
+    Without a pipeline, only the health, session and OpenAPI parts work: the health tests and
+    scripts/export_openapi.py use that. The run routes need a pipeline.
+    """
     settings = settings or Settings()
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        if pipeline is not None:
+            routes_runs.resume_unfinished_runs(pipeline)
+        yield
+
     app = FastAPI(
         title="licence-to-kyb",
         version="0.0.0",
         description="Trade licence to KYB onboarding (contracts/http-api.md).",
+        lifespan=lifespan,
     )
     if pipeline is not None:
         app.state.pipeline = pipeline

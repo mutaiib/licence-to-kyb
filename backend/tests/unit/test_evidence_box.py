@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from licence_kyb.api.views import _evidence_box
+from licence_kyb.nodes.preprocess import Word
 
 
-def word(text: str, x0: float, x1: float, y: float = 0.5) -> dict[str, object]:
-    return {"page": 1, "text": text, "bbox": [x0, y - 0.005, x1, y + 0.005], "conf": 1.0}
+def word(text: str, x0: float, x1: float, y: float = 0.5) -> Word:
+    return Word(page=1, text=text, bbox=(x0, y - 0.005, x1, y + 0.005), conf=1.0)
 
 
 def test_the_box_spans_label_and_value_even_when_extraction_order_differs() -> None:

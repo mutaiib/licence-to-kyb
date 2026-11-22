@@ -11,14 +11,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from licence_kyb.testdata.catalogue import build
+from licence_kyb.testdata.catalogue import DEFAULT_SEED, build
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=20260601)
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     args = parser.parse_args()
     result = build(ROOT, seed=args.seed)
     print(

@@ -15,6 +15,8 @@ import numpy as np
 import pypdfium2 as pdfium
 from PIL import Image, ImageDraw, ImageFilter
 
+from licence_kyb.nodes.preprocess import POINTS_PER_INCH
+
 Degradation = Literal[
     "blur", "jpeg", "low_dpi", "rotate_small", "rotate_90", "perspective", "stamp"
 ]
@@ -24,7 +26,7 @@ def rasterise(pdf: bytes, dpi: int = 200) -> Image.Image:
     doc = pdfium.PdfDocument(pdf)
     try:
         page = doc[0]
-        image: Image.Image = page.render(scale=dpi / 72).to_pil().convert("RGB")
+        image: Image.Image = page.render(scale=dpi / POINTS_PER_INCH).to_pil().convert("RGB")
     finally:
         doc.close()
     return image

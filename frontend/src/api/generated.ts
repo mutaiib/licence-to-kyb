@@ -148,6 +148,13 @@ export interface components {
             /** Y */
             y: number;
         };
+        /** FormActivity */
+        FormActivity: {
+            /** Code */
+            code: string | null;
+            /** Description */
+            description: string | null;
+        };
         /** FormFieldView */
         FormFieldView: {
             confidence?: components["schemas"]["ConfidenceView"] | null;
@@ -178,7 +185,18 @@ export interface components {
              */
             status: "present" | "not_present" | "unclear";
             /** Value */
-            value: unknown;
+            value: string | components["schemas"]["FormPerson"][] | components["schemas"]["FormActivity"][] | null;
+        };
+        /** FormPerson */
+        FormPerson: {
+            /** Name */
+            name: string;
+            /** Nationality */
+            nationality: string | null;
+            /** Roles */
+            roles: string[];
+            /** Share Pct */
+            share_pct?: number | null;
         };
         /** FormView */
         FormView: {

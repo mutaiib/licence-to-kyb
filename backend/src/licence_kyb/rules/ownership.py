@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from licence_kyb.rules.base import failed, not_applicable, passed, present
+from licence_kyb.schemas.licence import OWNER_ROLES
 
 if TYPE_CHECKING:
     from licence_kyb.rules import RuleContext
@@ -12,7 +13,6 @@ if TYPE_CHECKING:
     from licence_kyb.schemas.results import RuleResult
 
 SHARE_TOLERANCE = 0.5
-OWNER_ROLES = frozenset({"owner", "partner", "shareholder"})
 
 
 def _people(ctx: RuleContext) -> list[Person] | None:
