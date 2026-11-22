@@ -39,7 +39,7 @@ The graph is `validate → resolve → validate` (at most 2 rounds) `→ confide
 | `registry_not_found` | the number looked up may be misread |
 | `low_confidence` from the `required` check | the value was not readable |
 
-**Applying proposals:** the resolve node applies each proposal to a copy of the extraction, re-runs every rule, and keeps the proposal only if every rule on its field passes (FR-016). A kept value has origin `read` and the proposal's evidence quote, so the evidence check applies to it as to any read value.
+**Applying proposals:** the resolve node applies each proposal to a copy of the extraction, re-runs every rule, and keeps the proposal only if no blocking check and no re-readable check (the table above) fails on its field (FR-016). A business warning that is true of the corrected value, such as `near_expiry`, does not block it: it is not a doubt about the reading, and it stays flagged for the reviewer. A kept value has origin `read` and the proposal's evidence quote, so the evidence check applies to it as to any read value.
 
 **Text-only models:** a profile with `vision: false` does not get `licence_reread_region`; `licence_ocr_region` reads the same regions from the OCR words.
 

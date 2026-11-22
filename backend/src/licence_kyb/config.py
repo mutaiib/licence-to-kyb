@@ -110,6 +110,8 @@ class ModelProfile(BaseModel):
     """None: the provider's published prices (``llm/client.py``)."""
     deadline_seconds: float | None = None
     """Overrides ``budgets.yaml`` for a slower model, such as one on a CPU."""
+    resolver_seconds: tuple[float, float] | None = None
+    """(soft, hard) resolver time limits for a slower model; the other limits stay shared."""
     steps: ModelsConfig
 
 
@@ -165,6 +167,15 @@ def models_config() -> ModelsConfig:
 
 def budgets_config() -> BudgetsConfig:
     return BudgetsConfig.model_validate(load_yaml("budgets.yaml"))
+
+
+def resolver_budget() -> ResolverBudget:
+    """The resolver's limits, with the active profile's time limits when it sets them."""
+    limits = budgets_config().resolver
+    seconds = active_profile().resolver_seconds
+    if seconds is None:
+        return limits
+    return limits.model_copy(update={"soft_seconds": seconds[0], "hard_seconds": seconds[1]})
 
 
 def processing_deadline_seconds() -> float:
