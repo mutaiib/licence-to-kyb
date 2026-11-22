@@ -154,10 +154,37 @@ class Database:
             ).fetchall()
         return [dict(r) for r in rows]
 
+    def list_runs(self, limit: int) -> list[dict[str, Any]]:
+        """The newest runs first, with the columns the run list shows."""
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT run_id, created_at, applicant_name, route, status, cost_usd, duration_ms "
+                "FROM runs ORDER BY created_at DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
     def delete_runs_created_before(self, iso_timestamp: str) -> int:
         with self.connect() as conn:
             cur = conn.execute("DELETE FROM runs WHERE created_at < ?", (iso_timestamp,))
             return cur.rowcount
+
+    # ------------------------------------------------------------------ files
+    def record_file(
+        self, *, run_id: str, mime: str, page_count: int, megapixels: float, encrypted_path: str
+    ) -> None:
+        """One file per run. Repeating the write for the same run writes nothing new."""
+        with self.connect() as conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO files (run_id, mime, page_count, megapixels, "
+                "encrypted_path) VALUES (?, ?, ?, ?, ?)",
+                (run_id, mime, page_count, megapixels, encrypted_path),
+            )
+
+    def file_mime(self, run_id: str) -> str:
+        with self.connect() as conn:
+            row = conn.execute("SELECT mime FROM files WHERE run_id = ?", (run_id,)).fetchone()
+        return str(row["mime"])
 
     # ------------------------------------------------------------------ keyed writes
     def record_decision(

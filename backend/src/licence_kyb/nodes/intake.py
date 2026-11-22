@@ -96,15 +96,17 @@ class IntakeService:
                 run.run_id, status="rejected", route="reject", reasons_json=json.dumps(reasons)
             )
             return IntakeResult(run.run_id, reason_code=reason, mime=mime)
+        assert mime is not None  # noqa: S101 - a file of unknown type is refused above
         path = self.stored_path(run.run_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(self.cipher.encrypt(data))
-        with self.db.connect() as conn:
-            conn.execute(
-                "INSERT OR IGNORE INTO files (run_id, mime, page_count, megapixels, "
-                "encrypted_path) VALUES (?, ?, ?, ?, ?)",
-                (run.run_id, mime, pages, megapixels, str(path)),
-            )
+        self.db.record_file(
+            run_id=run.run_id,
+            mime=mime,
+            page_count=pages,
+            megapixels=megapixels,
+            encrypted_path=str(path),
+        )
         return IntakeResult(run.run_id, mime=mime, page_count=pages)
 
     def _check(self, data: bytes) -> tuple[ReasonCode | None, str | None, int, float]:

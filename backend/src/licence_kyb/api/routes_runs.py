@@ -20,6 +20,8 @@ from licence_kyb.api.views import build_run_view
 from licence_kyb.nodes.intake import MAX_BYTES
 from licence_kyb.pipeline import Pipeline
 
+RUN_LIST_LIMIT = 200
+
 router = APIRouter(prefix="/api/runs", tags=["runs"])
 log = logging.getLogger(__name__)
 
@@ -69,18 +71,12 @@ async def create_run(
 @router.get("", response_model=RunList)
 def list_runs(request: Request) -> RunList:
     pipeline = _pipeline(request)
-    with pipeline.db.connect() as conn:
-        rows = conn.execute(
-            "SELECT run_id, created_at, applicant_name, route, status, cost_usd, duration_ms "
-            "FROM runs ORDER BY created_at DESC LIMIT 200"
-        ).fetchall()
     cipher = pipeline.deps.cipher
-    return RunList(
-        runs=[
-            RunSummary(**{**dict(r), "applicant_name": cipher.decrypt_text(r["applicant_name"])})
-            for r in rows
-        ]
-    )
+    summaries: list[RunSummary] = []
+    for row in pipeline.db.list_runs(limit=RUN_LIST_LIMIT):
+        row["applicant_name"] = cipher.decrypt_text(row["applicant_name"])
+        summaries.append(RunSummary(**row))
+    return RunList(runs=summaries)
 
 
 @router.get("/{run_id}", response_model=RunView, responses={404: {"model": ErrorOut}})

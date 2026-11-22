@@ -135,11 +135,7 @@ class Pipeline:
         run_id = state["run_id"]
         with self.tracer.span("step", "preprocess", run_id=run_id):
             data = self.intake.read_original(run_id)
-            with self.db.connect() as conn:
-                mime = conn.execute(
-                    "SELECT mime FROM files WHERE run_id = ?", (run_id,)
-                ).fetchone()["mime"]
-            pages = preprocess_file(data, mime)
+            pages = preprocess_file(data, self.db.file_mime(run_id))
             folder = self.deps.files_dir / run_id
             for n, png in enumerate(pages.images, start=1):
                 (folder / f"page-{n}.png.enc").write_bytes(self.deps.cipher.encrypt(png))
