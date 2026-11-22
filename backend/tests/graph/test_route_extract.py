@@ -137,6 +137,59 @@ def test_a_blank_page_goes_to_review_as_unclear(catalogue: Any, tmp_path: Path) 
     assert codes(state) == {"unclear_document"}
 
 
+class RouteRefused(ScriptedTransport):
+    """The model declines to identify the document."""
+
+    def send(self, req: Any) -> Any:
+        response = super().send(req)
+        if req.step == "route":
+            return replace(response, content=[], parsed=None, stop_reason="refusal")
+        return response
+
+
+@pytest.mark.parametrize(
+    ("transport", "budget", "code"),
+    [
+        (ScriptedTransport(None, doc_type="unclear", authority="unknown"), 1_000_000, None),
+        (RouteRefused(None), 1_000_000, None),
+        (ScriptedTransport(None), 10, "budget_exhausted"),
+    ],
+    ids=["unclear document", "routing failed", "daily budget used"],
+)
+def test_a_run_that_was_never_read_still_gets_a_form_to_fill_by_hand(
+    catalogue: Any, tmp_path: Path, transport: ScriptedTransport, budget: int, code: str | None
+) -> None:
+    """FR-043: when no reading exists, the reviewer enters the values by hand."""
+    root, cases = catalogue
+    case = first_case(cases.values(), "clean")
+
+    state, pipeline = run_case(root, case, tmp_path, transport, budget=budget)
+
+    assert state["decision"]["route"] == "needs_review"
+    assert state["form"] is not None
+    if code:
+        assert code in codes(state)
+    number = case["expected_values"]["licence_number"]
+    pipeline.act(
+        state["run_id"],
+        {
+            "kind": "review",
+            "action_id": "a1",
+            "reviewer": "r1",
+            "form_version": state["form"]["version"],
+            "decisions": [
+                {
+                    "decision_id": "d1",
+                    "field": "licence_number",
+                    "action": "correct",
+                    "value": number,
+                }
+            ],
+        },
+    )
+    assert pipeline.state(state["run_id"])["form"]["licence_number"] == number
+
+
 def test_an_authority_that_contradicts_the_printed_number_becomes_unknown(
     catalogue: Any, tmp_path: Path
 ) -> None:

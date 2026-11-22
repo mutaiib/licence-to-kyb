@@ -276,7 +276,11 @@ class Pipeline:
         g.add_conditional_edges(
             "preprocess", self._after_preprocess, {"route": "route", "gate": "gate"}
         )
-        g.add_conditional_edges("route", self._after_route, {"extract": "extract", "gate": "gate"})
+        g.add_conditional_edges(
+            "route",
+            self._after_route,
+            {"extract": "extract", "map_form": "map_form", "gate": "gate"},
+        )
         g.add_conditional_edges(
             "extract", self._after_extract, {"validate": "validate", "map_form": "map_form"}
         )
@@ -375,8 +379,14 @@ class Pipeline:
         return "gate" if unreadable else "route"
 
     @staticmethod
-    def _after_route(state: RunState) -> Literal["extract", "gate"]:
-        return "extract" if state["route"]["doc_type"] == "trade_licence" else "gate"
+    def _after_route(state: RunState) -> Literal["extract", "map_form", "gate"]:
+        """A licence is read. A document that is not a licence goes to the gate (rejected).
+        An unclear one, or one the model could not identify (a failed call, the daily budget
+        used), gets an empty form, so the reviewer can enter the values by hand (FR-043)."""
+        doc_type = state["route"]["doc_type"]
+        if doc_type == "trade_licence":
+            return "extract"
+        return "map_form" if doc_type == "unclear" else "gate"
 
     def _extract(self, state: RunState) -> dict[str, Any]:
         run_id = state["run_id"]
@@ -565,11 +575,13 @@ class Pipeline:
         return with_expiry_corroboration(run_rules(ctx), state.get("agreement", {}))
 
     def _map_form(self, state: RunState) -> dict[str, Any]:
-        ex = TradeLicenceExtraction.model_validate(state["extraction"])
+        # A run that was never read (unclear document) starts from an empty extraction.
+        extraction = state.get("extraction") or review.empty_extraction()
+        ex = TradeLicenceExtraction.model_validate(extraction)
         results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
         with self.tracer.span("step", "map_form", run_id=state["run_id"]):
             form = build_form(ex, results, authority=state["route"]["authority"], version=1)
-        return {"form": form.model_dump(mode="json")}
+        return {"extraction": extraction, "form": form.model_dump(mode="json")}
 
     def _confidence(self, state: RunState) -> dict[str, Any]:
         """Score each read field from its evidence; flag fields below their threshold."""
