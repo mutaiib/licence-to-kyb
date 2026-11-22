@@ -26,6 +26,7 @@ test:
 	cd frontend && npm test
 
 types:
+	$(BACKEND) python scripts/export_openapi.py var/openapi.json
 	cd frontend && npx openapi-typescript ../var/openapi.json -o src/api/generated.ts
 
 eval:              ## paid: calls the model API
