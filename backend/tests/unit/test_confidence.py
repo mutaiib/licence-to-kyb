@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from hypothesis import given
 from hypothesis import strategies as st
+
 from licence_kyb.nodes.confidence import (
     SIGNALS,
     ConfidenceConfig,
@@ -12,7 +13,6 @@ from licence_kyb.nodes.confidence import (
     low_confidence_results,
     weighted_score,
 )
-
 from licence_kyb.nodes.preprocess import Word
 from licence_kyb.rules.base import failed, not_applicable, passed
 from tests.builders import extraction, field
@@ -131,3 +131,10 @@ def test_raising_any_signal_never_lowers_the_score(
 @given(SIGNAL_VALUES)
 def test_the_score_stays_between_0_and_1(signals: dict[str, float]) -> None:
     assert 0.0 <= weighted_score(signals, WEIGHTS) <= 1.0
+
+
+def test_a_field_with_its_own_failed_check_is_not_also_flagged_as_low_confidence() -> None:
+    scores = {"expiry_date": {"score": 0.6, "threshold": 0.9, "signals": {}}}
+    expired = [failed("expiry", "expiry_date", severity="block", reason="expired")]
+
+    assert low_confidence_results(scores, expired) == []

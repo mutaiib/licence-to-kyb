@@ -136,9 +136,16 @@ def score_fields(
     return scores
 
 
-def low_confidence_results(scores: dict[str, dict[str, Any]]) -> list[RuleResult]:
+def low_confidence_results(
+    scores: dict[str, dict[str, Any]], other_results: list[RuleResult] | None = None
+) -> list[RuleResult]:
     """A failed ``confidence`` check for each field below its threshold. The form, the review
-    page and the review actions then treat it like any other failed check."""
+    page and the review actions then treat it like any other failed check.
+
+    A field that already has its own failed check is not flagged again: that check names
+    the problem more exactly. Its score still shows in the field details.
+    """
+    already_flagged = {f for r in other_results or [] if r.counts_as_failed for f in r.fields}
     return [
         failed(
             "confidence",
@@ -148,5 +155,7 @@ def low_confidence_results(scores: dict[str, dict[str, Any]]) -> list[RuleResult
             detail={"score": f"{s['score']:.2f}", "threshold": f"{s['threshold']:.2f}"},
         )
         for source, s in scores.items()
-        if s.get("threshold") is not None and s["score"] < s["threshold"]
+        if s.get("threshold") is not None
+        and s["score"] < s["threshold"]
+        and source not in already_flagged
     ]

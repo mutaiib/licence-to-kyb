@@ -363,7 +363,7 @@ class Pipeline:
             self._pages(state).words,
             self.deps.confidence,
         )
-        flagged = low_confidence_results(scores)
+        flagged = low_confidence_results(scores, results)
         return {
             "confidence": scores,
             "rule_results": [
@@ -433,7 +433,8 @@ class Pipeline:
                 for source, s in state.get("confidence", {}).items()
                 if getattr(ex, source).origin == "read"
             }
-            return self._run_rules(state, ex) + low_confidence_results(still_read)  # type: ignore[arg-type]
+            results = self._run_rules(state, ex)  # type: ignore[arg-type]
+            return results + low_confidence_results(still_read, results)
 
         return run
 
