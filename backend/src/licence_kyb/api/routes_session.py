@@ -27,7 +27,9 @@ def sign_in(body: SessionIn, request: Request, response: Response) -> SessionOut
 
 
 @router.delete("", status_code=204)
-def sign_out(response: Response) -> Response:
+def sign_out(request: Request, response: Response) -> Response:
+    auth: Auth = request.app.state.auth
+    auth.revoke(request)  # the session ends on the server, not only in this browser
     Auth.clear(response)
     response.status_code = 204
     return response

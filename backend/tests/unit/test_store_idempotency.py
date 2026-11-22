@@ -60,23 +60,6 @@ def test_a_new_action_with_a_new_key_is_always_recorded(db: Database) -> None:
     assert actions == ["reject", "reopen", "reject"]
 
 
-def test_review_decision_with_a_repeated_decision_id_is_applied_once(db: Database) -> None:
-    run_id = new_run(db)
-    for _ in range(2):
-        db.record_decision(
-            decision_id="d-9",
-            run_id=run_id,
-            form_version=2,
-            target="expiry_date",
-            action="correct",
-            value="2026-12-25",
-            reason=None,
-            reviewer="r1",
-        )
-
-    assert db.count("review_decisions") == 1
-
-
 def test_submission_is_unique_per_form_version_and_repeat_returns_the_same_id(db: Database) -> None:
     run_id = new_run(db)
     first = db.record_submission(

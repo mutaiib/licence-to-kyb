@@ -23,6 +23,7 @@ from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 
 from licence_kyb.config import Settings
+from licence_kyb.store.db import Database
 
 SESSION_COOKIE = "session"
 CSRF_COOKIE = "csrf"
@@ -40,8 +41,11 @@ def error_response(status: int, code: str) -> JSONResponse:
 
 
 class Auth:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, db: Database | None = None) -> None:
+        """``db`` stores revoked sessions; without it (tests of passwords only), sign-out
+        cannot end a session on the server."""
         self.settings = settings
+        self._db = db
         secret = settings.session_secret.get_secret_value() if settings.session_secret else None
         self._key = (secret or secrets.token_hex(32)).encode()
         self._hasher = PasswordHasher()
@@ -86,7 +90,8 @@ class Auth:
 
     def issue(self, response: Response, username: str) -> None:
         expiry = int(time.time() + self.settings.session_hours * 3600)
-        payload = f"{username}|{expiry}"
+        session_id = secrets.token_urlsafe(16)  # lets sign-out end this session on the server
+        payload = f"{username}|{session_id}|{expiry}"
         secure = self.settings.cookie_secure
         response.set_cookie(
             SESSION_COOKIE,
@@ -110,17 +115,32 @@ class Auth:
         response.delete_cookie(SESSION_COOKIE)
         response.delete_cookie(CSRF_COOKIE)
 
-    def reviewer(self, request: Request) -> str | None:
-        raw = request.cookies.get(SESSION_COOKIE, "")
-        parts = raw.split("|")
-        if len(parts) != 3:  # noqa: PLR2004 - user|expiry|signature
+    def _session(self, request: Request) -> tuple[str, str, int] | None:
+        """(user, session ID, expiry) of a valid, unexpired session cookie; else None."""
+        parts = request.cookies.get(SESSION_COOKIE, "").split("|")
+        if len(parts) != 4:  # noqa: PLR2004 - user|session_id|expiry|signature
             return None
-        user, expiry, sig = parts
-        if not hmac.compare_digest(sig, self._sign(f"{user}|{expiry}")):
+        user, session_id, expiry, sig = parts
+        if not hmac.compare_digest(sig, self._sign(f"{user}|{session_id}|{expiry}")):
             return None
         if not expiry.isdigit() or int(expiry) < time.time():
             return None
+        return user, session_id, int(expiry)
+
+    def reviewer(self, request: Request) -> str | None:
+        session = self._session(request)
+        if session is None:
+            return None
+        user, session_id, _ = session
+        if self._db is not None and self._db.is_revoked(session_id):
+            return None  # signed out: a copied cookie no longer works
         return user if user in self.settings.reviewer_accounts else None
+
+    def revoke(self, request: Request) -> None:
+        """End the request's session on the server (sign-out)."""
+        session = self._session(request)
+        if session is not None and self._db is not None:
+            self._db.revoke_session(session[1], session[2])
 
     @staticmethod
     def csrf_ok(request: Request) -> bool:
