@@ -10,6 +10,8 @@ import { listRuns, onSessionExpired, signOut } from './api/client';
 import { defaultThemeSlug, themes } from './astryx-themes';
 import { copy } from './copy';
 import { ReviewPage } from './pages/ReviewPage';
+import { RunsPage } from './pages/RunsPage';
+import { TracePage } from './pages/TracePage';
 import { SignInPage } from './pages/SignInPage';
 import { UploadPage } from './pages/UploadPage';
 import { navigate, parsePath, useLinkHandler, usePathname } from './router';
@@ -41,13 +43,22 @@ function useSession() {
 }
 
 function NavItems({ pathname }: { pathname: string }) {
+  const page = parsePath(pathname).name;
   return (
-    <TopNavItem
-      label={copy['nav.upload']}
-      href="/"
-      onClick={useLinkHandler('/')}
-      isSelected={parsePath(pathname).name === 'upload'}
-    />
+    <>
+      <TopNavItem
+        label={copy['nav.upload']}
+        href="/"
+        onClick={useLinkHandler('/')}
+        isSelected={page === 'upload'}
+      />
+      <TopNavItem
+        label={copy['nav.runs']}
+        href="/runs"
+        onClick={useLinkHandler('/runs')}
+        isSelected={page === 'runs' || page === 'trace'}
+      />
+    </>
   );
 }
 
@@ -78,6 +89,10 @@ export function App() {
     );
   } else if (page.name === 'review') {
     content = <ReviewPage runId={page.runId} />;
+  } else if (page.name === 'runs') {
+    content = <RunsPage />;
+  } else if (page.name === 'trace') {
+    content = <TracePage runId={page.runId} />;
   } else {
     content = <UploadPage />;
   }

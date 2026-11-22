@@ -15,12 +15,13 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from licence_kyb.config import StepModel
-from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest
+from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import load_prompt
 from licence_kyb.schemas.licence import TradeLicenceExtraction
 from licence_kyb.schemas.results import ProposedFix, RuleResult
 from licence_kyb.tools import ToolContext
 from licence_kyb.tools.definitions import tool_definitions
+from licence_kyb.tools.errors import ToolResult
 from licence_kyb.tools.runner import Budget, ToolRunner
 
 # Failed checks that a second reading can fix (contracts/resolver-tools.md, "When the
@@ -66,7 +67,10 @@ def run_resolver(
     budget: Budget,
     extraction: dict[str, Any],
     run_rules: RunRules,
+    on_model_call: Callable[[ModelRequest, ModelResponse], None] | None = None,
+    on_tool_call: Callable[[str, dict[str, Any], ToolResult], None] | None = None,
 ) -> ResolverOutcome:
+    """The loop. ``on_model_call`` and ``on_tool_call`` let the caller trace each call."""
     tools = tool_definitions(ctx.failed_fields, vision=ctx.reread is not None)
     runner = ToolRunner(ctx, budget)
     messages: list[dict[str, Any]] = [
@@ -93,10 +97,18 @@ def run_resolver(
             log.exception("resolver model call failed")
             break
         budget.charge_turn(response.usage.billed_tokens)
+        if on_model_call is not None:
+            on_model_call(request, response)
         calls = [b for b in response.content if b.get("type") == "tool_use"]
         if response.stop_reason != "tool_use" or not calls:
             break
-        results = [runner.call(c["name"], c.get("input") or {}).block(c["id"]) for c in calls]
+        results = []
+        for c in calls:
+            args = c.get("input") or {}
+            result = runner.call(c["name"], args)
+            if on_tool_call is not None:
+                on_tool_call(c["name"], args, result)
+            results.append(result.block(c["id"]))
         messages += [
             {"role": "assistant", "content": response.content},
             {"role": "user", "content": results},

@@ -26,6 +26,8 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 - User Story 4: a bounded resolver agent re-reads values that failed a check, with five
   read-only tools and one structured error format; a proposal is kept only when no check
   that doubts the value fails.
+- User Story 5: a trace of every step, model call and tool call, and today's refusal,
+  fallback and examination rates, cost and remaining budget, with personal data hidden.
 
 ### Changed
 - Readability pass: one source for shared constants and types, all SQL in `Database`,

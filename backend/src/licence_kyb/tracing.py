@@ -130,7 +130,17 @@ class Tracer:
                 ),
             )
 
-    # Used from User Story 5 (the trace API).
+    def run_totals(self, run_id: str) -> tuple[float, int]:
+        """The run's model cost (USD) and its processing time (ms, the sum of its steps)."""
+        with self.db.connect() as conn:
+            row = conn.execute(
+                "SELECT COALESCE(SUM(CASE WHEN kind = 'model_call' THEN cost_usd END), 0), "
+                "COALESCE(SUM(CASE WHEN kind = 'step' THEN latency_ms END), 0) "
+                "FROM spans WHERE run_id = ?",
+                (run_id,),
+            ).fetchone()
+        return float(row[0]), int(row[1])
+
     def spans_for(self, run_id: str) -> list[dict[str, Any]]:
         """Spans for the trace API. Only non-personal columns are selected; raw tool results and
         model views are never returned, so the response cannot contain personal data."""

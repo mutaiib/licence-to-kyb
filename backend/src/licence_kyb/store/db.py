@@ -252,6 +252,32 @@ class Database:
         verified = None if row["verified"] is None else bool(row["verified"])
         return SubmissionRow(row["submission_id"], row["run_id"], row["form_version"], verified)
 
+    def day_summary(self, day: str) -> dict[str, Any]:
+        """Counts for runs created on ``day`` (YYYY-MM-DD, UTC) that finished processing."""
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS runs, "
+                "SUM(route = 'needs_review') AS reviewed, "
+                "SUM(reasons_json LIKE '%\"fallback_model\"%') AS fallbacks, "
+                "SUM(EXISTS (SELECT 1 FROM spans s WHERE s.run_id = runs.run_id "
+                "            AND s.error_code = 'refusal')) AS refused "
+                "FROM runs WHERE substr(created_at, 1, 10) = ? "
+                "AND status NOT IN ('received', 'processing')",
+                (day,),
+            ).fetchone()
+            cost = conn.execute(
+                "SELECT COALESCE(SUM(cost_usd), 0) FROM spans "
+                "WHERE kind = 'model_call' AND substr(started_at, 1, 10) = ?",
+                (day,),
+            ).fetchone()[0]
+        return {
+            "runs": row["runs"],
+            "reviewed": row["reviewed"] or 0,
+            "fallbacks": row["fallbacks"] or 0,
+            "refused": row["refused"] or 0,
+            "cost_usd": float(cost),
+        }
+
     def find_submission(
         self, run_id: str, action_id: str, form_version: int
     ) -> dict[str, Any] | None:

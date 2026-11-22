@@ -22,6 +22,7 @@ from licence_kyb.config import StepModel
 from licence_kyb.llm.client import (
     LLMClient,
     LLMError,
+    ModelRefusedError,
     ModelRequest,
     ModelResponse,
     image_block,
@@ -45,6 +46,8 @@ class ExtractOutcome:
     serving_models: list[str] = field(default_factory=list)
     responses: list[tuple[ModelRequest, ModelResponse]] = field(default_factory=list)
     reasons: list[ReasonCode] = field(default_factory=list)
+    refused: bool = False
+    """The model declined a reading (counted in the daily refusal rate)."""
 
 
 def _profile_text(profile: AuthorityProfile) -> str:
@@ -90,6 +93,7 @@ class _Reading[M: BaseModel]:
     parsed: M | None = None
     responses: list[tuple[ModelRequest, ModelResponse]] = field(default_factory=list)
     reasons: list[ReasonCode] = field(default_factory=list)
+    refused: bool = False
 
 
 def _read[M: BaseModel](llm: LLMClient, request: ModelRequest, model: type[M]) -> _Reading[M]:
@@ -98,6 +102,7 @@ def _read[M: BaseModel](llm: LLMClient, request: ModelRequest, model: type[M]) -
         response = llm.call(request)
     except LLMError as exc:
         reading.reasons.append(exc.reason_code)
+        reading.refused = isinstance(exc, ModelRefusedError)
         return reading
     reading.responses.append((request, response))
     if is_fallback(request, response):
@@ -196,4 +201,5 @@ def extract_licence(
         out.agreement = agreement(out.primary, out.secondary)
     # Both readings can report the same code; keep each code once, in first-seen order.
     out.reasons = list(dict.fromkeys([*primary.reasons, *secondary.reasons]))
+    out.refused = primary.refused or secondary.refused
     return out

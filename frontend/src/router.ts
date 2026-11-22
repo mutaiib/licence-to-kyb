@@ -1,23 +1,38 @@
 /**
- * A small history router. The app has two pages, so a router dependency is not necessary.
+ * A small history router. The app has four pages, so a router dependency is not necessary.
  * nginx serves index.html for every path (nginx.conf), so deep links work.
  */
 import { useCallback, useSyncExternalStore, type MouseEvent } from 'react';
 
-export type Page = { name: 'upload' } | { name: 'review'; runId: string };
+export type Page =
+  | { name: 'upload' }
+  | { name: 'runs' }
+  | { name: 'review'; runId: string }
+  | { name: 'trace'; runId: string };
 
 const NAVIGATE_EVENT = 'app:navigate';
 
 export function parsePath(pathname: string): Page {
-  const match = /^\/runs\/([^/]+)\/?$/.exec(pathname);
-  if (match?.[1] !== undefined) {
-    return { name: 'review', runId: decodeURIComponent(match[1]) };
+  if (/^\/runs\/?$/.test(pathname)) {
+    return { name: 'runs' };
+  }
+  const trace = /^\/runs\/([^/]+)\/trace\/?$/.exec(pathname);
+  if (trace?.[1] !== undefined) {
+    return { name: 'trace', runId: decodeURIComponent(trace[1]) };
+  }
+  const review = /^\/runs\/([^/]+)\/?$/.exec(pathname);
+  if (review?.[1] !== undefined) {
+    return { name: 'review', runId: decodeURIComponent(review[1]) };
   }
   return { name: 'upload' };
 }
 
 export function runPath(runId: string): string {
   return `/runs/${encodeURIComponent(runId)}`;
+}
+
+export function tracePath(runId: string): string {
+  return `${runPath(runId)}/trace`;
 }
 
 export function navigate(path: string): void {

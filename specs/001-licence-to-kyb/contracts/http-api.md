@@ -155,7 +155,18 @@ Response: `{ "spans": [SpanView] }`. Each `SpanView` contains `span_id`, `parent
 
 ## GET /api/metrics/summary
 
-Response for the current day (UTC):
+Response for the current day (UTC). Counted over runs created today that finished processing:
+
+| Field | Meaning |
+|---|---|
+| `runs` | how many runs |
+| `refusal_rate` | share of runs with at least one model call the model refused |
+| `fallback_rate` | share of runs with reason code `fallback_model` |
+| `review_rate` | share of runs routed `needs_review` |
+| `cost_usd` | the sum of the cost of today's model-call spans |
+| `budget_tokens_remaining` | the daily token budget minus the tokens used today |
+
+Example:
 
 ```json
 { "runs": 42, "refusal_rate": 0.0, "fallback_rate": 0.02, "review_rate": 0.31, "cost_usd": 6.10, "budget_tokens_remaining": 1250000 }
