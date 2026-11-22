@@ -108,6 +108,9 @@ Request:
   - An ID that was already applied is ignored, and creates no second audit event.
   - A new action, such as a second reject after a reopen, carries a new ID, so it is always recorded.
 - **Partial review:** each call resumes the paused run, applies the decisions, and pauses it again. The run leaves review only when `approve_form` or `reject_case` is set.
+- **When it applies:** runs in `awaiting_review` or `awaiting_submit`. A `ready` run is approved with `approve_form` and no decisions.
+- **Flagged field:** a form field with state `flagged` or `needs_examination`. `approve_form` needs a decision on every flagged field (`undecided_fields`).
+- **Blocking checks:** an `approve` or `correct` decision is refused with `blocking_rule_failed` when a rule with severity `block` fails on that field after the re-check. For example, an approved expired date or a corrected number in the wrong format.
 
 | Status | Meaning |
 |---|---|

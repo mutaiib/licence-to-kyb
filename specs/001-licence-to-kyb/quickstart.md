@@ -36,15 +36,15 @@ make demo                         # docker compose up; UI on http://localhost:51
 
 | Story | Steps | Expected result |
 |---|---|---|
-| US1 | Upload `data/generated/det_clean_001.pdf` with the business name from its ground truth. | The form shows every value from `det_clean_001.json`, each with its evidence text. |
-| US1 | Upload `data/generated/det_injected_001.pdf`. | Same values and route as `det_clean_001`. |
-| US2 | Upload `data/generated/det_near_expiry_001.pdf`. Correct the expiry date, approve, and submit. | One submission, marked as verified. The audit shows the correction and the reviewer. |
+| US1 | Upload `data/generated/clean_001.pdf` with the business name from its ground truth. | The form shows every value from `det_clean_001.json`, each with its evidence text. |
+| US1 | Upload `data/generated/injected_001.pdf`. | Same values and route as `det_clean_001`. |
+| US2 | Upload `data/generated/near_expiry_001.pdf`. Correct the expiry date, approve, and submit. | One submission, marked as verified. The audit shows the correction and the reviewer. |
 | US2 | Click Submit again. | Same submission ID. No second submission. |
 | US2 | Stop the stack while a run waits for review, start it again, and open the run. | Same flagged fields. |
-| US3 | Upload `data/generated/added_expired_001.pdf` (expiry corroborated). | Route "reject", reason code `expired`. |
-| US3 | Upload `data/generated/det_expired_uncertain_001.pdf`. | Route "needs review", reason code `expiry_uncertain`. |
+| US3 | Upload `data/generated/expired_001.pdf` (expiry corroborated). | Route "reject", reason code `expired`. |
+| US3 | Upload `data/generated/expired_uncertain_001.pdf`. | Route "needs review", reason code `expiry_uncertain`. |
 | US2 | Reopen the rejected run with a reason. | Status "awaiting review". The audit shows the reopen event and its reason. |
-| US4 | Upload `data/generated/dmcc_blur_003.pdf`. | The trace shows a resolver span, and the expiry date matches the ground truth. |
+| US4 | Upload `data/generated/scans_003.jpg`. | The trace shows a resolver span, and the expiry date matches the ground truth. |
 | US5 | Open a trace and the daily summary, and search each page for an owner's name. | The name is masked. The summary shows the refusal, fallback and review rates. |
 | US6 | Run `make eval`, change one threshold, then run `make eval-compare`. | The comparison lists only the cases whose route changed. |
 

@@ -32,7 +32,13 @@ class RunState(TypedDict, total=False):
     decision: dict[str, Any]
     form: dict[str, Any]
     # review / submit
-    # pending_decisions and submission: used from User Story 2 (review and submission).
-    pending_decisions: dict[str, Any]
+    action: dict[str, Any]
+    """The reviewer action the run resumed with (``wait_for_reviewer``)."""
+    decisions: dict[str, Any]
+    """Every field decision so far, keyed by form field (or rule ID for an override)."""
+    read_extraction: dict[str, Any]
+    """The extraction as the model read it, before any correction."""
+    applied_ids: list[str]
+    """Decision and action IDs already applied; a repeated ID changes nothing."""
     submission: dict[str, Any]
     reasons: list[dict[str, Any]]

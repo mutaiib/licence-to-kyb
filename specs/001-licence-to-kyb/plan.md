@@ -150,9 +150,9 @@ backend/
 │   ├── state.py               # RunState
 │   ├── schemas/               # licence.py, results.py, kyb_form.py, api.py
 │   ├── profiles/              # det.yaml, added.yaml, dmcc.yaml, ifza.yaml, generic.yaml
-│   ├── nodes/                 # intake, preprocess, route, extract, validate, resolve,
-│   │                          # confidence, gate, map_form, review (collect), apply_decisions,
-│   │                          # await_submit, submit, verify
+│   ├── nodes/                 # intake, preprocess, route, extract, map_form, review
+│   │                          # (apply one reviewer action), later: resolve, confidence, gate
+│   ├── pipeline.py            # the graph: process → wait_for_reviewer → apply_action → … → done
 │   ├── rules/                 # expiry, number_format, dates, ownership, legal_form,
 │   │                          # arabic_name, activity, grounding, qr, registry, applicant
 │   ├── tools/                 # reread_region, ocr_region, registry_mock,

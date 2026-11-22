@@ -18,6 +18,9 @@ export type FormActivity = Schemas['FormActivity'];
 export type EvidenceBox = Schemas['EvidenceBox'];
 export type StepView = Schemas['StepView'];
 export type ReasonCode = Schemas['ReasonView']['code'];
+export type ReviewRequest = Schemas['ReviewIn'];
+export type Decision = Schemas['DecisionIn'];
+export type SubmitResult = Schemas['SubmitOut'];
 export type RunStatus = RunView['status'];
 export type Route = NonNullable<RunView['route']>;
 export type FieldState = FormFieldView['state'];
@@ -152,6 +155,35 @@ export async function createRun(file: File, applicantName: string): Promise<Uplo
     return { kind: 'refused', reasonCode: reasonCode as ReasonCode };
   }
   return { kind: 'failed', code: field(raw.body, 'code') ?? 'network' };
+}
+
+// ─── Reviewer actions (User Story 2). Each action carries a new random ID, so a repeated
+// request (for example after a network retry) changes nothing on the server. ──────────────────
+
+export function newId(): string {
+  return crypto.randomUUID();
+}
+
+const runPath = (runId: string, action: string) =>
+  `/api/runs/${encodeURIComponent(runId)}/${action}`;
+
+export async function reviewRun(runId: string, request: ReviewRequest): Promise<Result<RunView>> {
+  return toResult(await send('POST', runPath(runId, 'review'), JSON.stringify(request)), [200]);
+}
+
+export async function submitRun(runId: string, formVersion: number): Promise<Result<SubmitResult>> {
+  const body = { action_id: newId(), form_version: formVersion };
+  return toResult(await send('POST', runPath(runId, 'submit'), JSON.stringify(body)), [200]);
+}
+
+export async function reopenRun(runId: string, reason: string): Promise<Result<RunView>> {
+  const body = { action_id: newId(), reason };
+  return toResult(await send('POST', runPath(runId, 'reopen'), JSON.stringify(body)), [200]);
+}
+
+export async function retryRun(runId: string): Promise<Result<RunCreated>> {
+  const body = { action_id: newId() };
+  return toResult(await send('POST', runPath(runId, 'retry'), JSON.stringify(body)), [202]);
 }
 
 /** The URL of a page image (1-based page number). */

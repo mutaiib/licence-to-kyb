@@ -64,7 +64,7 @@ function openAt(path: string) {
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const fieldButton = (key: CopyKey) =>
-  screen.findByRole('button', { name: new RegExp(escape(copy[key])) });
+  screen.findByRole('button', { name: new RegExp(`^${escape(copy[key])}`) });
 
 beforeEach(() => {
   document.cookie = 'csrf=token-123';

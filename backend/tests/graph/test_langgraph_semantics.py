@@ -21,7 +21,7 @@ CALLS: list[str] = []
 def collect(state: RunState) -> dict[str, Any]:
     CALLS.append("collect")
     answer = interrupt({"flagged": ["expiry_date"]})
-    return {"pending_decisions": answer}
+    return {"action": answer}
 
 
 def apply(state: RunState) -> dict[str, Any]:
@@ -51,7 +51,7 @@ def test_a_paused_run_survives_a_restart_and_resumes_with_the_reviewers_answer(
     final = restarted.invoke(Command(resume={"expiry_date": "approve"}), thread_config("r1"))
 
     assert final["status"] == "awaiting_submit"
-    assert final["pending_decisions"] == {"expiry_date": "approve"}
+    assert final["action"] == {"expiry_date": "approve"}
 
 
 def test_the_interrupting_node_runs_again_from_its_start_on_resume(tmp_path: Path) -> None:

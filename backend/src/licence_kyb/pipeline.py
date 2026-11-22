@@ -1,12 +1,19 @@
 """The processing pipeline for one run (architecture §4; tasks T051).
 
-Graph (User Story 1 scope):
+Graph:
     preprocess → route → extract → validate → map_form → decide → persist
-with short-cuts from route and extract to ``decide`` when there is nothing to extract.
+        → wait_for_reviewer → apply_action → (wait_for_reviewer | retry | END)
 
-Nodes are pure except ``persist``, which writes keyed, idempotent records. Checkpoints are
-encrypted (EncryptedSerializer + the rotating Fernet cipher), because the state holds
-personal data from the document.
+- ``route`` goes straight to ``decide`` when the file is not a trade licence.
+- When extraction fails, ``map_form`` builds an empty form, so the reviewer can enter values.
+- ``wait_for_reviewer`` only pauses (``interrupt``). LangGraph re-runs a paused node when the
+  run resumes, so this node must have no side effects.
+- ``apply_action`` applies one reviewer action (logic in ``nodes/review.py``). ``act`` checks
+  the action before it resumes the run, so this node only sees valid actions.
+
+Nodes are pure except ``persist`` and ``apply_action``, which write keyed, idempotent
+records. Checkpoints are encrypted (EncryptedSerializer + the rotating Fernet cipher),
+because the state holds personal data from the document.
 """
 
 from __future__ import annotations
@@ -21,6 +28,7 @@ from langgraph.checkpoint.serde.encrypted import EncryptedSerializer
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
+from langgraph.types import Command, interrupt
 
 from licence_kyb.clock import Clock, SystemClock
 from licence_kyb.config import (
@@ -32,9 +40,10 @@ from licence_kyb.config import (
 from licence_kyb.graph import thread_config
 from licence_kyb.llm.client import LLMClient, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import prompt_hash
+from licence_kyb.nodes import review
 from licence_kyb.nodes.extract import build_extract_request, extract_licence
 from licence_kyb.nodes.intake import IntakeResult, IntakeService
-from licence_kyb.nodes.map_form import build_form
+from licence_kyb.nodes.map_form import SOURCES, build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
 from licence_kyb.nodes.route import build_route_request, route_document
 from licence_kyb.ops import Operations
@@ -113,23 +122,76 @@ class Pipeline:
             raise KeyError(run_id)
         applicant = self.deps.cipher.decrypt_text(run["applicant_name"])
         self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
+        config = thread_config(run_id)
+        if self.graph.get_state(config).next:
+            # A restart stopped this run part way: continue after its last completed step.
+            resumed: dict[str, Any] = self.graph.invoke(None, config)
+            return resumed
         state: dict[str, Any] = self.graph.invoke(
-            {"run_id": run_id, "applicant_name": applicant}, thread_config(run_id)
+            {"run_id": run_id, "applicant_name": applicant}, config
         )
         return state
 
     def mark_failed(self, run_id: str) -> None:
-        """Send a run whose processing raised an error to review (FR-039)."""
+        """Send a run whose processing raised an error to review (FR-039).
+
+        The run's graph also moves to the review pause, so the reviewer can retry it.
+        """
         run = self.db.get_run(run_id)
-        if run is not None:
-            self.ops.send_to_review(
-                run, event="processing_error", note="processing raised an error"
-            )
+        if run is None:
+            return
+        self.ops.send_to_review(run, event="processing_error", note="processing raised an error")
+        updated = self.db.get_run(run_id) or run
+        self.graph.update_state(
+            thread_config(run_id),
+            {
+                "run_id": run_id,
+                "applicant_name": self.deps.cipher.decrypt_text(run["applicant_name"]),
+                "status": "awaiting_review",
+                "reasons": json.loads(updated["reasons_json"]),
+            },
+            as_node="persist",  # the next node is wait_for_reviewer
+        )
 
     def page_png(self, run_id: str, page: int) -> bytes:
         return self.deps.cipher.decrypt(
             (self.deps.files_dir / run_id / f"page-{page}.png.enc").read_bytes()
         )
+
+    # ------------------------------------------------------------------ reviewer actions
+    def state(self, run_id: str) -> dict[str, Any]:
+        snapshot = self.graph.get_state(thread_config(run_id))
+        return dict(snapshot.values) if snapshot and snapshot.values else {}
+
+    def check(self, run_id: str, action: dict[str, Any]) -> None:
+        """Refuse an invalid action with ``review.ActionRefused``. Changes nothing."""
+        state = self.state(run_id)
+        if action["action_id"] in state.get("applied_ids", []):
+            return  # a repeated action is answered, not refused
+        kind = action["kind"]
+        if kind == "review":
+            review.apply_review(state, action, self._rules_for(state))
+        elif kind == "submit":
+            approved = self.db.approval_for(run_id, action["form_version"]) is not None
+            review.check_submit(state, action, approved=approved)
+        elif kind == "reopen":
+            review.check_reopen(state)
+        elif kind == "retry":
+            review.check_retry(state)
+
+    def act(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
+        """Check one reviewer action, then resume the paused run with it."""
+        self.check(run_id, action)
+        if action["action_id"] in self.state(run_id).get("applied_ids", []):
+            return self.state(run_id)
+        if action["kind"] == "retry":
+            self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
+        result: dict[str, Any] = self.graph.invoke(Command(resume=action), thread_config(run_id))
+        return result
+
+    def submission_for(self, run_id: str, action: dict[str, Any]) -> dict[str, Any] | None:
+        """The submission an earlier call made with this action or for this form version."""
+        return self.db.find_submission(run_id, action["action_id"], action["form_version"])
 
     # ------------------------------------------------------------------ graph
     def _build(self) -> CompiledStateGraph[Any]:
@@ -147,12 +209,26 @@ class Pipeline:
             "route", self._after_route, {"extract": "extract", "decide": "decide"}
         )
         g.add_conditional_edges(
-            "extract", self._after_extract, {"validate": "validate", "decide": "decide"}
+            "extract", self._after_extract, {"validate": "validate", "map_form": "map_form"}
         )
         g.add_edge("validate", "map_form")
         g.add_edge("map_form", "decide")
         g.add_edge("decide", "persist")
-        g.add_edge("persist", END)
+        g.add_node("wait_for_reviewer", self._wait_for_reviewer)
+        g.add_node("apply_action", self._apply_action)
+        g.add_edge("persist", "wait_for_reviewer")
+        g.add_edge("wait_for_reviewer", "apply_action")
+        g.add_conditional_edges(
+            "apply_action",
+            self._after_action,
+            {
+                "wait": "wait_for_reviewer",
+                "preprocess": "preprocess",
+                "route": "route",
+                "extract": "extract",
+                "end": END,
+            },
+        )
         return g.compile(checkpointer=self.checkpointer)
 
     def _preprocess(self, state: RunState) -> dict[str, Any]:
@@ -227,7 +303,9 @@ class Pipeline:
         for code in out.reasons:
             reasons.append(reason_entry(code))
         return {
-            "extraction": out.primary.model_dump(mode="json") if out.primary else {},
+            "extraction": (
+                out.primary.model_dump(mode="json") if out.primary else review.empty_extraction()
+            ),
             "secondary": out.secondary.model_dump(mode="json") if out.secondary else {},
             "agreement": out.agreement,
             "serving_models": out.serving_models,
@@ -235,11 +313,18 @@ class Pipeline:
         }
 
     @staticmethod
-    def _after_extract(state: RunState) -> Literal["validate", "decide"]:
-        return "validate" if state.get("extraction") else "decide"
+    def _after_extract(state: RunState) -> Literal["validate", "map_form"]:
+        failed = {r["code"] for r in state.get("reasons", [])} & review.RETRYABLE
+        return "map_form" if failed else "validate"
 
     def _validate(self, state: RunState) -> dict[str, Any]:
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
+        with self.tracer.span("step", "validate", run_id=state["run_id"]):
+            results = self._run_rules(state, ex)
+        return {"rule_results": [r.model_dump(mode="json") for r in results]}
+
+    def _run_rules(self, state: RunState, ex: TradeLicenceExtraction) -> list[RuleResult]:
+        """Every rule on one extraction. Used after extraction and after each review."""
         pages = self._pages(state)
         ctx = RuleContext(
             extraction=ex,
@@ -251,13 +336,11 @@ class Pipeline:
             applicant_name=state["applicant_name"],
             applicant_threshold=self.deps.applicant_threshold,
         )
-        with self.tracer.span("step", "validate", run_id=state["run_id"]):
-            results = run_rules(ctx)
-        return {"rule_results": [r.model_dump(mode="json") for r in results]}
+        return run_rules(ctx)
 
     def _map_form(self, state: RunState) -> dict[str, Any]:
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
-        results = [RuleResult.model_validate(r) for r in state["rule_results"]]
+        results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
         form = build_form(ex, results, authority=state["route"]["authority"], version=1)
         return {"form": form.model_dump(mode="json")}
 
@@ -304,14 +387,183 @@ class Pipeline:
             reasons_json=json.dumps(state.get("reasons", [])),
             form_version=version,
         )
-        self.db.record_audit(
-            event_key=f"{run_id}:persist:{status}:{version}",
-            run_id=run_id,
-            action="status_change",
+        self._audit(
+            state,
+            f"{run_id}:persist:{status}:{version}",
+            "status_change",
             actor="system",
             new=status,
         )
         return {"status": status}
+
+    # ------------------------------------------------------------------ review nodes
+    @staticmethod
+    def _wait_for_reviewer(state: RunState) -> dict[str, Any]:
+        action = interrupt({"run_id": state["run_id"], "status": state.get("status")})
+        return {"action": action}
+
+    @staticmethod
+    def _after_action(
+        state: RunState,
+    ) -> Literal["wait", "preprocess", "route", "extract", "end"]:
+        if state["status"] == "done":
+            return "end"
+        if state["status"] == "processing" and not state.get("pages"):
+            return "preprocess"  # processing failed before the pages were read
+        if state["status"] == "processing":  # retry: run the step that failed again
+            return (
+                "extract" if state.get("route", {}).get("doc_type") == "trade_licence" else "route"
+            )
+        return "wait"
+
+    def _rules_for(self, state: dict[str, Any]) -> review.RunRules:
+        return lambda ex: self._run_rules(state, ex)  # type: ignore[arg-type]
+
+    def _apply_action(self, state: RunState) -> dict[str, Any]:
+        action, run_id = state["action"], state["run_id"]
+        if action["kind"] == "review":
+            updates = self._apply_review(state, action)
+        elif action["kind"] == "submit":
+            updates = self._apply_submit(state, action)
+        elif action["kind"] == "reopen":
+            updates = self._apply_reopen(state, action)
+        else:
+            updates = self._apply_retry(state, action)
+        form = updates.get("form", state.get("form", {}))
+        reasons = updates.get("reasons", state.get("reasons", []))
+        self.db.update_run(
+            run_id,
+            status=updates["status"],
+            reasons_json=json.dumps(reasons),
+            form_version=form.get("version", 0),
+        )
+        return updates
+
+    def _audit(self, state: RunState, key: str, action: str, **fields: Any) -> None:
+        """One audit event per key; values are encrypted (they can hold personal data)."""
+        for name in ("old", "new"):
+            if fields.get(name) is not None:
+                fields[name] = self.deps.cipher.encrypt_text(str(fields[name]))
+        self.db.record_audit(event_key=key, run_id=state["run_id"], action=action, **fields)
+
+    def _apply_review(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
+        result = review.apply_review(dict(state), action, self._rules_for(dict(state)))
+        if not result.state:
+            return {"status": state["status"]}
+        reviewer, run_id = action["reviewer"], state["run_id"]
+        for d in result.new_decisions:
+            self._record_decision(state, d, reviewer)
+        form = result.state["form"]
+        if result.approved_version is not None:
+            self.db.record_approval(
+                action_id=action["action_id"],
+                run_id=run_id,
+                form_version=form["version"],
+                reviewer=reviewer,
+            )
+            self._audit(
+                state, action["action_id"], "approve_form", actor=reviewer, new=form["version"]
+            )
+        if result.rejected:
+            self._audit(
+                state, action["action_id"], "reject", actor=reviewer, reason=action["reject_reason"]
+            )
+        return result.state
+
+    def _record_decision(self, state: RunState, d: dict[str, Any], reviewer: str) -> None:
+        """The audit event for one field decision, and a captured correction for a fix."""
+        target = d.get("field") or d["rule_id"]
+        old = None
+        if d["action"] == "correct":
+            old = state["extraction"].get(SOURCES[target], {}).get("value")
+            self.db.record_capture(
+                capture_key=d["decision_id"],
+                run_id=state["run_id"],
+                field=target,
+                read_value_enc=self.deps.cipher.encrypt_text(str(old)),
+                corrected_value_enc=self.deps.cipher.encrypt_text(d["value"]),
+                fault_group=self._fault_of(state, target),
+            )
+        self._audit(
+            state,
+            d["decision_id"],
+            d["action"],
+            actor=reviewer,
+            target=target,
+            old=old,
+            new=d.get("value"),
+            reason=d.get("reason"),
+        )
+
+    @staticmethod
+    def _fault_of(state: RunState, form_field: str) -> str:
+        """The reason the field was flagged, to group captured corrections for the eval set."""
+        source = SOURCES[form_field]
+        for r in state.get("rule_results", []):
+            rule = RuleResult.model_validate(r)
+            if source in rule.fields and rule.counts_as_failed:
+                return str(rule.reason_code)
+        return "reviewer_correction"
+
+    def _apply_submit(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
+        """Store the approved form once, read it back, and finish only when they match."""
+        run_id, form, reviewer = state["run_id"], state["form"], action["reviewer"]
+        approved = review.form_json(form)
+        submission = self.db.record_submission(
+            action_id=action["action_id"],
+            run_id=run_id,
+            form_version=form["version"],
+            form_json=self.deps.cipher.encrypt_text(approved),
+            approved_by=reviewer,
+        )
+        self._audit(state, action["action_id"], "submit", actor=reviewer, new=form["version"])
+        stored = self.db.read_submission(submission.submission_id)
+        verified = (
+            stored is not None and self.deps.cipher.decrypt_text(stored["form_enc"]) == approved
+        )
+        self.db.set_submission_verified(submission.submission_id, verified)
+        self._audit(
+            state,
+            f"{submission.submission_id}:verify",
+            "verify",
+            actor="system",
+            new="matches" if verified else "differs",
+        )
+        applied = [*state.get("applied_ids", []), action["action_id"]]
+        record = {"submission_id": submission.submission_id, "verified": verified}
+        if verified:
+            return {"status": "done", "submission": record, "applied_ids": applied}
+        # The stored record differs: the run goes back to review with a new form version,
+        # so the reviewer must approve again before the next submit (FR-028).
+        reasons = [*state.get("reasons", []), reason_entry("verification_failed")]
+        return {
+            "status": "awaiting_review",
+            "submission": record,
+            "applied_ids": applied,
+            "reasons": reasons,
+            "form": {**form, "version": form["version"] + 1},
+        }
+
+    def _apply_reopen(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
+        self._audit(
+            state, action["action_id"], "reopen", actor=action["reviewer"], reason=action["reason"]
+        )
+        reasons = [r for r in state.get("reasons", []) if r["code"] != "reviewer_rejected"]
+        applied = [*state.get("applied_ids", []), action["action_id"]]
+        return {"status": "awaiting_review", "reasons": reasons, "applied_ids": applied}
+
+    def _apply_retry(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
+        """Start processing again from the step that failed, with no reviewer decisions."""
+        self._audit(state, action["action_id"], "retry", actor=action["reviewer"])
+        applied = [*state.get("applied_ids", []), action["action_id"]]
+        return {
+            "status": "processing",
+            "reasons": [],
+            "decisions": {},
+            "read_extraction": {},
+            "rule_results": [],
+            "applied_ids": applied,
+        }
 
     def _trace_call(
         self, run_id: str, parent: Span, req: ModelRequest, resp: ModelResponse

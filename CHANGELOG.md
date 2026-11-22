@@ -13,3 +13,16 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   model client with replay, tracing, operations, checkpointed graph skeleton, synthetic
   licence generator, labelled case catalogue and case runner.
 - Repository standards: CI gate, pre-commit hooks, Dependabot, CODEOWNERS, templates.
+- User Story 1: upload a licence and get a checked draft KYB form, each value linked to
+  its evidence on the page; sign-in, upload with progress and a read-only review page.
+- User Story 2: approve, correct, override, reject, reopen, retry and submit. A
+  submission is stored once per approved form version and must read back the same.
+
+### Changed
+- Readability pass: one source for shared constants and types, all SQL in `Database`,
+  shorter pipeline nodes, one typed shape for form field values.
+
+### Fixed
+- Dates in the wrong order reach the reviewer as `date_order`, not `processing_failed`.
+- A run whose processing crashes goes to review and can be retried; an interrupted run
+  continues after its last completed step.

@@ -79,7 +79,7 @@ def _form_view(state: dict[str, Any]) -> tuple[FormView | None, list[str]]:
     extraction = TradeLicenceExtraction.model_validate(state["extraction"])
     read = read_values(extraction)
     words = [Word.from_dict(w) for w in state["pages"]["words"]]
-    rules = [RuleResult.model_validate(r) for r in state["rule_results"]]
+    rules = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
 
     fields: dict[str, FormFieldView] = {}
     for form_field, source_name in SOURCES.items():

@@ -180,6 +180,13 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `review.rationale.note` | The model wrote this text. Compare it with the licence. |
 | `review.requiredDocuments.title` | Documents to request |
 | `review.approve` | Approve |
+| `review.approve.field` | Approve {field} |
+| `review.correct.field` | Correct {field} |
+| `review.enterValue.field` | Enter value for {field} |
+| `review.save` | Save |
+| `review.cancel` | Cancel |
+| `review.rejected` | You rejected this case. Reopen the case to examine the form again. |
+| `review.retry.help` | Processing stopped. Retry processing, or enter each value. |
 | `review.correct` | Correct |
 | `review.correct.label` | New value |
 | `review.override` | Override check |
@@ -195,6 +202,8 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `review.approveForm` | Approve form |
 | `review.approveForm.disabled` | Approve or correct each flagged field first. |
 | `review.remaining` | `{count}` flagged fields remain. |
+| `review.remaining.one` | 1 flagged field remains. |
+| `review.allDecided` | Each flagged field has a decision. Approve the form. |
 | `review.ready` | You approved all fields. Submit the form. |
 | `review.submit` | Submit |
 | `review.submitted` | You submitted the form. The stored record matches the approved form. |

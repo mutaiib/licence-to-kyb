@@ -56,6 +56,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{run_id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reopen Run */
+        post: operations["reopen_run_api_runs__run_id__reopen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Run
+         * @description Process the run again from the step that failed. Processing runs in the background.
+         */
+        post: operations["retry_run_api_runs__run_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Review Run
+         * @description Apply field decisions; optionally approve or reject the whole form.
+         */
+        post: operations["review_run_api_runs__run_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit Run
+         * @description Store the approved form once. A repeated call returns the same submission.
+         */
+        post: operations["submit_run_api_runs__run_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/session": {
         parameters: {
             query?: never;
@@ -112,6 +189,21 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * ActionErrorOut
+         * @description 409: the action is not possible now. ``code`` names the reason (contracts/http-api.md).
+         */
+        ActionErrorOut: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "blocking_rule_failed" | "not_overridable" | "undecided_fields" | "stale_version" | "reason_required" | "not_approved" | "not_awaiting_submit" | "not_rejected" | "not_retryable";
+            /** Field */
+            field?: string | null;
+            /** Rule Id */
+            rule_id?: string | null;
+        };
         /** Body_create_run_api_runs_post */
         Body_create_run_api_runs_post: {
             /** Applicant Name */
@@ -129,6 +221,27 @@ export interface components {
             };
             /** Threshold */
             threshold: number;
+        };
+        /**
+         * DecisionIn
+         * @description One decision on one field (``approve`` or ``correct``) or on one check (``override``).
+         */
+        DecisionIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "approve" | "correct" | "override";
+            /** Decision Id */
+            decision_id: string;
+            /** Field */
+            field?: string | null;
+            /** Reason */
+            reason?: string | null;
+            /** Rule Id */
+            rule_id?: string | null;
+            /** Value */
+            value?: string | null;
         };
         /** ErrorOut */
         ErrorOut: {
@@ -230,6 +343,42 @@ export interface components {
             field?: string | null;
             /** Rule Id */
             rule_id?: string | null;
+        };
+        /** ReopenIn */
+        ReopenIn: {
+            /** Action Id */
+            action_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /** RetryIn */
+        RetryIn: {
+            /** Action Id */
+            action_id: string;
+        };
+        /** ReviewIn */
+        ReviewIn: {
+            /** Action Id */
+            action_id: string;
+            /**
+             * Approve Form
+             * @default false
+             */
+            approve_form: boolean;
+            /**
+             * Decisions
+             * @default []
+             */
+            decisions: components["schemas"]["DecisionIn"][];
+            /** Form Version */
+            form_version: number;
+            /**
+             * Reject Case
+             * @default false
+             */
+            reject_case: boolean;
+            /** Reject Reason */
+            reject_reason?: string | null;
         };
         /** RuleView */
         RuleView: {
@@ -341,6 +490,20 @@ export interface components {
              * @enum {string}
              */
             state: "done" | "running" | "pending" | "skipped";
+        };
+        /** SubmitIn */
+        SubmitIn: {
+            /** Action Id */
+            action_id: string;
+            /** Form Version */
+            form_version: number;
+        };
+        /** SubmitOut */
+        SubmitOut: {
+            /** Submission Id */
+            submission_id: string;
+            /** Verified */
+            verified: boolean;
         };
         /** UploadRejected */
         UploadRejected: {
@@ -505,6 +668,218 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reopen_run_api_runs__run_id__reopen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReopenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_run_api_runs__run_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunCreated"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_run_api_runs__run_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_run_api_runs__run_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmitOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionErrorOut"];
                 };
             };
             /** @description Validation Error */

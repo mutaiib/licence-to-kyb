@@ -60,6 +60,8 @@ The example input is `acme.pdf`, a scanned Dubai (DET) licence. The applicant ty
 | 11 Await submit (pause) | The run pauses until a person clicks Submit on the approved version. | The reviewer clicks Submit. |
 | 12 Submit and verify | Code writes one submission for the approved form version, keyed by the client's action ID, reads it back and compares it with the approved form. | It matches, so the run is marked done. The audit log names the reviewer. |
 
+In code, both pauses (10 and 11) are one `wait_for_reviewer` node, and one `apply_action` node applies whatever the reviewer did. The status (`awaiting_review` or `awaiting_submit`) says which pause the run is in.
+
 ---
 
 ## 3. Why a workflow with one agent

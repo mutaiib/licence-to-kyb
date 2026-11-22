@@ -182,7 +182,7 @@ Today is 2026-06-01 (fixed clock).
 | The store reports success but holds a different value | Run status `awaiting_review`, reason `verification_failed`. Not `done`. |
 | Reviewer rejects the case with a reason | Status `rejected`, reason `reviewer_rejected`. No `Submission`. The audit names the reviewer. |
 | Reviewer reopens a rejected run with a reason | Status `awaiting_review`. The audit has a `reopen` event with the reason. |
-| `ready` run | No review pause. Submit still needs an approval and a click. |
+| `ready` run | Status `awaiting_submit`: no field decisions are needed. Submit still needs a form approval and a click. |
 | Run in review with `processing_failed`; reviewer retries | Status `processing`, resuming from the last completed step, with a new 120 s deadline. The audit has one `retry` event. |
 | Run in review with `budget_exhausted`; reviewer retries the next day | Processing runs with a new deadline. It does not return at once with `processing_failed`. |
 | Run in review with `budget_exhausted`; reviewer enters every value | Every value has origin `entered_by_reviewer`. The evidence check is `not_applicable`, and all other rules apply. |
