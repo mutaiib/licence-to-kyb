@@ -10,6 +10,13 @@ updates:
     schedule: { interval: weekly }
     target-branch: develop
     commit-message: { prefix: "build", include: scope }
+    ignore:
+      # Types must match the Node runtime (22 LTS); upgrade both together in a planned change.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # typescript-eslint supports TypeScript < 6.1; revisit when it supports 6+.
+      - dependency-name: "typescript"
+        versions: [">=6.0.0"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
@@ -20,8 +27,16 @@ updates:
     schedule: { interval: weekly }
     target-branch: develop
     commit-message: { prefix: "build" }
+    ignore:
+      # The project requires Python >=3.12,<3.13; a Python upgrade is a planned change.
+      - dependency-name: "python"
+        versions: [">=3.13"]
   - package-ecosystem: docker
     directory: /frontend
     schedule: { interval: weekly }
     target-branch: develop
     commit-message: { prefix: "build" }
+    ignore:
+      # Build on the Node 22 LTS, matching CI and @types/node.
+      - dependency-name: "node"
+        versions: [">=23"]
