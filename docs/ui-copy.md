@@ -182,9 +182,10 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `review.page.label` | Licence page `{page}` |
 | `review.reasons.title` | Reasons |
 | `review.evidence.label` | Text on the licence |
-| `review.confidence.label` | Confidence |
-| `review.threshold.label` | Required confidence |
+| `review.confidence.label` | Reading confidence |
+| `review.threshold.label` | Required reading confidence |
 | `confidence.weak.title` | Weak evidence |
+| `confidence.sureButFlagged` | The system is sure of this reading. The check above flagged the field. |
 | `signal.agreement` | The two readings of this field are different. |
 | `signal.grounding` | The quoted text is not in the text of the licence. |
 | `signal.rules` | A blocking check failed on this field. |

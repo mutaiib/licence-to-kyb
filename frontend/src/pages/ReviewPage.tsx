@@ -117,7 +117,9 @@ function FieldDetails({
           </MetadataListItem>
         )}
       </MetadataList>
-      {field.confidence != null && <ConfidenceDetails confidence={field.confidence} />}
+      {field.confidence != null && (
+        <ConfidenceDetails confidence={field.confidence} isFlagged={isUndecided(field)} />
+      )}
       {field.model_rationale != null && (
         <ProposalDetails
           rationale={field.model_rationale}

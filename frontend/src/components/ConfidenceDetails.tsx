@@ -22,7 +22,15 @@ const SIGNAL_TEXT: Readonly<Record<string, CopyKey>> = {
   self_rating: 'signal.self_rating',
 };
 
-export function ConfidenceDetails({ confidence }: { confidence: Confidence }) {
+export function ConfidenceDetails({
+  confidence,
+  isFlagged = false,
+}: {
+  confidence: Confidence;
+  /** The field is flagged. A sure reading then means a check flagged it, not the reading. */
+  isFlagged?: boolean;
+}) {
+  const isSure = confidence.threshold != null && confidence.score >= confidence.threshold;
   const weak: CopyKey[] = [];
   for (const [name, value] of Object.entries(confidence.signals)) {
     const key = SIGNAL_TEXT[name];
@@ -40,6 +48,7 @@ export function ConfidenceDetails({ confidence }: { confidence: Confidence }) {
           </MetadataListItem>
         )}
       </MetadataList>
+      {isFlagged && isSure && <Text color="secondary">{copy['confidence.sureButFlagged']}</Text>}
       {weak.length > 0 && (
         <List
           header={<Text weight="semibold">{copy['confidence.weak.title']}</Text>}
