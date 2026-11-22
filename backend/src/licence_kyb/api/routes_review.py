@@ -54,6 +54,9 @@ def retry_in_background(pipeline: Pipeline, run_id: str, action: dict[str, Any])
     """Process the run again. An error sends it back to review, as on the first attempt."""
     try:
         pipeline.act(run_id, action)
+    except ActionRefused:
+        # A second retry click, for example: the run is already processing. Nothing to do.
+        log.info("retry refused", extra={"run_id": run_id})
     except Exception:
         log.exception("retry failed", extra={"run_id": run_id})
         pipeline.mark_failed(run_id)

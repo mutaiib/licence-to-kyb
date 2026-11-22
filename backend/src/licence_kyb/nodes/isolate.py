@@ -6,12 +6,16 @@ child does the reading; the parent watches the child's resident memory and its t
 stops it past either limit. Only the child can die.
 
 The memory is read from /proc (Linux, as in the container). Where /proc is missing, only the
-time limit applies.
+time limits apply. The child also limits itself (CPU time; on Linux, death with its
+parent), so it stops even when nothing watches it.
 """
 
 from __future__ import annotations
 
+import ctypes
 import multiprocessing as mp
+import resource
+import signal
 import time
 from collections.abc import Callable
 from multiprocessing.connection import Connection
@@ -19,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 POLL_SECONDS = 0.05
+PR_SET_PDEATHSIG = 1  # prctl option: a signal for this process when its parent exits
 
 
 class TooCostly(Exception):  # noqa: N818 - reads as "the document is too costly"
@@ -29,7 +34,7 @@ def run_limited(fn: Callable[..., Any], *args: Any, memory_mb: int, seconds: flo
     """``fn(*args)`` in a child process. Raises ``TooCostly`` past a limit or on any error."""
     ctx = mp.get_context("spawn")  # never fork a threaded server process
     receive, send = ctx.Pipe(duplex=False)
-    child = ctx.Process(target=_child, args=(send, fn, args), daemon=True)
+    child = ctx.Process(target=_child, args=(send, fn, args, seconds), daemon=True)
     child.start()
     send.close()
     deadline = time.monotonic() + seconds
@@ -54,13 +59,26 @@ def run_limited(fn: Callable[..., Any], *args: Any, memory_mb: int, seconds: flo
     return value
 
 
-def _child(send: Connection, fn: Callable[..., Any], args: tuple[Any, ...]) -> None:
+def _child(send: Connection, fn: Callable[..., Any], args: tuple[Any, ...], seconds: float) -> None:
+    _limit_self(seconds)
     try:
         send.send((True, fn(*args)))
     except BaseException as exc:
         send.send((False, type(exc).__name__))
     finally:
         send.close()
+
+
+def _limit_self(seconds: float) -> None:
+    """Limits that hold even if the parent dies and stops watching: a CPU-time limit, and
+    (Linux) a kill signal when the parent exits."""
+    cpu = int(seconds) + 5
+    resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu))
+    try:
+        libc = ctypes.CDLL("libc.so.6", use_errno=True)
+        libc.prctl(PR_SET_PDEATHSIG, signal.SIGKILL)
+    except OSError:  # not Linux: the CPU limit still applies
+        pass
 
 
 def _resident_mb(pid: int | None) -> float:

@@ -65,6 +65,9 @@ function readCookie(name: string): string | null {
   return null;
 }
 
+/** How long a request may wait for a reply. An upload of 10 MB on a slow line fits. */
+export const REQUEST_TIMEOUT_MS = 60_000;
+
 async function readJson(response: Response): Promise<unknown> {
   try {
     return (await response.json()) as unknown;
@@ -97,11 +100,25 @@ async function send(method: string, path: string, body?: BodyInit): Promise<Raw 
       headers.set(CSRF_HEADER, token);
     }
   }
+  // A request with no reply ends after a time limit, so a hung connection never blocks the
+  // reviewer's next action; it is shown as a connection error.
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, REQUEST_TIMEOUT_MS);
   let response: Response;
   try {
-    response = await fetch(path, { method, headers, body, credentials: 'include' });
+    response = await fetch(path, {
+      method,
+      headers,
+      body,
+      credentials: 'include',
+      signal: controller.signal,
+    });
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
   const json = response.status === 204 ? null : await readJson(response);
   if (response.status === 401 && field(json, 'code') === 'session_expired') {

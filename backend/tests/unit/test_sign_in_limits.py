@@ -52,3 +52,14 @@ def test_an_unknown_user_takes_as_long_as_a_known_one() -> None:
     unknown = seconds("nobody", "10.0.0.2")
 
     assert unknown > known / 3  # same order: both run argon2
+
+
+def test_tries_with_many_user_names_keep_memory_bounded() -> None:
+    """Rate-limited tries must not each leave an entry behind (one IP, random names)."""
+    a = auth()
+    for n in range(MAX_FAILURES):
+        a.check_password(f"name{n}", "wrong", "6.6.6.6")
+    for n in range(2_000):
+        assert a.check_password(f"random{n}", "wrong", "6.6.6.6") == "rate_limited"
+
+    assert len(a._failures) <= 2 * MAX_FAILURES  # the memory being bounded

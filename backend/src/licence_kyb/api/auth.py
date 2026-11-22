@@ -14,7 +14,7 @@ import hmac
 import secrets
 import threading
 import time
-from collections import defaultdict, deque
+from collections import deque
 from typing import Literal
 
 from argon2 import PasswordHasher
@@ -49,16 +49,22 @@ class Auth:
         secret = settings.session_secret.get_secret_value() if settings.session_secret else None
         self._key = (secret or secrets.token_hex(32)).encode()
         self._hasher = PasswordHasher()
-        self._failures: dict[str, deque[float]] = defaultdict(deque)
+        self._failures: dict[str, deque[float]] = {}
         self._lock = threading.Lock()
         # Checked when the user name is unknown, so the reply takes as long as for a real one.
         self._dummy_hash = self._hasher.hash(secrets.token_urlsafe(16))
 
     # ---------------------------------------------------------------- passwords + limits
     def _recent(self, key: str, now: float) -> deque[float]:
-        q = self._failures[key]
+        """The failures of ``key`` in the window. A key with none left is removed, so names
+        tried once do not stay in memory."""
+        q = self._failures.get(key, deque())
         while q and now - q[0] > WINDOW_SECONDS:
             q.popleft()
+        if q:
+            self._failures[key] = q
+        else:
+            self._failures.pop(key, None)
         return q
 
     def check_password(self, username: str, password: str, ip: str) -> SignInResult:
@@ -70,7 +76,8 @@ class Auth:
             if any(len(self._recent(k, now)) >= MAX_FAILURES for k in keys):
                 return "rate_limited"
             for k in keys:
-                self._recent(k, now).append(now)
+                self._failures[k] = self._recent(k, now)
+                self._failures[k].append(now)
         stored = self.settings.reviewer_accounts.get(username)
         hashed = stored.get_secret_value() if stored is not None else self._dummy_hash
         try:
@@ -81,7 +88,11 @@ class Auth:
             return "invalid"
         with self._lock:  # a right password does not use up a try
             for k in keys:
-                self._recent(k, now).remove(now)
+                q = self._recent(k, now)
+                if now in q:
+                    q.remove(now)
+                if not q:
+                    self._failures.pop(k, None)
         return "ok"
 
     # ---------------------------------------------------------------- sessions

@@ -37,22 +37,31 @@ class Operations:
 
     def resume_on_startup(self, resume: Callable[[str], None]) -> list[str]:
         runs = self.db.runs_with_status("received", "processing")
+        # Every deadline first: runs wait their turn, and the deadline sweep must not send a
+        # waiting run to review with the deadline it had before the restart.
         for run in runs:
             self.db.update_run(run["run_id"], deadline_at=self.new_deadline())
+        for run in runs:
             resume(run["run_id"])
         log.info("resumed runs after startup", extra={"count": len(runs)})
         return [r["run_id"] for r in runs]
 
-    def sweep_deadlines(self) -> list[str]:
+    def late_runs(self) -> list[dict[str, Any]]:
+        """Runs still marked ``processing`` after their deadline."""
         now = self.clock.now()
-        moved: list[str] = []
-        for run in self.db.runs_with_status("processing"):
-            deadline = run["deadline_at"]
-            if deadline is None or datetime.fromisoformat(deadline) > now:
-                continue
+        return [
+            run
+            for run in self.db.runs_with_status("processing")
+            if run["deadline_at"] is not None and datetime.fromisoformat(run["deadline_at"]) <= now
+        ]
+
+    def sweep_deadlines(self) -> list[str]:
+        """Send every late run to review. The pipeline sweeps run by run instead, skipping
+        runs a thread is still processing (``Pipeline.maintenance``)."""
+        late = self.late_runs()
+        for run in late:
             self.send_to_review(run, event="deadline_sweep", note="processing deadline passed")
-            moved.append(run["run_id"])
-        return moved
+        return [run["run_id"] for run in late]
 
     def send_to_review(self, run: dict[str, Any], *, event: str, note: str) -> None:
         """Move ``run`` to review with ``processing_failed``. Repeating it writes nothing new.
