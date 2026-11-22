@@ -13,6 +13,16 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
   checkpoints, and the daily token budget starts again each day.
 
 ### Fixed
+- Security: a small PDF that inflates to gigabytes could exhaust the API's memory; pages are
+  now read in a limited child process. Parallel sign-ins passed the rate limit; an unknown
+  user name answered faster; QR licence numbers and reviewers' reasons were stored in plain
+  text. All fixed.
+- Evals: calibration dropped thresholds for fields without rows; `ready` precision counted
+  unlabelled documents and invented values as right; errored cases left the denominators;
+  splits were uneven and could leak a twin; `compare` picked the wrong report. All fixed;
+  the baseline was regenerated (50 test cases).
+- A value the resolver changed kept the two readings' agreement as evidence.
+- Demo-mode traces showed a Claude model and token counts although no model ran.
 - A reopened case kept its earlier approval; a reopen now needs a new approval.
 - A retry dropped the reasons found while routing.
 - A run that crashed before its form existed answered review and submit with a 500.
