@@ -107,6 +107,9 @@ class FormView(BaseModel):
 
 class RunView(BaseModel):
     run_id: str
+    applicant_name: str
+    """The business name on the application (a company name, not personal data)."""
+    created_at: str
     status: RunStatus
     steps: list[StepView]
     route: Route | None

@@ -49,6 +49,8 @@ def build_run_view(pipeline: Pipeline, run_id: str) -> RunView | None:
     form, documents = _form_view(state)
     return RunView(
         run_id=run_id,
+        applicant_name=pipeline.deps.cipher.decrypt_text(run["applicant_name"]),
+        created_at=run["created_at"],
         status=run["status"],
         steps=_step_views(state, finished=run["status"] not in ACTIVE_STATUSES),
         route=run["route"],
