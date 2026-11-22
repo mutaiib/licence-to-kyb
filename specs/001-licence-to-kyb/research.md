@@ -133,6 +133,15 @@ The Technical Context has no open questions. This file records each technical de
   - WeasyPrint in Docker only: it would split the local and CI paths.
   - Headless Chrome printing: a heavy dependency for test-data generation.
 
+## R10a. Scripted model responses for offline graph tests (amended 2026-11-22)
+
+- **Decision:** offline graph tests use a `ScriptedTransport`. It answers each model call with a response written from the case's labelled ground truth, plus explicit fault variants: a malformed reply, a refusal, `max_tokens`, a fallback serving model, and injected text. Live recordings (`RecordingTransport`, `make record`) are added when an API key is available, and are stored next to the scripted fixtures.
+- **Rationale:**
+  - Graph tests check the pipeline's logic: routing, validation, corroboration, form mapping and writes. Model quality is measured by the live eval, not by unit tests.
+  - Scripted responses make every fault path testable on purpose, and keep CI free and deterministic.
+- **Alternatives considered:**
+  - Recording every response live: it needs a paid key in CI, and it cannot produce a refusal or a fallback on demand.
+
 ## R10. Testing approach
 
 - **Decision:**
