@@ -26,6 +26,7 @@ import sqlite3
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import Any, Literal
 
@@ -86,6 +87,13 @@ STATUS_FOR_ROUTE = {
 }
 
 log = logging.getLogger(__name__)
+
+
+def _secondary_expiry(state: RunState) -> date | None:
+    """The expiry date the second reading read, if it read one."""
+    field_ = state.get("secondary", {}).get("expiry_date") or {}
+    value = field_.get("value") if field_.get("status") == "present" else None
+    return date.fromisoformat(value) if value else None
 
 
 def codes_only(reasons: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -548,6 +556,7 @@ class Pipeline:
             registry=self.deps.registry.lookup,
             applicant_name=state["applicant_name"],
             applicant_threshold=self.deps.applicant_threshold,
+            secondary_expiry=_secondary_expiry(state),
         )
         # An uncorroborated "expired" becomes "expiry_uncertain" here, so the resolver, the
         # gate, the review page and the review re-check all see the same result. The gate

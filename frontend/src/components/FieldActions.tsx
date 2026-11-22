@@ -56,7 +56,9 @@ export function FieldActions({
 
   const label = { field: fieldLabel(name) };
   const overridable = field.rule_results.filter(
-    (rule) => rule.outcome === 'could_not_run' && rule.overridable,
+    // A check that could not run, or one whose rule says it can be wrong (an inferred
+    // licence number pattern): the backend marks both as overridable.
+    (rule) => rule.outcome !== 'passed' && rule.overridable,
   );
 
   if (editing?.kind === 'value') {

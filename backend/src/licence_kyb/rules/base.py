@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING
 
+from licence_kyb.normalise import ascii_digits
 from licence_kyb.schemas.results import ReasonCode, RuleResult, Severity
 
 if TYPE_CHECKING:
@@ -75,8 +76,14 @@ def normalise_name(text: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+# Arabic diacritics (tashkeel) and the tatweel stretch: they change the look, not the word.
+_ARABIC_MARKS = re.compile("[\\u064b-\\u065f\\u0640]")
+
+
 def normalise_text(text: str) -> str:
-    """For evidence matching: NFKC, casefold, collapse whitespace, strip bidi marks."""
-    value = unicodedata.normalize("NFKC", text).casefold()
+    """For evidence matching: NFKC, ASCII digits, no Arabic marks, casefold, collapse
+    whitespace, strip bidi marks."""
+    value = ascii_digits(unicodedata.normalize("NFKC", text)).casefold()
+    value = _ARABIC_MARKS.sub("", value)
     value = re.sub("[\\u200e\\u200f\\u202a-\\u202e]", "", value)
     return re.sub(r"\s+", " ", value).strip()

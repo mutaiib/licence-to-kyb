@@ -370,7 +370,7 @@ export interface components {
              * Code
              * @enum {string}
              */
-            code: "invalid_type" | "too_large" | "too_many_pages" | "image_too_large" | "unreadable_file" | "out_of_scope" | "unclear_document" | "unknown_authority" | "expired" | "expiry_uncertain" | "near_expiry" | "number_format" | "date_order" | "shares_total" | "sole_owner_count" | "legal_form_not_allowed" | "arabic_name_missing" | "high_risk_activity" | "evidence_mismatch" | "qr_mismatch" | "registry_not_found" | "registry_expiry_mismatch" | "registry_unavailable" | "applicant_name_mismatch" | "owners_unclear" | "ubo_needs_examination" | "low_confidence" | "processing_failed" | "budget_exhausted" | "fallback_model" | "resolver_budget" | "verification_failed" | "reviewer_rejected" | "other";
+            code: "invalid_type" | "too_large" | "too_many_pages" | "image_too_large" | "unreadable_file" | "out_of_scope" | "unclear_document" | "unknown_authority" | "expired" | "expiry_uncertain" | "near_expiry" | "number_format" | "date_order" | "shares_total" | "sole_owner_count" | "legal_form_not_allowed" | "arabic_name_missing" | "high_risk_activity" | "evidence_mismatch" | "qr_mismatch" | "registry_not_found" | "registry_expiry_mismatch" | "registry_unavailable" | "registry_inactive" | "applicant_name_mismatch" | "owners_unclear" | "ubo_needs_examination" | "low_confidence" | "processing_failed" | "budget_exhausted" | "fallback_model" | "resolver_budget" | "verification_failed" | "reviewer_rejected" | "other";
             /**
              * Detail
              * @default {}
@@ -436,7 +436,7 @@ export interface components {
             /** Overridable */
             overridable: boolean;
             /** Reason Code */
-            reason_code: ("invalid_type" | "too_large" | "too_many_pages" | "image_too_large" | "unreadable_file" | "out_of_scope" | "unclear_document" | "unknown_authority" | "expired" | "expiry_uncertain" | "near_expiry" | "number_format" | "date_order" | "shares_total" | "sole_owner_count" | "legal_form_not_allowed" | "arabic_name_missing" | "high_risk_activity" | "evidence_mismatch" | "qr_mismatch" | "registry_not_found" | "registry_expiry_mismatch" | "registry_unavailable" | "applicant_name_mismatch" | "owners_unclear" | "ubo_needs_examination" | "low_confidence" | "processing_failed" | "budget_exhausted" | "fallback_model" | "resolver_budget" | "verification_failed" | "reviewer_rejected" | "other") | null;
+            reason_code: ("invalid_type" | "too_large" | "too_many_pages" | "image_too_large" | "unreadable_file" | "out_of_scope" | "unclear_document" | "unknown_authority" | "expired" | "expiry_uncertain" | "near_expiry" | "number_format" | "date_order" | "shares_total" | "sole_owner_count" | "legal_form_not_allowed" | "arabic_name_missing" | "high_risk_activity" | "evidence_mismatch" | "qr_mismatch" | "registry_not_found" | "registry_expiry_mismatch" | "registry_unavailable" | "registry_inactive" | "applicant_name_mismatch" | "owners_unclear" | "ubo_needs_examination" | "low_confidence" | "processing_failed" | "budget_exhausted" | "fallback_model" | "resolver_budget" | "verification_failed" | "reviewer_rejected" | "other") | null;
             /** Rule Id */
             rule_id: string;
             /**
@@ -613,7 +613,7 @@ export interface components {
              * Reason Code
              * @enum {string}
              */
-            reason_code: "invalid_type" | "too_large" | "too_many_pages" | "image_too_large" | "unreadable_file" | "out_of_scope" | "unclear_document" | "unknown_authority" | "expired" | "expiry_uncertain" | "near_expiry" | "number_format" | "date_order" | "shares_total" | "sole_owner_count" | "legal_form_not_allowed" | "arabic_name_missing" | "high_risk_activity" | "evidence_mismatch" | "qr_mismatch" | "registry_not_found" | "registry_expiry_mismatch" | "registry_unavailable" | "applicant_name_mismatch" | "owners_unclear" | "ubo_needs_examination" | "low_confidence" | "processing_failed" | "budget_exhausted" | "fallback_model" | "resolver_budget" | "verification_failed" | "reviewer_rejected" | "other";
+            reason_code: "invalid_type" | "too_large" | "too_many_pages" | "image_too_large" | "unreadable_file" | "out_of_scope" | "unclear_document" | "unknown_authority" | "expired" | "expiry_uncertain" | "near_expiry" | "number_format" | "date_order" | "shares_total" | "sole_owner_count" | "legal_form_not_allowed" | "arabic_name_missing" | "high_risk_activity" | "evidence_mismatch" | "qr_mismatch" | "registry_not_found" | "registry_expiry_mismatch" | "registry_unavailable" | "registry_inactive" | "applicant_name_mismatch" | "owners_unclear" | "ubo_needs_examination" | "low_confidence" | "processing_failed" | "budget_exhausted" | "fallback_model" | "resolver_budget" | "verification_failed" | "reviewer_rejected" | "other";
             /** Run Id */
             run_id: string | null;
         };

@@ -203,7 +203,9 @@ def check_review_target(state: dict[str, Any], d: dict[str, Any]) -> None:
         rule = next(
             (r for r in state.get("rule_results", []) if r["rule_id"] == d.get("rule_id")), None
         )
-        if rule is None or rule["outcome"] != "could_not_run" or not rule["overridable"]:
+        # A check that could not run, or one whose own rule says it can be wrong (a number
+        # pattern inferred from samples), may be overridden; any other failed check may not.
+        if rule is None or rule["outcome"] == "passed" or not rule["overridable"]:
             raise ActionRefused("not_overridable", rule_id=d.get("rule_id"))
         return
     name = d.get("field")

@@ -17,12 +17,14 @@ def number_format_rule(ctx: RuleContext) -> list[RuleResult]:
         return [not_applicable("number_format", "licence_number")]
     if ctx.profile.matches_number(number):
         return [passed("number_format", "licence_number")]
-    return [
-        failed(
-            "number_format",
-            "licence_number",
-            severity="block",
-            reason="number_format",
-            detail={"authority": ctx.authority},
-        )
-    ]
+    result = failed(
+        "number_format",
+        "licence_number",
+        severity="block",
+        reason="number_format",
+        detail={"authority": ctx.authority},
+    )
+    # A pattern inferred from samples can be wrong for a real licence (an older, shorter
+    # number): a reviewer may override it with a reason. A confirmed pattern cannot be.
+    overridable = ctx.profile.number_pattern_source != "confirmed"
+    return [result.model_copy(update={"overridable": overridable})]

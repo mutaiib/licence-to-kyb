@@ -217,6 +217,28 @@ describe('review actions', () => {
     expect(screen.getByText(copy['review.allDecided'])).toBeInTheDocument();
   });
 
+  it('offers an override for a failed check that its rule marks as overridable', async () => {
+    const inferred: FormFieldView = {
+      ...passed,
+      state: 'flagged',
+      rule_results: [
+        {
+          rule_id: 'number_format',
+          severity: 'block',
+          outcome: 'failed',
+          reason_code: 'number_format',
+          overridable: true,
+          detail: { authority: 'DET' },
+        },
+      ],
+    };
+    openRun(runView({ licence_number: inferred }));
+
+    expect(
+      await button(format('review.override.field', { field: fieldLabel('licence_number') })),
+    ).toBeInTheDocument();
+  });
+
   it('asks for a reason before it overrides a check that could not run', async () => {
     const unchecked: FormFieldView = {
       ...passed,

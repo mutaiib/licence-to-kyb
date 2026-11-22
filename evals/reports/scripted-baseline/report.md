@@ -1,6 +1,6 @@
 # Eval report: scripted-baseline
 
-- Date: 2026-11-22T13:51:41+00:00
+- Date: 2026-11-22T14:47:19+00:00
 - Model profile: scripted
 - Model, all steps: scripted (labels): checks routing and rules, not reading
 - Resolver: on
@@ -35,8 +35,8 @@
 
 | Stage | p95 | Budget |
 |---|---|---|
-| preprocess | 1851 ms | 8000 ms |
-| route | 5 ms | 4000 ms |
-| extract | 10 ms | 18000 ms |
-| validate | 2 ms | 1000 ms |
-| resolve | 179 ms | 45000 ms |
+| preprocess | 2975 ms | 8000 ms |
+| route | 3 ms | 4000 ms |
+| extract | 7 ms | 18000 ms |
+| validate | 3 ms | 1000 ms |
+| resolve | 27 ms | 45000 ms |
