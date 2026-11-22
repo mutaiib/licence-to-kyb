@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import io
 from dataclasses import dataclass, field
+from typing import Any
 
 import cv2
 import numpy as np
@@ -32,6 +33,12 @@ class Word:
     text: str
     bbox: tuple[float, float, float, float]  # x0, y0, x1, y1 as fractions of the page
     conf: float  # 0..1
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Word:
+        """A word read back from the run state, which stores it as ``dataclasses.asdict``."""
+        x0, y0, x1, y1 = data["bbox"]
+        return cls(page=data["page"], text=data["text"], bbox=(x0, y0, x1, y1), conf=data["conf"])
 
 
 @dataclass

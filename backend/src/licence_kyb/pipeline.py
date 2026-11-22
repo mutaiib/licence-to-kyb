@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
@@ -31,7 +31,7 @@ from licence_kyb.nodes.extract import build_extract_request, extract_licence
 from licence_kyb.nodes.intake import IntakeResult, IntakeService
 from licence_kyb.nodes.map_form import build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
-from licence_kyb.nodes.route import build_route_request, decide_route, route_document
+from licence_kyb.nodes.route import build_route_request, route_document
 from licence_kyb.profiles import load_profile
 from licence_kyb.registry import MockRegistry
 from licence_kyb.rules import RuleContext, run_rules
@@ -40,7 +40,13 @@ from licence_kyb.schemas.results import FILE_REASONS, RuleResult, reason_entry
 from licence_kyb.security import Cipher
 from licence_kyb.state import RunState
 from licence_kyb.store.db import Database
-from licence_kyb.tracing import Tracer
+from licence_kyb.tracing import Span, Tracer
+
+STATUS_FOR_ROUTE = {
+    "reject": "rejected",
+    "needs_review": "awaiting_review",
+    "ready": "awaiting_submit",
+}
 
 
 class FernetCheckpointCipher:
@@ -144,22 +150,26 @@ class Pipeline:
                 "page_count": pages.page_count,
                 "qr_payload": pages.qr_payload,
                 "source": pages.source,
-                "words": [w.__dict__ for w in pages.words],
+                "words": [asdict(w) for w in pages.words],
             }
         }
 
     def _pages(self, state: RunState) -> PageSet:
-        p = state["pages"]
-        words = [Word(w["page"], w["text"], tuple(w["bbox"]), w["conf"]) for w in p["words"]]
-        return PageSet(page_count=p["page_count"], words=words, qr_payload=p["qr_payload"])
+        stored = state["pages"]
+        return PageSet(
+            page_count=stored["page_count"],
+            words=[Word.from_dict(w) for w in stored["words"]],
+            qr_payload=stored["qr_payload"],
+        )
 
     def _route(self, state: RunState) -> dict[str, Any]:
-        run_id, pages = state["run_id"], self._pages(state)
+        run_id = state["run_id"]
+        pages = self._pages(state)
         request = build_route_request(self.page_png(run_id, 1), pages.text, self.deps.models.route)
         with self.tracer.span("step", "route", run_id=run_id) as step:
             outcome = route_document(self.deps.llm, request, pages.text)
             if outcome.response is not None:
-                self._trace_call(run_id, step, request, outcome.response, "route")
+                self._trace_call(run_id, step, request, outcome.response)
         return {
             "route": {"doc_type": outcome.doc_type, "authority": outcome.authority},
             "reasons": [reason_entry(code) for code in outcome.reasons],
@@ -170,7 +180,8 @@ class Pipeline:
         return "extract" if state["route"]["doc_type"] == "trade_licence" else "decide"
 
     def _extract(self, state: RunState) -> dict[str, Any]:
-        run_id, pages = state["run_id"], self._pages(state)
+        run_id = state["run_id"]
+        pages = self._pages(state)
         authority = state["route"]["authority"]
         profile = load_profile(authority)
         images = [self.page_png(run_id, n) for n in range(1, pages.page_count + 1)]
@@ -193,7 +204,7 @@ class Pipeline:
         with self.tracer.span("step", "extract", run_id=run_id) as step:
             out = extract_licence(self.deps.llm, primary, secondary)
             for req, resp in out.responses:
-                self._trace_call(run_id, step, req, resp, req.step.removesuffix("_retry"))
+                self._trace_call(run_id, step, req, resp)
         reasons = list(state.get("reasons", []))
         for code in out.reasons:
             reasons.append(reason_entry(code))
@@ -264,12 +275,9 @@ class Pipeline:
         return {"decision": {"route": route}, "reasons": reasons}
 
     def _persist(self, state: RunState) -> dict[str, Any]:
-        run_id, route = state["run_id"], state["decision"]["route"]
-        status = {
-            "reject": "rejected",
-            "needs_review": "awaiting_review",
-            "ready": "awaiting_submit",
-        }[route]
+        run_id = state["run_id"]
+        route = state["decision"]["route"]
+        status = STATUS_FOR_ROUTE[route]
         version = state.get("form", {}).get("version", 0)
         self.db.update_run(
             run_id,
@@ -288,24 +296,16 @@ class Pipeline:
         return {"status": status}
 
     def _trace_call(
-        self, run_id: str, parent: Any, req: ModelRequest, resp: ModelResponse, prompt: str
+        self, run_id: str, parent: Span, req: ModelRequest, resp: ModelResponse
     ) -> None:
         with self.tracer.span("model_call", req.step, run_id=run_id, parent=parent) as span:
-            span.requested_model, span.serving_model, span.effort = (
-                req.model,
-                resp.serving_model,
-                req.effort,
-            )
-            span.input_tokens, span.output_tokens = (
-                resp.usage.input_tokens,
-                resp.usage.output_tokens,
-            )
-            span.thinking_tokens, span.cache_read_tokens = (
-                resp.usage.thinking_tokens,
-                resp.usage.cache_read_tokens,
-            )
+            span.requested_model = req.model
+            span.serving_model = resp.serving_model
+            span.effort = req.effort
+            span.input_tokens = resp.usage.input_tokens
+            span.output_tokens = resp.usage.output_tokens
+            span.thinking_tokens = resp.usage.thinking_tokens
+            span.cache_read_tokens = resp.usage.cache_read_tokens
             span.cost_usd = resp.cost_usd()
-            span.prompt_hash = prompt_hash(prompt)
-
-
-__all__ = ["CriticalFields", "Deps", "FernetCheckpointCipher", "Pipeline", "decide_route"]
+            # A retry uses the prompt of the step it retries ("extract_primary_retry").
+            span.prompt_hash = prompt_hash(req.step.removesuffix("_retry"))
