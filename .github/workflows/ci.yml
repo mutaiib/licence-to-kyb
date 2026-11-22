@@ -1,0 +1,117 @@
+# CI gate (docs/engineering-practices.md §4). Every job is a required status check.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend (lint, types, tests, coverage)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          enable-cache: true
+      - name: Install system packages for OCR
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-ara fonts-noto-core
+      - name: Install dependencies from the lock file
+        working-directory: backend
+        run: uv sync --frozen
+      - name: Ruff lint and format
+        run: |
+          uv --project backend run ruff check .
+          uv --project backend run ruff format --check .
+      - name: mypy --strict
+        working-directory: backend
+        run: uv run mypy
+      - name: Offline tests with coverage gate
+        working-directory: backend
+        run: |
+          uv run pytest -m "not live" --cov --cov-report=term-missing
+          # The deterministic core must keep >= 90% line coverage (constitution, CI gate).
+          if [ -d src/licence_kyb/rules ]; then
+            uv run coverage report --fail-under=90 \
+              --include='src/licence_kyb/rules/*,src/licence_kyb/nodes/confidence.py,src/licence_kyb/nodes/gate.py,src/licence_kyb/nodes/map_form.py'
+          fi
+      - name: Eval harness unit tests
+        run: uv --project backend run pytest evals/tests -m "not live" -p no:cacheprovider
+      - name: Dependency audit
+        working-directory: backend
+        run: uv export --frozen --no-hashes --format requirements-txt > /tmp/req.txt && uv run pip-audit -r /tmp/req.txt --strict
+
+  frontend:
+    name: frontend (lint, types, tests, build)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
+  copy:
+    name: UI copy (ASD-STE100)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check interface strings
+        run: |
+          if [ -f scripts/lint_copy.py ]; then python3 scripts/lint_copy.py; else echo "copy lint arrives with US1 (T053)"; fi
+
+  secrets:
+    name: secret scan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pr-title:
+    name: Conventional Commit title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@c5e23b7e584519ee15caa684cf60d056aa9f035f # v6.1.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            test
+            refactor
+            perf
+            build
+            ci
+            chore
+            style
+            revert
+            eval

@@ -1,0 +1,15 @@
+name: Bug
+description: Something behaves differently from the spec
+labels: [bug]
+body:
+  - type: textarea
+    id: expected
+    attributes: { label: Expected (cite the spec requirement or scenario), placeholder: "FR-0xx / User Story N scenario M" }
+    validations: { required: true }
+  - type: textarea
+    id: actual
+    attributes: { label: What happened, description: "Run ID and reason codes help. Never paste personal data or real documents." }
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes: { label: Steps to reproduce }
