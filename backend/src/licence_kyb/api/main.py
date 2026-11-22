@@ -15,7 +15,6 @@ from licence_kyb.llm.client import AnthropicTransport, DailyBudget, LLMClient, T
 from licence_kyb.logging import configure_logging
 from licence_kyb.pipeline import Deps, Pipeline
 from licence_kyb.security import Cipher
-from licence_kyb.testdata.answers import LabelDemoTransport
 
 
 def build() -> object:
@@ -32,6 +31,9 @@ def build() -> object:
             "DEMO MODE: answers come from synthetic case labels, not a model",
             extra={"cases": str(settings.demo_answers_dir)},
         )
+        # Imported only in demo mode: test-data libraries are not in the production image.
+        from licence_kyb.testdata.answers import LabelDemoTransport  # noqa: PLC0415
+
         transport = LabelDemoTransport(settings.demo_answers_dir)
     deps = Deps(
         data_dir=settings.data_dir,
