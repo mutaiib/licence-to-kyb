@@ -1,5 +1,5 @@
-"""Compare two eval reports (US6, T094): list exactly the cases whose route, reason codes or
-field results changed. Also shows the resolver on/off difference.
+"""Compare two eval reports (US6, T094): list exactly the cases whose route, reason codes,
+field results or read values changed. Also shows the resolver on/off difference.
 
     uv --project backend run python -m evals.compare [BEFORE.json AFTER.json]
 
@@ -36,6 +36,15 @@ def changed_cases(before: dict[str, Any], after: dict[str, Any]) -> dict[str, di
         }
         if fields:
             change["fields"] = fields
+        # A value can change while staying wrong: the reading itself changed.
+        old_values, new_values = a.get("values", {}), b.get("values", {})
+        values = {
+            f: (old_values.get(f), new_values.get(f))
+            for f in sorted(set(old_values) | set(new_values))
+            if old_values.get(f) != new_values.get(f)
+        }
+        if values:
+            change["values"] = values
         if change:
             changes[case_id] = change
     return changes

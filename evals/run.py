@@ -20,7 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -74,17 +74,24 @@ PASS3_CASES = 30
 # ------------------------------------------------------------------ running one case
 @dataclass
 class CountingTransport:
-    """Counts the replies that stopped at the token limit (a report metric)."""
+    """Counts the replies that stopped at the token limit, and records which model served
+    each step (a server-side fallback can serve another model than the one asked for)."""
 
     inner: Transport
     calls: int = 0
     max_token_stops: int = 0
+    serving: dict[str, set[str]] = field(default_factory=dict)
 
     def send(self, req: ModelRequest) -> ModelResponse:
         response = self.inner.send(req)
         self.calls += 1
         self.max_token_stops += response.stop_reason == "max_tokens"
+        self.serving.setdefault(req.step, set()).add(response.serving_model)
         return response
+
+    def served(self) -> dict[str, str]:
+        """Each step and the models that served it."""
+        return {step: ", ".join(sorted(models)) for step, models in self.serving.items()}
 
 
 def field_correct(fields: dict[str, bool], name: str) -> bool | None:
@@ -123,7 +130,7 @@ def grade(
     stages = {
         s["name"]: s["latency_ms"] for s in pipeline.tracer.spans_for(run_id) if s["kind"] == "step"
     }
-    cost, _ = pipeline.tracer.run_totals(run_id)
+    cost, duration_ms = pipeline.tracer.run_totals(run_id)
     signals = [
         {
             "field": f,
@@ -145,7 +152,11 @@ def grade(
         "critical_ok": critical_ok,
         "safety": safety_violations(submissions, approvals),
         "cost_usd": cost,
+        "duration_ms": duration_ms,
         "stages_ms": stages,
+        # The values as read (synthetic or public documents only), so a report can show a
+        # reading that changed while staying wrong.
+        "values": {name: f.get("value") for name, f in state.get("extraction", {}).items()},
         "signals": signals,
         "split": case.split,
         "mix_bucket": case.mix_bucket,
@@ -217,6 +228,7 @@ def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
         # The mix is renormalised over the buckets present; name the missing ones.
         "missing_mix_buckets": [b for b, gs in by_bucket.items() if not gs],
         "cost_per_document_usd": round(sum(g["cost_usd"] for g in cases) / n, 4) if n else 0.0,
+        "p95_document_ms": p95([g["duration_ms"] for g in cases if "duration_ms" in g]),
         "p95_ms": {
             s: p95([g["stages_ms"][s] for g in cases if s in g["stages_ms"]])
             for s in STAGE_BUDGET_MS
@@ -233,14 +245,7 @@ def summarise(graded: dict[str, Any], *, split: str) -> dict[str, Any]:
     }
 
 
-def models_measured(model: str) -> dict[str, str]:
-    if model == "scripted":
-        return {"all steps": "scripted (labels): checks routing and rules, not reading"}
-    profile = active_profile()
-    return {
-        step: getattr(profile.steps, step).model
-        for step in ("route", "extract_primary", "extract_secondary", "resolve")
-    }
+SCRIPTED_MODELS = {"all steps": "scripted (labels): checks routing and rules, not reading"}
 
 
 def write_report(
@@ -251,7 +256,7 @@ def write_report(
         "meta": meta,
         "summary": summary,
         "cases": {
-            k: {x: v[x] for x in ("route", "reason_codes", "fields")}
+            k: {x: v[x] for x in ("route", "reason_codes", "fields", "values", "duration_ms")}
             for k, v in graded.items()
             if "error" not in v
         },
@@ -288,6 +293,7 @@ def write_report(
         )
         + " |",
         f"| Cost per document | ${summary['cost_per_document_usd']:.4f} |",
+        f"| Processing time per document, p95 | {summary['p95_document_ms']} ms |",
         f"| `max_tokens` stops | {meta['max_token_stops']} of {meta['model_calls']} calls |",
         f"| Bad documents routed `ready` (SC-004) | {summary['bad_documents_ready']} |",
         f"| Submits without approval (none happen before the first pause) | "
@@ -350,7 +356,8 @@ def main() -> None:
         "name": args.name,
         "date": datetime.now(UTC).isoformat(timespec="seconds"),
         "profile": "scripted" if args.model == "scripted" else active_profile_name() or "default",
-        "models": models_measured(args.model),
+        # The models that served each step, as the replies name them (FR-044).
+        "models": SCRIPTED_MODELS if args.model == "scripted" else transport.served(),
         "resolver": not args.no_resolver,
         "split": args.split,
         "skipped_no_document": skipped,
