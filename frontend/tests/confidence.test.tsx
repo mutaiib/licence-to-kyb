@@ -64,3 +64,25 @@ describe('resolver proposal', () => {
     expect(screen.queryByText(copy['proposal.accepted'])).toBeNull();
   });
 });
+
+describe('a sure reading on a flagged field', () => {
+  const sure = { score: 1, threshold: 0.9, signals: { agreement: 1 } };
+
+  it('says the flag comes from a check, not from the reading', () => {
+    render(<ConfidenceDetails confidence={sure} isFlagged />);
+
+    expect(screen.getByText(copy['confidence.sureButFlagged'])).toBeInTheDocument();
+  });
+
+  it('says nothing extra when the field is not flagged', () => {
+    render(<ConfidenceDetails confidence={sure} isFlagged={false} />);
+
+    expect(screen.queryByText(copy['confidence.sureButFlagged'])).toBeNull();
+  });
+
+  it('says nothing extra when the reading itself is the doubt', () => {
+    render(<ConfidenceDetails confidence={lowScore} isFlagged />);
+
+    expect(screen.queryByText(copy['confidence.sureButFlagged'])).toBeNull();
+  });
+});

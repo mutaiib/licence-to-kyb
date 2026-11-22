@@ -103,6 +103,7 @@ const SPANS = [
 ];
 
 let runs: unknown[] = [];
+let served: RunView = VIEW;
 
 function serve() {
   vi.stubGlobal(
@@ -123,7 +124,7 @@ function serve() {
                 budget_tokens_remaining: 10,
               }
             : path === '/api/runs/run-1'
-              ? VIEW
+              ? served
               : path === '/api/runs/run-1/trace'
                 ? { spans: SPANS }
                 : null;
@@ -167,6 +168,7 @@ const before = (a: Element, b: Element) =>
 beforeEach(() => {
   document.cookie = 'csrf=token-123';
   runs = [];
+  served = VIEW;
 });
 
 afterEach(() => {
@@ -175,14 +177,14 @@ afterEach(() => {
 });
 
 describe('review page', () => {
-  it('puts the form actions before the fields (T112)', async () => {
+  it('puts the next step before the fields (T112, T119)', async () => {
     openAt('/runs/run-1');
 
-    const approveForm = await screen.findByRole('button', { name: copy['review.approveForm'] });
+    const next = await screen.findByRole('region', { name: copy['next.label'] });
     const firstField = screen.getByRole('button', {
       name: new RegExp(`^${fieldLabel('expiry_date')}`),
     });
-    expect(before(approveForm, firstField)).toBe(true);
+    expect(before(next, firstField)).toBe(true);
   });
 
   it('lists the flagged fields first and keeps passed fields closed (T113)', async () => {
@@ -318,4 +320,86 @@ describe('accessibility (T098)', () => {
       expect(result.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
     },
   );
+});
+
+describe('review page, round 2 (T119-T122)', () => {
+  const allPassed: RunView = {
+    ...VIEW,
+    route: 'ready',
+    reasons: [],
+    form: { version: 1, fields: { licence_number: passed('7828167') } },
+  };
+
+  it('says what to do while a flagged field has no decision, with no form button', async () => {
+    openAt('/runs/run-1');
+
+    const next = await screen.findByRole('region', { name: copy['next.label'] });
+    expect(within(next).getByText(copy['next.examine.one'])).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: copy['review.approveForm'] })).toBeNull();
+    expect(screen.queryByRole('button', { name: copy['review.submit'] })).toBeNull();
+  });
+
+  it('offers only Approve form when every field has a decision', async () => {
+    served = allPassed;
+    openAt('/runs/run-1');
+
+    const next = await screen.findByRole('region', { name: copy['next.label'] });
+    expect(within(next).getByRole('button', { name: copy['review.approveForm'] })).toBeEnabled();
+    expect(screen.queryByRole('button', { name: copy['review.submit'] })).toBeNull();
+  });
+
+  it('offers only Submit after the form is approved', async () => {
+    served = { ...allPassed, status: 'awaiting_submit', form_approved: true };
+    openAt('/runs/run-1');
+
+    const next = await screen.findByRole('region', { name: copy['next.label'] });
+    expect(within(next).getByRole('button', { name: copy['review.submit'] })).toBeEnabled();
+    expect(screen.queryByRole('button', { name: copy['review.approveForm'] })).toBeNull();
+  });
+
+  it('keeps reading confidence in a closed details section of the field (T120)', async () => {
+    served = {
+      ...VIEW,
+      form: {
+        version: 1,
+        fields: {
+          expiry_date: {
+            ...flagged,
+            confidence: { score: 1, threshold: 0.9, signals: { agreement: 1 } },
+          },
+        },
+      },
+    };
+    openAt('/runs/run-1');
+
+    const details = await screen.findByRole('button', { name: copy['review.details'] });
+    expect(details).toHaveAttribute('aria-expanded', 'false');
+    const approve = screen.getByRole('button', {
+      name: format('review.approve.field', { field: fieldLabel('expiry_date') }),
+    });
+    expect(before(approve, details)).toBe(true);
+  });
+
+  it('lists the documents to request after the fields (T121)', async () => {
+    served = { ...VIEW, required_documents: ['memorandum_of_association'] };
+    openAt('/runs/run-1');
+
+    const documents = await screen.findByRole('list', {
+      name: copy['review.requiredDocuments.title'],
+    });
+    const passedGroup = screen.getByRole('button', {
+      name: new RegExp(escape(format('review.passedFields', { count: '2' }))),
+    });
+    expect(before(passedGroup, documents)).toBe(true);
+  });
+
+  it('puts Reject case at the end, after the fields (T122)', async () => {
+    openAt('/runs/run-1');
+
+    const reject = await screen.findByRole('button', { name: copy['review.reject'] });
+    const passedGroup = screen.getByRole('button', {
+      name: new RegExp(escape(format('review.passedFields', { count: '2' }))),
+    });
+    expect(before(passedGroup, reject)).toBe(true);
+  });
 });

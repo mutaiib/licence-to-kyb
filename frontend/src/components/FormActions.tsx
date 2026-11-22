@@ -1,14 +1,16 @@
-// Actions on the whole form, which depend on the run status:
-// - awaiting review: approve the form (only when every flagged field has a decision), reject,
-//   and retry processing after a processing failure
-// - awaiting submit: submit, or reject
-// - rejected: reopen
-// - done: the submission matched the approved form
-import { Banner } from '@astryxdesign/core/Banner';
+// Actions on the whole form, in two parts:
+// - NextStep, at the top: one card that says what to do now, with at most one main button.
+//     a flagged field has no decision  → examine the fields (the buttons are on the fields)
+//     every field has a decision        → Approve form
+//     the form is approved              → Submit
+//     processing stopped                → Retry processing
+//     rejected                          → Reopen case
+//     done                              → nothing more to do
+// - RejectCase, at the end: the exception, with a reason and a confirmation.
 import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { Banner } from '@astryxdesign/core/Banner';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack } from '@astryxdesign/core/HStack';
-import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { useState } from 'react';
 
@@ -26,7 +28,79 @@ export interface FormHandlers {
   onRetry: () => void;
 }
 
-export function FormActions({
+type Status = 'info' | 'warning' | 'error' | 'success';
+
+interface Step {
+  status: Status;
+  title: string;
+  description: string;
+  action?: { label: string; onClick: () => void };
+}
+
+/** What the reviewer does now. Null while the system is still processing. */
+function nextStep(view: RunView, undecided: number, handlers: FormHandlers): Step | null {
+  if (view.status === 'done') {
+    return {
+      status: 'success',
+      title: copy['next.done.title'],
+      description: copy['review.submitted'],
+    };
+  }
+  if (view.status === 'rejected') {
+    const bySystem = view.route === 'reject';
+    return {
+      status: 'error',
+      title: copy[bySystem ? 'route.reject' : 'next.rejected.title'],
+      description: copy[bySystem ? 'route.reject.detail' : 'review.rejected'],
+    };
+  }
+  if (view.status !== 'awaiting_review' && view.status !== 'awaiting_submit') return null;
+
+  if (view.reasons.some((reason) => RETRYABLE.has(reason.code))) {
+    return {
+      status: 'error',
+      title: copy['next.retry.title'],
+      description: copy['review.retry.help'],
+      action: { label: copy['review.retry'], onClick: handlers.onRetry },
+    };
+  }
+  if (view.form === null) {
+    return {
+      status: 'error',
+      title: copy['route.reject'],
+      description: copy['route.reject.detail'],
+    };
+  }
+  if (undecided > 0) {
+    return {
+      status: 'warning',
+      title:
+        undecided === 1
+          ? copy['next.examine.one']
+          : format('next.examine', { count: String(undecided) }),
+      description: copy['next.examine.detail'],
+    };
+  }
+  // Submit needs an approval of this exact form version (FR-026). A ready run waits for
+  // submit too, but nobody has approved it yet.
+  if (view.form_approved && view.status === 'awaiting_submit') {
+    return {
+      status: 'success',
+      title: copy['next.submit.title'],
+      description: copy['review.ready'],
+      action: { label: copy['review.submit'], onClick: handlers.onSubmit },
+    };
+  }
+  return {
+    status: 'info',
+    title: copy['next.approve.title'],
+    // A ready run had nothing flagged; say so, then ask for the approval.
+    description: copy[view.route === 'ready' ? 'route.ready.detail' : 'review.allDecided'],
+    action: { label: copy['review.approveForm'], onClick: handlers.onApproveForm },
+  };
+}
+
+export function NextStep({
   view,
   undecided,
   handlers,
@@ -36,122 +110,91 @@ export function FormActions({
   undecided: number;
   handlers: FormHandlers;
 }) {
-  const [writing, setWriting] = useState<'reject' | 'reopen' | null>(null);
-  const [rejectReason, setRejectReason] = useState<string | null>(null);
-
-  if (view.status === 'done') {
-    return <Banner status="success" title={copy['review.submitted']} />;
-  }
-  if (writing !== null) {
-    const isReject = writing === 'reject';
-    return (
-      <InlineEditor
-        label={copy[isReject ? 'review.reject.reason.label' : 'review.reopen.reason.label']}
-        onCancel={() => {
-          setWriting(null);
-        }}
-        onSave={(reason) => {
-          setWriting(null);
-          if (isReject) setRejectReason(reason);
-          else handlers.onReopen(reason);
-        }}
-      />
-    );
-  }
-  if (view.status === 'rejected') {
-    return (
-      <VStack gap={3}>
-        <Banner status="error" title={copy['review.rejected']} />
+  const [isReopening, setIsReopening] = useState(false);
+  const step = nextStep(view, undecided, handlers);
+  if (step === null) return null;
+  const canReopen = view.status === 'rejected';
+  return (
+    <VStack gap={3} role="region" aria-label={copy['next.label']}>
+      <Banner status={step.status} title={step.title} description={step.description} />
+      {step.action !== undefined && (
+        <HStack>
+          <Button label={step.action.label} variant="primary" onClick={step.action.onClick} />
+        </HStack>
+      )}
+      {canReopen && !isReopening && (
         <HStack>
           <Button
             label={copy['review.reopen']}
             onClick={() => {
-              setWriting('reopen');
+              setIsReopening(true);
             }}
           />
         </HStack>
-      </VStack>
-    );
-  }
-  if (view.status !== 'awaiting_review' && view.status !== 'awaiting_submit') {
-    return null; // still processing
-  }
+      )}
+      {isReopening && (
+        <InlineEditor
+          label={copy['review.reopen.reason.label']}
+          onCancel={() => {
+            setIsReopening(false);
+          }}
+          onSave={(reason) => {
+            setIsReopening(false);
+            handlers.onReopen(reason);
+          }}
+        />
+      )}
+    </VStack>
+  );
+}
 
-  const canRetry = view.reasons.some((reason) => RETRYABLE.has(reason.code));
-  // Submit needs an approval of this exact form version (FR-026). A ready run waits for
-  // submit too, but nobody has approved it yet.
-  const isApproved = view.form_approved && view.status === 'awaiting_submit';
-  // No form (processing stopped before one was made): nothing to approve or submit yet.
-  const hasForm = view.form !== null;
+/** Reject the case: a quiet button at the end of the panel, then a reason, then a confirmation. */
+export function RejectCase({
+  view,
+  onReject,
+}: {
+  view: RunView;
+  onReject: (reason: string) => void;
+}) {
+  const [isWriting, setIsWriting] = useState(false);
+  const [reason, setReason] = useState<string | null>(null);
+  if (view.status !== 'awaiting_review' && view.status !== 'awaiting_submit') return null;
   return (
     <VStack gap={3}>
-      {canRetry && (
-        <VStack gap={2}>
-          <Text>{copy['review.retry.help']}</Text>
-          <HStack>
-            <Button label={copy['review.retry']} onClick={handlers.onRetry} />
-          </HStack>
-        </VStack>
-      )}
-      {!hasForm && (
+      {isWriting ? (
+        <InlineEditor
+          label={copy['review.reject.reason.label']}
+          onCancel={() => {
+            setIsWriting(false);
+          }}
+          onSave={(text) => {
+            setIsWriting(false);
+            setReason(text);
+          }}
+        />
+      ) : (
         <HStack>
           <Button
             label={copy['review.reject']}
-            variant="destructive"
+            variant="ghost"
             onClick={() => {
-              setWriting('reject');
-            }}
-          />
-        </HStack>
-      )}
-      {hasForm && (
-        <Text>
-          {isApproved
-            ? copy['review.ready']
-            : undecided === 1
-              ? copy['review.remaining.one']
-              : undecided > 1
-                ? format('review.remaining', { count: String(undecided) })
-                : copy['review.allDecided']}
-        </Text>
-      )}
-      {hasForm && (
-        <HStack gap={2} wrap="wrap">
-          {!isApproved && (
-            <Button
-              label={copy['review.approveForm']}
-              variant="primary"
-              isDisabled={undecided > 0}
-              onClick={handlers.onApproveForm}
-            />
-          )}
-          <Button
-            label={copy['review.submit']}
-            variant={isApproved ? 'primary' : 'secondary'}
-            isDisabled={!isApproved}
-            onClick={handlers.onSubmit}
-          />
-          <Button
-            label={copy['review.reject']}
-            variant="destructive"
-            onClick={() => {
-              setWriting('reject');
+              setIsWriting(true);
             }}
           />
         </HStack>
       )}
       <AlertDialog
-        isOpen={rejectReason !== null}
+        isOpen={reason !== null}
         onOpenChange={(isOpen) => {
-          if (!isOpen) setRejectReason(null);
+          if (!isOpen) setReason(null);
         }}
         title={copy['review.reject']}
         description={copy['review.reject.confirm']}
         actionLabel={copy['review.reject']}
         cancelLabel={copy['review.cancel']}
         onAction={() => {
-          if (rejectReason !== null) handlers.onReject(rejectReason);
-          setRejectReason(null);
+          if (reason !== null) onReject(reason);
+          setReason(null);
         }}
       />
     </VStack>

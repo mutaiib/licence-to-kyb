@@ -459,16 +459,37 @@ describe('review page', () => {
     ).toBeInTheDocument();
   });
 
-  it.each([
-    { route: 'ready', label: 'route.ready', detail: 'route.ready.detail' },
-    { route: 'needs_review', label: 'route.needs_review', detail: 'route.needs_review.detail' },
-    { route: 'reject', label: 'route.reject', detail: 'route.reject.detail' },
-  ] as const)('shows the $route route with its detail', async (row) => {
-    serveRun(runView({ route: row.route }));
+  it.each<{ case: string; view: Partial<RunView>; title: CopyKey; detail: CopyKey }>([
+    {
+      case: 'a flagged field without a decision',
+      view: { route: 'needs_review', status: 'awaiting_review' },
+      title: 'next.examine.one',
+      detail: 'next.examine.detail',
+    },
+    {
+      case: 'a ready run that nobody approved',
+      view: {
+        route: 'ready',
+        status: 'awaiting_submit',
+        reasons: [],
+        form: { version: 1, fields: { licence_number: LICENCE_NUMBER } },
+      },
+      title: 'next.approve.title',
+      detail: 'route.ready.detail',
+    },
+    {
+      case: 'a case the system rejected',
+      view: { route: 'reject', status: 'rejected' },
+      title: 'route.reject',
+      detail: 'route.reject.detail',
+    },
+  ])('says the next step for $case', async (row) => {
+    serveRun(runView(row.view));
     openAt('/runs/run-1');
 
-    expect(await screen.findByText(copy[row.detail])).toBeInTheDocument();
-    expect(screen.getAllByText(copy[row.label]).length).toBeGreaterThan(0);
+    const next = await screen.findByRole('region', { name: copy['next.label'] });
+    expect(within(next).getByText(copy[row.title])).toBeInTheDocument();
+    expect(within(next).getByText(copy[row.detail])).toBeInTheDocument();
   });
 
   it('lists the documents to request and the run reasons', async () => {

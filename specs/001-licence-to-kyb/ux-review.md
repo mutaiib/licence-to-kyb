@@ -29,3 +29,20 @@ All ten findings are fixed, each with a test, and checked again in the browser
 Accessibility (T098): axe-core finds no WCAG 2.2 AA problem on any page, both in the test
 suite (jsdom) and in the browser with colour contrast. A keyboard-only pass of the review
 page reaches every control in working order, with a visible focus outline.
+
+## Round 2 (owner feedback: "it is confusing")
+
+| # | Finding | Why it matters | Task |
+|---|---|---|---|
+| 11 | Three buttons show at once (Approve form, Submit, Reject case), two of them disabled | The reviewer cannot see the first move | T119 |
+| 12 | The status banner, a counter and the buttons are three separate blocks saying related things | Repeated signals for one state | T119 |
+| 13 | Reading confidence numbers sit inside the decision | They are detail for an engineer, not for the decision | T120 |
+| 14 | "Documents to request" sits between the actions and the fields | It interrupts the work; it is needed after the decision | T121 |
+| 15 | "Reject case" is as loud as the main path, in red, next to Approve | An exception looks like a normal next step | T122 |
+
+### What changed in round 2
+
+- One "Next step" card at the top (`NextStep` in `frontend/src/components/FormActions.tsx`). It holds one sentence and at most one main button. The status banner, the counter and the disabled buttons are gone.
+- Each field: reason, text on the licence, buttons, then a closed "Details" section with reading confidence. A sure reading on a flagged field says that a check flagged it.
+- "Documents to request" after the fields; "Reject case" last, as a quiet button.
+- Tests: `frontend/tests/ux_polish.test.tsx` (round 2), `review_actions.test.tsx`, `upload_and_view.test.tsx`. Axe in the browser: no violations.

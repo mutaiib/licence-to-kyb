@@ -46,6 +46,8 @@ from licence_kyb.security import Cipher
 from licence_kyb.testdata.answers import LabelDemoTransport
 
 CASES = REPO_ROOT / "evals" / "cases" / "synthetic"
+PUBLIC = REPO_ROOT / "evals" / "cases" / "public"
+"""Real licences their companies publish: downloaded at eval time, never committed."""
 REPORTS = REPO_ROOT / "evals" / "reports"
 MIX = {"clean": 0.7, "scans_and_photos": 0.2, "problem": 0.1}
 """The realistic mix for the review rate (research R8a)."""
@@ -258,15 +260,25 @@ def main() -> None:
     parser.add_argument("--no-resolver", action="store_true")
     parser.add_argument("--pass3", action="store_true", help="run 30 routing cases 3 times")
     parser.add_argument("--groups", nargs="*", help="only these case groups")
+    parser.add_argument(
+        "--public",
+        action="store_true",
+        help="the public licences (scripts/fetch_public_samples.py downloads them first)",
+    )
+    parser.add_argument("--limit", type=int, help="at most this many cases (a slow model)")
     parser.add_argument("--name", default=datetime.now(UTC).strftime("%Y%m%d-%H%M%S"))
     args = parser.parse_args()
 
     # Signal rows from both splits feed calibration; the metrics use the chosen split only.
     cases = [
         c
-        for c in load_cases(CASES, groups=set(args.groups) if args.groups else None)
+        for c in load_cases(
+            PUBLIC if args.public else CASES, groups=set(args.groups) if args.groups else None
+        )
         if (REPO_ROOT / c.document).exists()
     ]
+    if args.limit:  # a slow model: the first cases of the chosen split only
+        cases = [c for c in cases if c.split == args.split][: args.limit]
     inner: Transport = (
         LabelDemoTransport(CASES)
         if args.model == "scripted"

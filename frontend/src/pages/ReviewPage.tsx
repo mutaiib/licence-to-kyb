@@ -1,6 +1,7 @@
 // Scaffolded from `astryx template detail-page`: a Layout with the record in the content region and a
 // LayoutPanel rail. Here the content region shows the licence page, and the rail shows the KYB form.
-// Each field has its own actions (FieldActions), and the form has the run-level actions (FormActions).
+// The rail reads top to bottom in the order a reviewer works: the next step, the fields to examine,
+// the fields that passed, the documents to request, and last the exception (reject the case).
 import { Banner } from '@astryxdesign/core/Banner';
 import { Collapsible, CollapsibleGroup } from '@astryxdesign/core/Collapsible';
 import { Heading } from '@astryxdesign/core/Heading';
@@ -21,7 +22,7 @@ import { ConfidenceDetails } from '../components/ConfidenceDetails';
 import { EvidenceViewer } from '../components/EvidenceViewer';
 import { ProposalDetails } from '../components/ProposalDetails';
 import { FieldActions, type NewDecision } from '../components/FieldActions';
-import { FormActions } from '../components/FormActions';
+import { NextStep, RejectCase } from '../components/FormActions';
 import { StatusLabel } from '../components/StatusLabel';
 import { useReviewActions } from './useReviewActions';
 import { tracePath, useLinkHandler } from '../router';
@@ -33,8 +34,6 @@ import {
   isFlagged,
   isUndecided,
   reasonText,
-  routeDetail,
-  routeLabel,
   shortTime,
   fieldValueText,
 } from '../text';
@@ -65,8 +64,6 @@ function useRun(runId: string): Load {
   }, [runId]);
   return load?.runId === runId ? load.load : { kind: 'loading' };
 }
-
-const ROUTE_STATUS = { ready: 'success', needs_review: 'warning', reject: 'error' } as const;
 
 interface FailingRule {
   rule_id: string;
@@ -117,7 +114,6 @@ function FieldDetails({
           </MetadataListItem>
         )}
       </MetadataList>
-      {field.confidence != null && <ConfidenceDetails confidence={field.confidence} />}
       {field.model_rationale != null && (
         <ProposalDetails
           rationale={field.model_rationale}
@@ -133,6 +129,14 @@ function FieldDetails({
             acting.onDecide(name, decision);
           }}
         />
+      )}
+      {field.confidence != null && (
+        <Collapsible
+          defaultIsOpen={false}
+          trigger={<Text color="secondary">{copy['review.details']}</Text>}
+        >
+          <ConfidenceDetails confidence={field.confidence} isFlagged={isUndecided(field)} />
+        </Collapsible>
       )}
     </VStack>
   );
@@ -280,45 +284,36 @@ function firstSelection(fields: Readonly<Record<string, FormFieldView>>): string
   return first === undefined ? null : first[0];
 }
 
-function StatusBanner({ view }: { view: RunView }) {
-  if (view.route === null) return null;
+/** Reasons about the whole run. A field's own reasons show on the field, so they are not
+ * repeated here. */
+function RunReasons({ view }: { view: RunView }) {
+  const runReasons = view.reasons.filter((reason) => reason.field === null);
+  if (runReasons.length === 0) return null;
   return (
-    <Banner
-      status={ROUTE_STATUS[view.route]}
-      title={routeLabel(view.route)}
-      description={routeDetail(view.route)}
-    />
+    <List header={<Heading level={2}>{copy['review.reasons.title']}</Heading>} listStyle="disc">
+      {runReasons.map((reason, index) => (
+        <ListItem
+          key={`${reason.code}-${String(index)}`}
+          label={<Text>{reasonText(reason.code, reason.detail)}</Text>}
+        />
+      ))}
+    </List>
   );
 }
 
-/** Reasons about the whole run, and the documents to request. A field's own reasons show on
- * the field, so they are not repeated here. */
-function RunNotes({ view }: { view: RunView }) {
-  const runReasons = view.reasons.filter((reason) => reason.field === null);
+/** The documents to ask the applicant for. Needed after the decision, so shown after the form. */
+function DocumentsToRequest({ view }: { view: RunView }) {
   const documents = [...new Set(view.required_documents)];
+  if (documents.length === 0) return null;
   return (
-    <VStack gap={4}>
-      {runReasons.length > 0 && (
-        <List header={<Heading level={2}>{copy['review.reasons.title']}</Heading>} listStyle="disc">
-          {runReasons.map((reason, index) => (
-            <ListItem
-              key={`${reason.code}-${String(index)}`}
-              label={<Text>{reasonText(reason.code, reason.detail)}</Text>}
-            />
-          ))}
-        </List>
-      )}
-      {documents.length > 0 && (
-        <List
-          header={<Heading level={2}>{copy['review.requiredDocuments.title']}</Heading>}
-          listStyle="disc"
-        >
-          {documents.map((code) => (
-            <ListItem key={code} label={documentLabel(code)} />
-          ))}
-        </List>
-      )}
-    </VStack>
+    <List
+      header={<Heading level={2}>{copy['review.requiredDocuments.title']}</Heading>}
+      listStyle="disc"
+    >
+      {documents.map((code) => (
+        <ListItem key={code} label={documentLabel(code)} />
+      ))}
+    </List>
   );
 }
 
@@ -356,21 +351,23 @@ function Review({ initial }: { initial: RunView }) {
   const document =
     view.pages > 0 ? <EvidenceViewer runId={view.run_id} page={page} box={box} /> : null;
   const selection: Selection = { selected, onSelect: setSelected };
-  // The order a reviewer works in: status, actions, then the fields that need a decision.
+  // The order a reviewer works in: what to do now, the fields that need a decision, then the
+  // rest. Rejecting the case is the exception, so it comes last.
   const panel = (between?: ReactNode) => (
     <VStack gap={6}>
-      <StatusBanner view={view} />
       {error !== null && (
         <VStack role="alert">
           <Banner status="error" title={errorText(error)} />
         </VStack>
       )}
-      <FormActions view={view} undecided={undecided} handlers={handlers} />
-      <RunNotes view={view} />
+      <NextStep view={view} undecided={undecided} handlers={handlers} />
+      <RunReasons view={view} />
       {view.form !== null && (
         <KybForm fields={fields} selection={selection} acting={acting} between={between} />
       )}
       {view.form === null && between}
+      <DocumentsToRequest view={view} />
+      <RejectCase view={view} onReject={handlers.onReject} />
     </VStack>
   );
 
