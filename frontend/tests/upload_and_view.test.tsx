@@ -121,6 +121,7 @@ function runView(overrides: Partial<RunView> = {}): RunView {
     ],
     required_documents: ['memorandum_of_association'],
     pages: 1,
+    form_approved: false,
     steps: [],
     form: { version: 1, fields: { licence_number: LICENCE_NUMBER, expiry_date: EXPIRY_DATE } },
     ...overrides,

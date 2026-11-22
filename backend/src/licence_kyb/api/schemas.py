@@ -115,6 +115,8 @@ class RunView(BaseModel):
     route: Route | None
     reasons: list[ReasonView]
     form: FormView | None
+    form_approved: bool = False
+    """A reviewer approved this exact form version (FR-026); Submit needs it."""
     required_documents: list[str]
     pages: int
 

@@ -280,9 +280,11 @@ def test_the_form_cannot_be_approved_while_a_flagged_field_is_undecided(
 def test_a_ready_run_still_needs_an_approval_and_a_submit(tmp_path: Path, catalogue: Any) -> None:
     r = start(tmp_path, catalogue, "clean")
     assert r.view()["status"] == "awaiting_submit"
+    assert r.view()["form_approved"] is False  # ready, but nobody approved it yet
     assert r.submit().json()["code"] == "not_approved"
 
     assert r.review(approve_form=True).status_code == 200
+    assert r.view()["form_approved"] is True
     submitted = r.submit()
 
     assert submitted.status_code == 200
@@ -299,6 +301,7 @@ def test_a_change_after_approval_needs_a_new_approval(tmp_path: Path, catalogue:
     approved_version = r.view()["form"]["version"]
 
     r.review(decision("legal_name_en", "correct", "Changed Name LLC"))
+    assert r.view()["form_approved"] is False  # the approval was for the old version
 
     assert r.submit(version=approved_version).json()["code"] == "stale_version"
     assert r.submit().json()["code"] == "not_approved"

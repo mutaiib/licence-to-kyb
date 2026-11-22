@@ -48,6 +48,7 @@ const VIEW: RunView = {
   ],
   required_documents: [],
   pages: 1,
+  form_approved: false,
   steps: [],
   form: {
     version: 1,

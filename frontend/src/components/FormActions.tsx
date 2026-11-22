@@ -78,7 +78,9 @@ export function FormActions({
   }
 
   const canRetry = view.reasons.some((reason) => RETRYABLE.has(reason.code));
-  const isApproved = view.status === 'awaiting_submit';
+  // Submit needs an approval of this exact form version (FR-026). A ready run waits for
+  // submit too, but nobody has approved it yet.
+  const isApproved = view.form_approved && view.status === 'awaiting_submit';
   // No form (processing stopped before one was made): nothing to approve or submit yet.
   const hasForm = view.form !== null;
   return (

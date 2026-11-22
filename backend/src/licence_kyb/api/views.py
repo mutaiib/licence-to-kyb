@@ -56,6 +56,8 @@ def build_run_view(pipeline: Pipeline, run_id: str) -> RunView | None:
         route=run["route"],
         reasons=[ReasonView(**r) for r in json.loads(run["reasons_json"])],
         form=form,
+        form_approved=form is not None
+        and pipeline.db.approval_for(run_id, form.version) is not None,
         required_documents=documents,
         pages=state.get("pages", {}).get("page_count", 0),
     )
