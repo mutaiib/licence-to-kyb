@@ -197,6 +197,7 @@ def test_a_correction_replaces_the_value_and_is_audited_and_captured(
 ) -> None:
     misread, truth = misread_expiry(catalogue)
     r = start(tmp_path, catalogue, "near_expiry", misread=misread)
+    read_quote = r.view()["form"]["fields"]["expiry_date"]["evidence_quote"]
 
     response = r.review(decision("expiry_date", "correct", truth, "QR code shows it"))
 
@@ -205,6 +206,7 @@ def test_a_correction_replaces_the_value_and_is_audited_and_captured(
     assert expiry["value"] == truth
     assert expiry["origin"] == "entered_by_reviewer"
     assert expiry["state"] == "corrected"
+    assert expiry["evidence_quote"] == read_quote  # the licence text stays visible
     # Re-checked with every rule: only the true near-expiry warning can remain.
     assert {x["reason_code"] for x in expiry["rule_results"]} <= {"near_expiry"}
     [event] = r.audit("correct")

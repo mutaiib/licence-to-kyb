@@ -202,6 +202,7 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `review.approveForm` | Approve form |
 | `review.approveForm.disabled` | Approve or correct each flagged field first. |
 | `review.remaining` | `{count}` flagged fields remain. |
+| `review.remaining.one` | 1 flagged field remains. |
 | `review.ready` | You approved all fields. Submit the form. |
 | `review.submit` | Submit |
 | `review.submitted` | You submitted the form. The stored record matches the approved form. |

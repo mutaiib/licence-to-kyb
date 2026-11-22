@@ -194,6 +194,7 @@ describe('review actions', () => {
 
     const approveForm = await button(copy['review.approveForm']);
     expect(approveForm).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText(copy['review.remaining.one'])).toBeInTheDocument();
 
     fireEvent.click(await fieldAction('review.approve.field', 'expiry_date'));
 

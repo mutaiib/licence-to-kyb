@@ -110,12 +110,15 @@ def corrected_extraction(read: dict[str, Any], decisions: dict[str, Any]) -> dic
             continue
         source = SOURCES[target]
         value = date.fromisoformat(d["value"]).isoformat() if target in DATE_FIELDS else d["value"]
+        read_field = read.get(source, {})
         updated[source] = {
             "value": value,
             "status": "present",
             "origin": "entered_by_reviewer",
-            "evidence_quote": None,  # a typed value has no text on the licence
-            "page": None,
+            # Keep where the licence shows this field, so the reviewer still sees the text.
+            # The evidence check does not apply to a typed value (rules/grounding.py).
+            "evidence_quote": read_field.get("evidence_quote"),
+            "page": read_field.get("page"),
             "self_confidence": "unknown",
         }
     return updated
