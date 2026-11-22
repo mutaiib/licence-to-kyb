@@ -31,7 +31,7 @@ The full design, with one licence traced end to end, is in [`docs/architecture.m
 **Language/Version**: Python 3.12 (backend). TypeScript 5 with React 19 (frontend).
 
 **Primary Dependencies**:
-- **Backend:** `langgraph` and `langgraph-checkpoint-sqlite`; `anthropic` (official SDK); `pydantic` v2; `fastapi` and `uvicorn`; `pypdfium2` and `pdfplumber`; `pytesseract` (Tesseract `eng+ara`); `opencv-python-headless` (QR decoding, deskew); `rapidfuzz`; `cryptography` (Fernet); `pyyaml`
+- **Backend:** `langgraph` and `langgraph-checkpoint-sqlite`; `anthropic` (official SDK, the default provider); `httpx` for OpenAI-compatible model servers such as llama.cpp's `llama-server` (ADR-004); `pydantic` v2; `fastapi` and `uvicorn`; `pypdfium2` and `pdfplumber`; `pytesseract` (Tesseract `eng+ara`); `opencv-python-headless` (QR decoding, deskew); `rapidfuzz`; `cryptography` (Fernet); `pyyaml`
 - **Test data:** `reportlab`, `arabic-reshaper`, `python-bidi`, `qrcode`, `faker`, `pillow` (see research R9a: no system packages are needed)
 - **Frontend:** `@astryxdesign/core`, `@astryxdesign/theme-neutral`, `@stylexjs/stylex`, `vite`, `openapi-typescript`
 
@@ -114,7 +114,7 @@ The README reports the measured numbers.
 | IX. Plain interface language | `frontend/src/copy.ts` follows [`docs/ui-copy.md`](../../docs/ui-copy.md), and `scripts/lint_copy.py` runs in CI. | PASS |
 | Branching and releases (GitFlow) | The specification is on `feature/001-licence-to-kyb`. Setup and Foundation are on `feature/001-licence-to-kyb-foundation`, each user story on `feature/001-licence-to-kyb-us<N>`, and Polish on `feature/001-licence-to-kyb-polish`. Each branch comes from `develop`, with one pull request per branch. The release goes `release/x.y.z` → `main` (pull request), then a back-merge → `develop` (pull request), with a signed tag, a changelog entry and the eval report. | PASS |
 | Engineering standards | Setup and polish tasks create the CI gate, pre-commit hooks, Dependabot, pinned Actions, SECURITY/CODEOWNERS/CONTRIBUTING files, the SBOM and attestations ([docs/engineering-practices.md](../../docs/engineering-practices.md)). | PASS |
-| X. Simplicity | One model family. No vector store and no framework wrapper around the SDK ([ADR-002](../../docs/decisions/ADR-002-anthropic-sdk-inside-langgraph-nodes.md)). Work is ordered by user-story priority. No scope is labelled with versions or "MVP". The second extraction pass and the resolver each have an experiment that can remove them. | PASS |
+| X. Simplicity | One model client (`LLMClient`) with two transports chosen by configuration: Claude by default, any OpenAI-compatible server for local and comparison runs (ADR-004). No vector store and no framework wrapper around the SDK ([ADR-002](../../docs/decisions/ADR-002-anthropic-sdk-inside-langgraph-nodes.md)). Work is ordered by user-story priority. No scope is labelled with versions or "MVP". The second extraction pass and the resolver each have an experiment that can remove them. | PASS |
 
 **Post-design re-check:** PASS, after the cross-artifact analysis on 2026-11-21. That analysis found violations of III, VIII and X, and all three are fixed in the data model, spec, test cases and tasks. The Complexity Tracking table is empty.
 
@@ -145,7 +145,7 @@ specs/001-licence-to-kyb/
 backend/
 ├── pyproject.toml
 ├── src/licence_kyb/
-│   ├── config.py              # settings, models.yaml, thresholds.yaml loading
+│   ├── config.py              # settings, models.yaml (profiles), thresholds.yaml loading
 │   ├── graph.py               # StateGraph wiring, checkpointer, interrupts
 │   ├── state.py               # RunState
 │   ├── schemas/               # licence.py, results.py, kyb_form.py, api.py
@@ -157,7 +157,8 @@ backend/
 │   │                          # arabic_name, activity, grounding, qr, registry, applicant
 │   ├── tools/                 # reread_region, ocr_region, registry_mock,
 │   │                          # activity_lookup, validation_report, errors (shared error responses)
-│   ├── llm/                   # client.py (LLMClient), recorder.py, prompts/
+│   ├── llm/                   # client.py (LLMClient, AnthropicTransport), openai_compatible.py,
+│   │                          # recorder.py, prompts/
 │   ├── store/                 # db.py, runs.py, submissions.py, audit.py, files.py
 │   ├── security.py            # Fernet, masking filter, retention
 │   ├── tracing.py             # spans

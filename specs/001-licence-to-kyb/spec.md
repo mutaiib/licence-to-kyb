@@ -284,6 +284,7 @@ A maintainer runs the labelled case set and gets a report. The report covers fie
 - **FR-036**: System MUST delete stored documents, personal data and captured corrections after a configured retention period (default 30 days), through a scheduled job.
 - **FR-042**: The interface MUST meet WCAG 2.2 level AA. That includes keyboard-only operation, and status shown by text, not by colour alone.
 - **FR-043**: For a run in review with `processing_failed` or `budget_exhausted`, reviewers MUST be able to retry processing from the last completed step, or to enter every value by hand. A hand-entered value has the origin "entered by reviewer".
+- **FR-044**: Maintainers MUST be able to run every model step on another model provider, including an open-weight model on their own machine, by configuration only. A run MUST record which model served each call, and every eval report MUST name the models it measured.
 
 ### Key Entities
 

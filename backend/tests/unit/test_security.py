@@ -74,3 +74,19 @@ def test_log_records_never_contain_pii_values_from_extra_fields() -> None:
     assert "Ahmed Al Mansoori" not in line
     assert "1234567" not in line
     assert "extracted" in line
+
+
+def test_the_logger_name_stays_readable_in_log_lines() -> None:
+    stream = io.StringIO()
+    logger = logging.getLogger("licence_kyb.api.main")
+    logger.setLevel(logging.INFO)
+    logger.handlers.clear()
+    handler = logging.StreamHandler(stream)
+    handler.addFilter(PiiMaskingFilter())
+    handler.setFormatter(logging.Formatter("%(name)s %(message)s"))
+    logger.addHandler(handler)
+    logger.propagate = False
+
+    logger.info("model profile")
+
+    assert stream.getvalue().startswith("licence_kyb.api.main ")

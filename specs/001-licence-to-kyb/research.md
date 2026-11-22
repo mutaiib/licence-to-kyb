@@ -114,6 +114,22 @@ The Technical Context has no open questions. This file records each technical de
 - **Rationale:** a 99% precision claim on 20 cases means nothing without an interval, and calibrating on the reporting set overfits.
 - **Alternatives considered:** reporting on the full set. Rejected, because it is optimistically biased.
 
+## R10b. Model providers and a local model
+
+- **Decision:** one `OpenAICompatibleTransport` next to the Anthropic one, with model profiles in `config/models.yaml` picked by `MODEL_PROFILE` ([ADR-004](../../docs/decisions/ADR-004-provider-neutral-model-calls.md)). The local profile runs llama.cpp's `llama-server` (release b11985, pinned by SHA-256) with a GGUF model file.
+- **Rationale:**
+  - real (not scripted) readings at no cost, so thresholds can be fitted and evals run often
+  - one interface (the OpenAI-compatible chat API) covers llama.cpp, Ollama, vLLM, LM Studio and a LiteLLM proxy
+- **Model for local runs:**
+  - Wiring and smoke tests: `mistral-7b-instruct-v0.2.Q4_K_M.gguf`, already on the development machine.
+  - Evals: a model that is stronger at Arabic and at JSON, such as Qwen2.5-7B-Instruct, when it is downloaded.
+  - Hardware: CPU only (16 cores, 15 GB RAM). Expect minutes per licence, so the local profile sets a longer deadline.
+  - Both readings run on the same local model, so the `agreement` signal is less independent than with two API passes. The experiment records this.
+- **Alternatives considered:**
+  - LiteLLM as a library: a large dependency for what one small transport does; the proxy stays possible.
+  - Hugging Face `transformers` in process: slow on a CPU, and the server would sit in the API process.
+  - Ollama: a good choice too. llama-server is one static binary with no installer.
+
 ## R9. Test data
 
 - **Decision:**

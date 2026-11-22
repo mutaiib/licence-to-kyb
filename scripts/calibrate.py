@@ -5,8 +5,8 @@
 Each line of ROWS.jsonl is one field of one case:
     {"field": "expiry_date", "split": "calibration", "signals": {...}, "correct": true}
 The eval runner (User Story 6) writes this file during a live run. Only calibration-split
-rows are used. The result replaces backend/config/thresholds.yaml, with ``fitted: true``
-and a short fit summary.
+rows are used. The result goes to backend/config/thresholds.<MODEL_PROFILE>.yaml, because
+thresholds are fitted per model profile (ADR-004), with ``fitted: true`` and a fit summary.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from pathlib import Path
 import yaml
 
 from licence_kyb.calibration import SignalRow, fit_thresholds, precision_at
-from licence_kyb.config import CONFIG_DIR
+from licence_kyb.config import CONFIG_DIR, active_profile_name
 from licence_kyb.nodes.confidence import load_config
 
 
@@ -53,7 +53,9 @@ def main() -> None:
         "thresholds": thresholds,
         "fit_summary": summary,
     }
-    (CONFIG_DIR / "thresholds.yaml").write_text(yaml.safe_dump(out, sort_keys=False))
+    profile = active_profile_name() or "anthropic"
+    out["model_profile"] = profile
+    (CONFIG_DIR / f"thresholds.{profile}.yaml").write_text(yaml.safe_dump(out, sort_keys=False))
     print(json.dumps(summary, indent=2))
 
 

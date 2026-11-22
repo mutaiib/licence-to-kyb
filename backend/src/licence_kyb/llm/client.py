@@ -91,6 +91,9 @@ class ModelResponse:
     serving_model: str
     usage: Usage
     latency_ms: int = 0
+    prices: tuple[float, float, float] | None = None
+    """USD per million input, output and cached tokens, when the transport knows them (a
+    model profile). Otherwise the published prices of the serving model apply."""
 
     def parsed_as[M: BaseModel](self, model: type[M]) -> M:
         if self.parsed is None:
@@ -98,7 +101,9 @@ class ModelResponse:
         return model.model_validate(self.parsed)
 
     def cost_usd(self) -> float:
-        price_in, price_out, price_cache = PRICES.get(self.serving_model, PRICES["claude-opus-5-5"])
+        price_in, price_out, price_cache = self.prices or PRICES.get(
+            self.serving_model, PRICES["claude-opus-5-5"]
+        )
         uncached = max(self.usage.input_tokens - self.usage.cache_read_tokens, 0)
         return (
             uncached * price_in

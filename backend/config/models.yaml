@@ -1,7 +1,32 @@
-# Model and effort per step (plan.md, "Model usage"). A change here is a pull request
-# with before-and-after eval numbers (docs/engineering-practices.md, section 6).
-route:             { model: claude-opus-5-5, effort: low,    max_tokens: 4000 }
-extract_primary:   { model: claude-opus-5-5, effort: medium, max_tokens: 16000 }
-extract_secondary: { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
-resolve:           { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
-reread_vision:     { model: claude-opus-5-5, effort: low,    max_tokens: 2000 }
+# Model profiles (ADR-004, FR-044). MODEL_PROFILE picks one; `default` applies otherwise.
+# A change to a profile's models is a pull request with before-and-after eval numbers
+# (docs/engineering-practices.md, section 6).
+default: anthropic
+
+profiles:
+  # Claude through the official SDK: vision, effort, prompt caching, server-side fallback.
+  anthropic:
+    provider: anthropic
+    vision: true
+    steps:
+      route:             { model: claude-opus-5-5, effort: low,    max_tokens: 4000 }
+      extract_primary:   { model: claude-opus-5-5, effort: medium, max_tokens: 16000 }
+      extract_secondary: { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
+      resolve:           { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
+      reread_vision:     { model: claude-opus-5-5, effort: low,    max_tokens: 2000 }
+
+  # An open-weight model on this machine, served by llama.cpp's llama-server
+  # (`make local-model`). Text only: the OCR text is in every prompt. No cost. A CPU is
+  # slow, so the deadline is longer. `effort` is not sent to this provider.
+  local:
+    provider: openai_compatible
+    base_url: http://127.0.0.1:8080/v1
+    vision: false
+    price_per_mtok: { input: 0, output: 0 }
+    deadline_seconds: 1800
+    steps:
+      route:             { model: local-model, effort: low,    max_tokens: 400 }
+      extract_primary:   { model: local-model, effort: medium, max_tokens: 3000 }
+      extract_secondary: { model: local-model, effort: medium, max_tokens: 1500 }
+      resolve:           { model: local-model, effort: medium, max_tokens: 2000 }
+      reread_vision:     { model: local-model, effort: low,    max_tokens: 800 }

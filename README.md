@@ -39,7 +39,7 @@ upload → check file → read pages (OCR, QR) → identify document (model) →
 
 ## Stack
 
-- **Backend:** Python 3.12, LangGraph, the `anthropic` SDK, Pydantic, FastAPI, SQLite, Tesseract.
+- **Backend:** Python 3.12, LangGraph, the `anthropic` SDK (default) or any OpenAI-compatible model server, Pydantic, FastAPI, SQLite, Tesseract.
 - **Frontend:** React 19, Vite, TypeScript, Astryx.
 
 ## Results
