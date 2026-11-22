@@ -196,10 +196,10 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 2 (write first; they must fail)
 
-- [ ] T056 [P] [US2] Write graph tests from the "Review, submission and verification" table in `backend/tests/graph/test_review_submit.py`. Include "resumed twice → one audit event per decision, one captured correction, one version increase".
-- [ ] T057 [P] [US2] Write API tests for review, reopen, retry and submit, covering statuses 200, 202, 401, 403 and 409 and their codes (including `not_retryable`) per `contracts/http-api.md`, in `backend/tests/api/test_review_submit.py`
-- [ ] T058 [P] [US2] Write an audit property test in `backend/tests/unit/test_audit.py`: for any sequence of decisions, including repeats, the audit log alone identifies the approver and every change before approval, with one event per key
-- [ ] T059 [P] [US2] Write Vitest tests in `frontend/tests/review_actions.test.tsx`:
+- [X] T056 [P] [US2] Write graph tests from the "Review, submission and verification" table in `backend/tests/graph/test_review_submit.py`. Include "resumed twice → one audit event per decision, one captured correction, one version increase".
+- [X] T057 [P] [US2] Write API tests for review, reopen, retry and submit, covering statuses 200, 202, 401, 403 and 409 and their codes (including `not_retryable`) per `contracts/http-api.md`, in `backend/tests/api/test_review_submit.py`
+- [X] T058 [P] [US2] Write an audit property test (in `backend/tests/api/test_review_submit.py`, to reuse its API harness): for any sequence of decisions, including repeats, the audit log alone identifies the approver and every change before approval, with one event per key
+- [X] T059 [P] [US2] Write Vitest tests in `frontend/tests/review_actions.test.tsx`:
   - Retry processing appears only for `processing_failed` and `budget_exhausted`
   - Enter value appears for `not_present` fields, and marks the value as "Value from reviewer"
   - Approve-form is disabled while any flagged field is undecided
@@ -210,24 +210,24 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Implementation for User Story 2
 
-- [ ] T060 [P] [US2] Use the keyed `Database` methods in `backend/src/licence_kyb/store/db.py` for decisions, approvals, submissions, audit events and captured corrections (built in Foundation). Add only what US2 needs: reading the latest submission and approvals per version. *(Simplified 2026-11-22: one store module, not five; same keys and guarantees.)*
-- [ ] T061 [US2] Add the `wait_for_reviewer` node in `backend/src/licence_kyb/pipeline.py`. It only calls `interrupt()` and returns the action; it has no side effects. Every run waits here after processing, including rejected runs, so reopen is just another action.
-- [ ] T062 [US2] Add the `apply_action` node, with its logic in `backend/src/licence_kyb/nodes/review.py`, for the review action:
+- [X] T060 [P] [US2] Use the keyed `Database` methods in `backend/src/licence_kyb/store/db.py` for decisions, approvals, submissions, audit events and captured corrections (built in Foundation). Add only what US2 needs: reading the latest submission and approvals per version. *(Simplified 2026-11-22: one store module, not five; same keys and guarantees.)*
+- [X] T061 [US2] Add the `wait_for_reviewer` node in `backend/src/licence_kyb/pipeline.py`. It only calls `interrupt()` and returns the action; it has no side effects. Every run waits here after processing, including rejected runs, so reopen is just another action.
+- [X] T062 [US2] Add the `apply_action` node, with its logic in `backend/src/licence_kyb/nodes/review.py`, for the review action:
   - keyed writes
   - re-validation, with the evidence check `not_applicable` for values entered by a reviewer
   - an override only on `could_not_run`, with a reason
   - a form version increase and a rebuilt draft form
   - a captured correction written encrypted, with `pending` status
-- [ ] T063 [US2] Handle the submit action in `apply_action` (logic in `backend/src/licence_kyb/nodes/review.py`):
+- [X] T063 [US2] Handle the submit action in `apply_action` (logic in `backend/src/licence_kyb/nodes/review.py`):
   - the approval is bound to the form version
   - the write is idempotent, keyed by `action_id` and unique per approved form version
   - the read-back comparison sends the run to `done`, or back to review with `verification_failed`
   - after `verification_failed`, a newly approved form version can be submitted, and the run is done when its latest submission verifies
-- [ ] T064 [US2] Handle reject and reopen in `apply_action`, and `POST /api/runs/{id}/reopen` in `backend/src/licence_kyb/api/routes_runs.py`. Each needs a reason and a client `action_id`, so a reject → reopen → reject cycle records every event.
-- [ ] T065 [US2] Implement retry processing (`POST /api/runs/{id}/retry`, only after `processing_failed` or `budget_exhausted`, resuming from the last checkpoint) and hand entry of values for `not_present` fields, in `backend/src/licence_kyb/api/routes_runs.py` and `backend/src/licence_kyb/nodes/review.py`
-- [ ] T066 [US2] Wire `persist → wait_for_reviewer → apply_action → (wait_for_reviewer | the failed step on retry: route when there is no route result, else extract | END when done)` in `backend/src/licence_kyb/pipeline.py`. Add the review, submit, reopen and retry endpoints in `backend/src/licence_kyb/api/routes_runs.py`. Each endpoint checks the action with one pure function (`backend/src/licence_kyb/api/actions.py`) and answers 409 before resuming the run, so the graph only sees valid actions.
-- [ ] T067 [US2] Add the strings for Approve, Correct, Override and its reason, Reject and its confirmation, Reopen, Retry processing, Enter value, Submit, verification and each error code to `frontend/src/copy.ts`. Add the Retry processing and Enter value actions. Make the Review page interactive in `frontend/src/pages/ReviewPage.tsx`.
-- [ ] T068 [US2] Record the model responses for the US2 graph tests (scripted responses from labels, per research R10a). Confirm that the US2 tests pass, then open the US2 pull request into `develop`.
+- [X] T064 [US2] Handle reject and reopen in `apply_action`, and `POST /api/runs/{id}/reopen` in `backend/src/licence_kyb/api/routes_runs.py`. Each needs a reason and a client `action_id`, so a reject → reopen → reject cycle records every event.
+- [X] T065 [US2] Implement retry processing (`POST /api/runs/{id}/retry`, only after `processing_failed` or `budget_exhausted`, resuming from the last checkpoint) and hand entry of values for `not_present` fields, in `backend/src/licence_kyb/api/routes_runs.py` and `backend/src/licence_kyb/nodes/review.py`
+- [X] T066 [US2] Wire `persist → wait_for_reviewer → apply_action → (wait_for_reviewer | the failed step on retry: preprocess when no pages were read, route when there is no route result, else extract | END when done)` in `backend/src/licence_kyb/pipeline.py`. Add the review, submit, reopen and retry endpoints in `backend/src/licence_kyb/api/routes_runs.py`. The endpoints live in `backend/src/licence_kyb/api/routes_review.py`. `Pipeline.check` runs the pure checks in `nodes/review.py` and the endpoint answers 409 before resuming the run, so the graph only sees valid actions.
+- [X] T067 [US2] Add the strings for Approve, Correct, Override and its reason, Reject and its confirmation, Reopen, Retry processing, Enter value, Submit, verification and each error code to `frontend/src/copy.ts`. Add the Retry processing and Enter value actions. Make the Review page interactive in `frontend/src/pages/ReviewPage.tsx`.
+- [X] T068 [US2] Record the model responses for the US2 graph tests (scripted responses from labels, per research R10a). Confirm that the US2 tests pass, then open the US2 pull request into `develop`.
 
 **Checkpoint**: US1 and US2 work together. A licence can be examined, approved and submitted, and the record is verified.
 
