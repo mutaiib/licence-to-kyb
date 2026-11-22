@@ -49,8 +49,8 @@ An escape value such as `other`, plus a `not_present` or `unclear` status on the
 <details><summary>2. Name the four validation layers and one failure each catches.</summary>
 
 1. **API:** a missing field.
-2. **Pydantic:** an expiry date before the issue date.
-3. **Business rules:** an expired licence, or a wrong number format.
+2. **Pydantic:** a share of 120%, or the date 31/02/2026.
+3. **Business rules:** an expired licence, an expiry date before the issue date, or a wrong number format.
 4. **Grounding:** a value that the document does not contain.
 </details>
 

@@ -129,27 +129,6 @@ class TradeLicenceExtraction(StrictModel):
     people: Field[list[Person]]
     address: Field[str]
 
-    @model_validator(mode="after")
-    def _date_order(self) -> Self:
-        issue, expiry, est = (
-            self.issue_date.value,
-            self.expiry_date.value,
-            self.establishment_date.value,
-        )
-        if issue is not None and expiry is not None and issue >= expiry:
-            raise PydanticCustomError(
-                "date_order",
-                "the issue date must be before the expiry date",
-                {"fields": ["issue_date", "expiry_date"]},
-            )
-        if est is not None and issue is not None and est > issue:
-            raise PydanticCustomError(
-                "date_order",
-                "the establishment date must not be after the issue date",
-                {"fields": ["establishment_date", "issue_date"]},
-            )
-        return self
-
 
 CRITICAL_FIELDS: tuple[str, ...] = (
     "licence_number",
