@@ -409,7 +409,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 - [X] T100 [P] Run mutation testing on `backend/src/licence_kyb/rules/` with `mutmut`, and record the score in `docs/experiments.md`
 - [ ] T101 Run the full eval suite. Fill `docs/experiments.md`, and replace the README Results section with the measured numbers and intervals, including any target that was missed.
 - [X] T102 [P] Add the release workflow in `.github/workflows/release.yml`: a CycloneDX SBOM, a GitHub artifact attestation, and release notes from `CHANGELOG.md`
-- [ ] T103 Cut `release/0.1.0` from `develop`. Update `CHANGELOG.md` and link the eval report. Open a pull request into `main`; after it merges, tag `v0.1.0` (annotated, signed) and open the back-merge pull request into `develop`.
+- [X] T103 Cut `release/0.1.0` from `develop`. Update `CHANGELOG.md` and link the eval report. Open a pull request into `main`; after it merges, tag `v0.1.0` (annotated, signed) and open the back-merge pull request into `develop`.
 - [X] T104 Run `quickstart.md` end to end on a clean clone, and fix any step that fails
 
 ---

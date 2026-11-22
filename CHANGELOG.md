@@ -6,6 +6,12 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-22
+
+Eval reports: offline baseline [`evals/reports/scripted-baseline/`](evals/reports/scripted-baseline/);
+first real readings [`evals/reports/local-smoke/`](evals/reports/local-smoke/) and
+[`evals/reports/local-public/`](evals/reports/local-public/) ([experiments](docs/experiments.md)).
+
 ### Added
 - Feature 001 specification, plan, contracts, test cases and tasks (Spec Kit).
 - Architecture, decision records, engineering practices, UI copy standard and handbook.
@@ -53,3 +59,6 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 - Dates in the wrong order reach the reviewer as `date_order`, not `processing_failed`.
 - A run whose processing crashes goes to review and can be retried; an interrupted run
   continues after its last completed step.
+
+[Unreleased]: https://github.com/mutaiib/licence-to-kyb/compare/v0.1.0...develop
+[0.1.0]: https://github.com/mutaiib/licence-to-kyb/releases/tag/v0.1.0
