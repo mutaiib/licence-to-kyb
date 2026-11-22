@@ -1,0 +1,15 @@
+# Activities that need more checks (spec FR-012; CBUAE guidance on trade-based money
+# laundering, docs/research.md). Matched on code or on any keyword, case-insensitive.
+high_risk:
+  - id: general_trading
+    codes: ["4690.01"]
+    keywords: ["general trading", "تجارة عامة"]
+  - id: precious_metals_and_stones
+    codes: ["4773.01"]
+    keywords: ["precious metals", "precious stones", "gold", "jewellery", "jewelry", "المعادن الثمينة"]
+  - id: virtual_assets
+    codes: ["6619.01"]
+    keywords: ["virtual asset", "crypto", "الأصول الافتراضية"]
+  - id: money_exchange
+    codes: ["6612.01"]
+    keywords: ["money exchange", "currency exchange", "remittance", "صرافة"]

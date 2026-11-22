@@ -1,0 +1,15 @@
+# Sample business activities for synthetic licences. Codes are synthetic and ISIC-shaped
+# (UAE authorities use ISIC-derived codes written in several formats; docs/research.md).
+activities:
+  - { code: "4690.01", en: "General Trading", ar: "تجارة عامة" }
+  - { code: "4719.01", en: "Supermarket", ar: "سوبر ماركت" }
+  - { code: "6201.01", en: "Computer Programming", ar: "برمجة الحاسوب" }
+  - { code: "7020.01", en: "Management Consultancy", ar: "استشارات إدارية" }
+  - { code: "4772.01", en: "Perfume Trading", ar: "تجارة العطور" }
+  - { code: "5610.01", en: "Restaurant", ar: "مطعم" }
+  - { code: "7311.01", en: "Advertising Services", ar: "خدمات الإعلان" }
+  - { code: "8549.01", en: "Training Services", ar: "خدمات التدريب" }
+  - { code: "4932.01", en: "Passenger Land Transport", ar: "النقل البري للركاب" }
+  - { code: "4773.01", en: "Precious Metals and Jewellery Trading", ar: "تجارة المعادن الثمينة والمجوهرات" }
+  - { code: "6619.01", en: "Virtual Asset Services", ar: "خدمات الأصول الافتراضية" }
+  - { code: "6612.01", en: "Money Exchange", ar: "صرافة" }

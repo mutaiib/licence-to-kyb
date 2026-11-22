@@ -1,0 +1,323 @@
+{
+  "ADDED": {
+    "CN-1526133": {
+      "expiry_date": "2027-03-20",
+      "status": "active",
+      "trade_name_en": "Miller Trading LLC"
+    },
+    "CN-1693976": {
+      "expiry_date": "2027-02-13",
+      "status": "active",
+      "trade_name_en": "Carney Trading LLC"
+    },
+    "CN-1968452": {
+      "expiry_date": "2026-08-31",
+      "status": "active",
+      "trade_name_en": "Cohen Technologies LLC"
+    },
+    "CN-2351653": {
+      "expiry_date": "2026-06-11",
+      "status": "active",
+      "trade_name_en": "Hill Consultancy LLC"
+    },
+    "CN-3069928": {
+      "expiry_date": "2027-04-20",
+      "status": "active",
+      "trade_name_en": "Mclaughlin Services LLC"
+    },
+    "CN-3348376": {
+      "expiry_date": "2027-03-03",
+      "status": "active",
+      "trade_name_en": "Oconnor Consultancy Est."
+    },
+    "CN-3644719": {
+      "expiry_date": "2026-10-08",
+      "status": "active",
+      "trade_name_en": "Moore Trading LLC"
+    },
+    "CN-4087442": {
+      "expiry_date": "2026-08-20",
+      "status": "active",
+      "trade_name_en": "Jones Services Est."
+    },
+    "CN-4329233": {
+      "expiry_date": "2026-12-04",
+      "status": "active",
+      "trade_name_en": "Harvey Trading Est."
+    },
+    "CN-4333660": {
+      "expiry_date": "2027-02-04",
+      "status": "active",
+      "trade_name_en": "Small Services Est."
+    },
+    "CN-4417343": {
+      "expiry_date": "2026-10-27",
+      "status": "active",
+      "trade_name_en": "Harris Services LLC"
+    },
+    "CN-5038239": {
+      "expiry_date": "2027-03-28",
+      "status": "active",
+      "trade_name_en": "Mann Services Est."
+    },
+    "CN-5210970": {
+      "expiry_date": "2026-09-30",
+      "status": "active",
+      "trade_name_en": "Ayala Services LLC"
+    },
+    "CN-5988224": {
+      "expiry_date": "2027-03-13",
+      "status": "active",
+      "trade_name_en": "Lee Technologies LLC"
+    },
+    "CN-5995791": {
+      "expiry_date": "2026-10-14",
+      "status": "active",
+      "trade_name_en": "Skinner Technologies LLC"
+    },
+    "CN-8305569": {
+      "expiry_date": "2026-09-13",
+      "status": "active",
+      "trade_name_en": "Sanchez Trading Est."
+    },
+    "CN-8338700": {
+      "expiry_date": "2027-03-01",
+      "status": "active",
+      "trade_name_en": "Hernandez Services Est."
+    },
+    "CN-8727776": {
+      "expiry_date": "2027-04-03",
+      "status": "active",
+      "trade_name_en": "Allen Trading Est."
+    },
+    "CN-8913250": {
+      "expiry_date": "2026-08-24",
+      "status": "active",
+      "trade_name_en": "Henry Trading Est."
+    },
+    "CN-9587258": {
+      "expiry_date": "2026-04-03",
+      "status": "expired",
+      "trade_name_en": "Smith Consultancy LLC"
+    },
+    "CN-9919604": {
+      "expiry_date": "2027-03-25",
+      "status": "active",
+      "trade_name_en": "Schmidt Services LLC"
+    }
+  },
+  "DET": {
+    "1131993": {
+      "expiry_date": "2027-02-20",
+      "status": "active",
+      "trade_name_en": "Campbell Trading LLC"
+    },
+    "1531161": {
+      "expiry_date": "2027-02-15",
+      "status": "active",
+      "trade_name_en": "Moore Technologies LLC"
+    },
+    "1999240": {
+      "expiry_date": "2026-09-15",
+      "status": "active",
+      "trade_name_en": "Young Services LLC"
+    },
+    "2501863": {
+      "expiry_date": "2026-08-21",
+      "status": "active",
+      "trade_name_en": "Larsen Consultancy LLC"
+    },
+    "2557694": {
+      "expiry_date": "2026-09-26",
+      "status": "active",
+      "trade_name_en": "Simmons Trading Est."
+    },
+    "2590674": {
+      "expiry_date": "2026-04-24",
+      "status": "expired",
+      "trade_name_en": "Morales Trading Est."
+    },
+    "3601653": {
+      "expiry_date": "2027-04-24",
+      "status": "active",
+      "trade_name_en": "Martinez Consultancy LLC"
+    },
+    "3909257": {
+      "expiry_date": "2026-08-21",
+      "status": "active",
+      "trade_name_en": "Ferguson Technologies LLC"
+    },
+    "4094039": {
+      "expiry_date": "2027-01-11",
+      "status": "active",
+      "trade_name_en": "Robinson Consultancy LLC"
+    },
+    "4299640": {
+      "expiry_date": "2027-01-06",
+      "status": "active",
+      "trade_name_en": "Gonzalez Consultancy LLC"
+    },
+    "4394767": {
+      "expiry_date": "2026-09-10",
+      "status": "active",
+      "trade_name_en": "Jimenez Consultancy Est."
+    },
+    "4448847": {
+      "expiry_date": "2026-12-20",
+      "status": "active",
+      "trade_name_en": "Bean Services LLC"
+    },
+    "5557955": {
+      "expiry_date": "2027-02-26",
+      "status": "active",
+      "trade_name_en": "Wise Services LLC"
+    },
+    "6414574": {
+      "expiry_date": "2027-03-13",
+      "status": "active",
+      "trade_name_en": "Rocha Consultancy Est."
+    },
+    "6997826": {
+      "expiry_date": "2027-02-28",
+      "status": "active",
+      "trade_name_en": "David Consultancy Est."
+    },
+    "7514658": {
+      "expiry_date": "2027-01-01",
+      "status": "active",
+      "trade_name_en": "Cordova Consultancy LLC"
+    },
+    "7633072": {
+      "expiry_date": "2026-10-04",
+      "status": "active",
+      "trade_name_en": "Sims Consultancy Est."
+    },
+    "7828167": {
+      "expiry_date": "2026-06-11",
+      "status": "active",
+      "trade_name_en": "Fuller Services LLC"
+    },
+    "8124126": {
+      "expiry_date": "2027-03-20",
+      "status": "active",
+      "trade_name_en": "Henry Consultancy Est."
+    },
+    "8636305": {
+      "expiry_date": "2027-01-03",
+      "status": "active",
+      "trade_name_en": "Gibson Technologies LLC"
+    },
+    "9062761": {
+      "expiry_date": "2026-09-27",
+      "status": "active",
+      "trade_name_en": "Williams Consultancy LLC"
+    },
+    "9173085": {
+      "expiry_date": "2026-05-16",
+      "status": "expired",
+      "trade_name_en": "West Services Est."
+    },
+    "9567647": {
+      "expiry_date": "2027-02-12",
+      "status": "active",
+      "trade_name_en": "Long Services LLC"
+    },
+    "9631425": {
+      "expiry_date": "2027-02-26",
+      "status": "active",
+      "trade_name_en": "Duran Services LLC"
+    }
+  },
+  "DMCC": {
+    "DMCC-14191": {
+      "expiry_date": "2026-06-11",
+      "status": "active",
+      "trade_name_en": "Young Services FZE"
+    },
+    "DMCC-17579": {
+      "expiry_date": "2027-03-03",
+      "status": "active",
+      "trade_name_en": "Kim Technologies FZCO"
+    },
+    "DMCC-31335": {
+      "expiry_date": "2026-10-20",
+      "status": "active",
+      "trade_name_en": "Smith Technologies FZE"
+    },
+    "DMCC-31434": {
+      "expiry_date": "2026-08-19",
+      "status": "active",
+      "trade_name_en": "Patterson Services FZE"
+    },
+    "DMCC-32563": {
+      "expiry_date": "2026-11-13",
+      "status": "active",
+      "trade_name_en": "Arellano Technologies FZCO"
+    },
+    "DMCC-37241": {
+      "expiry_date": "2027-02-15",
+      "status": "active",
+      "trade_name_en": "Smith Consultancy FZE"
+    },
+    "DMCC-38017": {
+      "expiry_date": "2027-02-04",
+      "status": "active",
+      "trade_name_en": "Lewis Consultancy FZE"
+    },
+    "DMCC-38305": {
+      "expiry_date": "2026-11-13",
+      "status": "active",
+      "trade_name_en": "Johnson Services FZCO"
+    },
+    "DMCC-45116": {
+      "expiry_date": "2027-04-18",
+      "status": "active",
+      "trade_name_en": "Williams Consultancy FZE"
+    },
+    "DMCC-51619": {
+      "expiry_date": "2026-09-17",
+      "status": "active",
+      "trade_name_en": "Mullen Technologies FZCO"
+    },
+    "DMCC-53234": {
+      "expiry_date": "2026-08-07",
+      "status": "active",
+      "trade_name_en": "Rivera Trading FZCO"
+    },
+    "DMCC-55778": {
+      "expiry_date": "2026-12-10",
+      "status": "active",
+      "trade_name_en": "Brown Consultancy FZE"
+    },
+    "DMCC-59371": {
+      "expiry_date": "2027-04-14",
+      "status": "active",
+      "trade_name_en": "Hamilton Trading FZCO"
+    },
+    "DMCC-66527": {
+      "expiry_date": "2026-04-17",
+      "status": "expired",
+      "trade_name_en": "Lee Technologies FZE"
+    },
+    "DMCC-69281": {
+      "expiry_date": "2026-09-09",
+      "status": "active",
+      "trade_name_en": "Jensen Technologies FZE"
+    },
+    "DMCC-74931": {
+      "expiry_date": "2026-09-22",
+      "status": "active",
+      "trade_name_en": "Walters Consultancy FZCO"
+    },
+    "DMCC-77671": {
+      "expiry_date": "2026-10-27",
+      "status": "active",
+      "trade_name_en": "Marshall Services FZE"
+    },
+    "DMCC-81076": {
+      "expiry_date": "2027-01-05",
+      "status": "active",
+      "trade_name_en": "Ballard Consultancy FZE"
+    }
+  }
+}
