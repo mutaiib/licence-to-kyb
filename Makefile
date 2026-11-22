@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo backup
+.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -46,6 +46,9 @@ measure:           ## paid: throughput probe (task T034)
 
 demo:
 	docker compose up --build
+
+dev:               ## local demo backend (label answers, no model key); run `npm run dev` in frontend/
+	scripts/dev_demo.sh
 
 backup:
 	mkdir -p var/backups && cp var/*.sqlite3 var/backups/ 2>/dev/null || true

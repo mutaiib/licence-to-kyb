@@ -43,16 +43,22 @@ class PageSet:
 
     @property
     def text(self) -> str:
-        """Words grouped into visual rows (by vertical centre), each row read left to right."""
-        rows: list[list[Word]] = []
-        for w in sorted(self.words, key=lambda w: (w.page, (w.bbox[1] + w.bbox[3]) / 2)):
-            centre = (w.bbox[1] + w.bbox[3]) / 2
-            last = rows[-1] if rows else None
-            if last and last[0].page == w.page and abs(_centre(last) - centre) <= ROW_TOLERANCE:
-                last.append(w)
-            else:
-                rows.append([w])
-        return "\n".join(" ".join(w.text for w in sorted(r, key=lambda w: w.bbox[0])) for r in rows)
+        """Words grouped into visual rows, each row read left to right."""
+        return "\n".join(" ".join(w.text for w in row) for row in visual_rows(self.words))
+
+
+def visual_rows(words: list[Word]) -> list[list[Word]]:
+    """Group words into rows by vertical centre, then order each row left to right.
+    PDF text layers return words in extraction order, which splits labels from values."""
+    rows: list[list[Word]] = []
+    for w in sorted(words, key=lambda w: (w.page, (w.bbox[1] + w.bbox[3]) / 2)):
+        centre = (w.bbox[1] + w.bbox[3]) / 2
+        last = rows[-1] if rows else None
+        if last and last[0].page == w.page and abs(_centre(last) - centre) <= ROW_TOLERANCE:
+            last.append(w)
+        else:
+            rows.append([w])
+    return [sorted(r, key=lambda w: w.bbox[0]) for r in rows]
 
 
 def _centre(row: list[Word]) -> float:

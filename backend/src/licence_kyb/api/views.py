@@ -17,6 +17,7 @@ from licence_kyb.api.schemas import (
 )
 from licence_kyb.graph import thread_config
 from licence_kyb.nodes.map_form import SOURCES
+from licence_kyb.nodes.preprocess import Word, visual_rows
 from licence_kyb.pipeline import Pipeline
 from licence_kyb.rules.base import normalise_text
 
@@ -30,7 +31,16 @@ def _evidence_box(
     if not quote or page is None:
         return None
     tokens = normalise_text(quote).split()
-    on_page = [w for w in words if w["page"] == page]
+    rows = visual_rows(
+        [
+            Word(w["page"], w["text"], tuple(w["bbox"]), w["conf"])
+            for w in words
+            if w["page"] == page
+        ]
+    )
+    on_page: list[dict[str, Any]] = [
+        {"page": w.page, "text": w.text, "bbox": w.bbox} for row in rows for w in row
+    ]
     best: list[dict[str, Any]] = []
     for i in range(len(on_page)):
         run: list[dict[str, Any]] = []
