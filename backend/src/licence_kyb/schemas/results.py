@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -99,6 +99,18 @@ class Reason(StrictModel):
     code: ReasonCode
     field: str | None = None
     rule_id: str | None = None
+    detail: dict[str, str] = Field(default_factory=dict)
+
+
+def reason_entry(
+    code: ReasonCode,
+    *,
+    field: str | None = None,
+    rule_id: str | None = None,
+    detail: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """A reason as the run state and ``runs.reasons_json`` store it."""
+    return Reason(code=code, field=field, rule_id=rule_id, detail=detail or {}).model_dump()
 
 
 class Decision(StrictModel):

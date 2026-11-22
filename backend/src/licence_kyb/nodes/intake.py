@@ -19,7 +19,7 @@ import pypdfium2 as pdfium
 from PIL import Image
 
 from licence_kyb.nodes.preprocess import POINTS_PER_INCH, RENDER_DPI
-from licence_kyb.schemas.results import ReasonCode
+from licence_kyb.schemas.results import ReasonCode, reason_entry
 from licence_kyb.security import Cipher
 from licence_kyb.store.db import Database
 
@@ -91,7 +91,7 @@ class IntakeService:
         if run.status != "received" or self.stored_path(run.run_id).exists():
             return IntakeResult(run.run_id, duplicate=True, mime=mime, page_count=pages)
         if reason is not None:
-            reasons = [{"code": reason, "field": None, "rule_id": None}]
+            reasons = [reason_entry(reason)]
             self.db.update_run(
                 run.run_id, status="rejected", route="reject", reasons_json=json.dumps(reasons)
             )

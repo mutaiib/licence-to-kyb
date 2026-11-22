@@ -36,7 +36,7 @@ from licence_kyb.profiles import load_profile
 from licence_kyb.registry import MockRegistry
 from licence_kyb.rules import RuleContext, run_rules
 from licence_kyb.schemas.licence import CriticalFields, TradeLicenceExtraction
-from licence_kyb.schemas.results import FILE_REASONS, RuleResult
+from licence_kyb.schemas.results import FILE_REASONS, RuleResult, reason_entry
 from licence_kyb.security import Cipher
 from licence_kyb.state import RunState
 from licence_kyb.store.db import Database
@@ -165,7 +165,7 @@ class Pipeline:
                 self._trace_call(run_id, step, request, outcome.response, "route")
         return {
             "route": {"doc_type": outcome.doc_type, "authority": outcome.authority},
-            "reasons": [{"code": c, "field": None, "rule_id": None} for c in outcome.reasons],
+            "reasons": [reason_entry(code) for code in outcome.reasons],
         }
 
     @staticmethod
@@ -204,10 +204,9 @@ class Pipeline:
             out = extract_licence(self.deps.llm, primary, secondary)
             for req, resp in out.responses:
                 self._trace_call(run_id, step, req, resp, req.step.removesuffix("_retry"))
-        reasons = [
-            *state.get("reasons", []),
-            *({"code": c, "field": None, "rule_id": None} for c in out.reasons),
-        ]
+        reasons = list(state.get("reasons", []))
+        for code in out.reasons:
+            reasons.append(reason_entry(code))
         return {
             "extraction": out.primary.model_dump(mode="json") if out.primary else {},
             "secondary": out.secondary.model_dump(mode="json") if out.secondary else {},
@@ -248,17 +247,23 @@ class Pipeline:
         """User Story 1 routing: file and corroborated out-of-scope reasons reject; any other
         reason or failed rule goes to review; otherwise ready. US3 adds confidence."""
         reasons = list(state.get("reasons", []))
-        for r in state.get("rule_results", []):
-            if r["outcome"] in ("failed", "could_not_run"):
-                for f in r["fields"] or [None]:
-                    reasons.append(
-                        {
-                            "code": r["reason_code"],
-                            "field": f,
-                            "rule_id": r["rule_id"],
-                            "detail": r.get("detail", {}),
-                        }
+        results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
+        for result in results:
+            if not result.counts_as_failed:
+                continue
+            assert result.reason_code is not None  # noqa: S101 - a failed rule always has a code
+            # One reason per field, so the review page can show it next to each field.
+            # A rule about the whole document (no fields) gives one reason with no field.
+            fields: list[str | None] = list(result.fields) or [None]
+            for field_name in fields:
+                reasons.append(
+                    reason_entry(
+                        result.reason_code,
+                        field=field_name,
+                        rule_id=result.rule_id,
+                        detail=result.detail,
                     )
+                )
         codes = {r["code"] for r in reasons}
         if codes & (FILE_REASONS | {"out_of_scope"}):
             route = "reject"

@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from licence_kyb.clock import Clock
+from licence_kyb.schemas.results import reason_entry
 from licence_kyb.store.db import Database
 
 log = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class Operations:
                 continue
             reasons = json.loads(run["reasons_json"])
             if not any(r.get("code") == "processing_failed" for r in reasons):
-                reasons.append({"code": "processing_failed", "field": None, "rule_id": None})
+                reasons.append(reason_entry("processing_failed"))
             self.db.update_run(
                 run["run_id"], status="awaiting_review", reasons_json=json.dumps(reasons)
             )
