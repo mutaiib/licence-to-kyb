@@ -13,7 +13,14 @@ import re
 from dataclasses import dataclass
 
 from licence_kyb.config import StepModel
-from licence_kyb.llm.client import LLMClient, LLMError, ModelRequest, ModelResponse, image_block
+from licence_kyb.llm.client import (
+    LLMClient,
+    LLMError,
+    ModelRefusedError,
+    ModelRequest,
+    ModelResponse,
+    image_block,
+)
 from licence_kyb.llm.prompts import load_prompt
 from licence_kyb.profiles import AUTHORITIES, load_profile
 from licence_kyb.schemas.licence import RouteResult
@@ -30,6 +37,8 @@ class RouteOutcome:
     authority: str
     reasons: tuple[ReasonCode, ...] = ()
     response: ModelResponse | None = None
+    refused: bool = False
+    """The model declined to classify the document (counted in the daily refusal rate)."""
 
 
 def _all_labels() -> list[str]:
@@ -117,7 +126,8 @@ def route_document(llm: LLMClient, request: ModelRequest, ocr_text: str) -> Rout
     try:
         response = llm.call(request)
     except LLMError as exc:
-        return RouteOutcome("unclear", "unknown", (exc.reason_code,))
+        refused = isinstance(exc, ModelRefusedError)
+        return RouteOutcome("unclear", "unknown", (exc.reason_code,), refused=refused)
     try:
         result = response.parsed_as(RouteResult)
     except ValueError:  # no parsed output, or output that does not match the schema

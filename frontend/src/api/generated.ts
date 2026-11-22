@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/metrics/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Summary */
+        get: operations["get_summary_api_metrics_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs": {
         parameters: {
             query?: never;
@@ -127,6 +144,23 @@ export interface paths {
          * @description Store the approved form once. A repeated call returns the same submission.
          */
         post: operations["submit_run_api_runs__run_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trace */
+        get: operations["get_trace_api_runs__run_id__trace_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -484,6 +518,37 @@ export interface components {
             /** Reviewer */
             reviewer: string;
         };
+        /**
+         * SpanView
+         * @description One step, model call or tool call. Only non-personal columns: no document text.
+         */
+        SpanView: {
+            /** Cache Read Tokens */
+            cache_read_tokens: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "step" | "model_call" | "tool_call";
+            /** Latency Ms */
+            latency_ms: number;
+            /** Model */
+            model: string | null;
+            /** Name */
+            name: string;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Span Id */
+            span_id: string;
+            /** Summary */
+            summary: string;
+        };
         /** StepView */
         StepView: {
             /** Duration Ms */
@@ -509,6 +574,29 @@ export interface components {
             submission_id: string;
             /** Verified */
             verified: boolean;
+        };
+        /**
+         * SummaryOut
+         * @description Today's rates, over runs that finished processing (contracts/http-api.md).
+         */
+        SummaryOut: {
+            /** Budget Tokens Remaining */
+            budget_tokens_remaining: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Fallback Rate */
+            fallback_rate: number;
+            /** Refusal Rate */
+            refusal_rate: number;
+            /** Review Rate */
+            review_rate: number;
+            /** Runs */
+            runs: number;
+        };
+        /** TraceOut */
+        TraceOut: {
+            /** Spans */
+            spans: components["schemas"]["SpanView"][];
         };
         /** UploadRejected */
         UploadRejected: {
@@ -542,6 +630,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_summary_api_metrics_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryOut"];
+                };
+            };
+        };
+    };
     list_runs_api_runs_get: {
         parameters: {
             query?: never;
@@ -885,6 +993,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionErrorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trace_api_runs__run_id__trace_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
             /** @description Validation Error */

@@ -181,3 +181,37 @@ class ActionErrorOut(BaseModel):
     code: ActionErrorCode
     field: str | None = None
     rule_id: str | None = None
+
+
+# ------------------------------------------------------------------ trace and summary (US5)
+class SpanView(BaseModel):
+    """One step, model call or tool call. Only non-personal columns: no document text."""
+
+    span_id: str
+    parent_id: str | None
+    kind: Literal["step", "model_call", "tool_call"]
+    name: str
+    latency_ms: int
+    input_tokens: int
+    output_tokens: int
+    cache_read_tokens: int
+    cost_usd: float
+    model: str | None
+    """The model that served the call."""
+    summary: str
+    """``ok``, or the error code (for example ``refusal`` or ``registry_unavailable``)."""
+
+
+class TraceOut(BaseModel):
+    spans: list[SpanView]
+
+
+class SummaryOut(BaseModel):
+    """Today's rates, over runs that finished processing (contracts/http-api.md)."""
+
+    runs: int
+    refusal_rate: float
+    fallback_rate: float
+    review_rate: float
+    cost_usd: float
+    budget_tokens_remaining: int
