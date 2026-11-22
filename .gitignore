@@ -37,3 +37,4 @@ evals/cases/precision/
 frontend/coverage/
 backend/.coverage
 mutants/
+.claude/worktrees/

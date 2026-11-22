@@ -340,10 +340,12 @@ class Database:
         new: str | None = None,
         reason: str | None = None,
     ) -> bool:
+        """``old``, ``new`` and ``reason`` must already be encrypted (they can hold personal
+        data); the caller holds the key."""
         with self.connect() as conn:
             cur = conn.execute(
                 "INSERT INTO audit_events (event_key, seq, run_id, action, target, old_enc, "
-                "new_enc, reason, actor) VALUES (?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM "
+                "new_enc, reason_enc, actor) VALUES (?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM "
                 "audit_events WHERE run_id = ?), ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT(event_key) DO NOTHING",
                 (event_key, run_id, run_id, action, target, old, new, reason, actor),

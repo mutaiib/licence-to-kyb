@@ -57,8 +57,9 @@ class Operations:
     def send_to_review(self, run: dict[str, Any], *, event: str, note: str) -> None:
         """Move ``run`` to review with ``processing_failed``. Repeating it writes nothing new.
 
-        ``event`` names the cause in the audit key; ``note`` is the audit reason text.
+        ``event`` names the cause in the audit key; ``note`` goes to the log.
         """
+        log.info("run sent to review", extra={"run_id": run["run_id"], "cause": note})
         reasons = json.loads(run["reasons_json"])
         if not any(r.get("code") == "processing_failed" for r in reasons):
             reasons.append(reason_entry("processing_failed"))
@@ -70,8 +71,8 @@ class Operations:
             run_id=run["run_id"],
             action="status_change",
             actor="system",
-            # Not in ``new``: that column holds encrypted values, and Operations has no cipher.
-            reason=f"{note}; moved to awaiting_review",
+            # The audit's values and reasons are encrypted, and Operations has no key: the
+            # action and the event key ("deadline_sweep", "processing_error") say what happened.
         )
 
     def apply_retention(self, *, days: int) -> list[str]:
