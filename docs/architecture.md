@@ -58,6 +58,8 @@ The example input is `acme.pdf`, a scanned Dubai (DET) licence. The applicant ty
 | 9 Draft form | Code fills the KYB form from passing values. Flagged fields are left as "needs examination". The step lists the documents still required. | Form version 1. Required: MOA, identity documents for each UBO and controller, and Ejari. |
 | 10 Human review (pause) | The run pauses. The review page shows the licence on the left and the form on the right, with only the 2 flagged fields expanded. Each decision is applied in its own node, with a unique key. | The reviewer approves `expiry_date` and the activity, then approves form version 3. |
 | 11 Await submit (pause) | The run pauses until a person clicks Submit on the approved version. | The reviewer clicks Submit. |
+
+In code, both pauses (10 and 11) are one `wait_for_reviewer` node, and one `apply_action` node applies whatever the reviewer did. The status (`awaiting_review` or `awaiting_submit`) says which pause the run is in.
 | 12 Submit and verify | Code writes one submission for the approved form version, keyed by the client's action ID, reads it back and compares it with the approved form. | It matches, so the run is marked done. The audit log names the reviewer. |
 
 ---
