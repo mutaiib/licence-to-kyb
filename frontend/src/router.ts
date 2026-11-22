@@ -12,17 +12,27 @@ export type Page =
 
 const NAVIGATE_EVENT = 'app:navigate';
 
+/** The run ID in a path part, or null when the part is not valid percent-encoding. */
+function runIdFrom(part: string | undefined): string | null {
+  if (part === undefined) return null;
+  try {
+    return decodeURIComponent(part);
+  } catch {
+    return null;
+  }
+}
+
 export function parsePath(pathname: string): Page {
   if (/^\/runs\/?$/.test(pathname)) {
     return { name: 'runs' };
   }
-  const trace = /^\/runs\/([^/]+)\/trace\/?$/.exec(pathname);
-  if (trace?.[1] !== undefined) {
-    return { name: 'trace', runId: decodeURIComponent(trace[1]) };
+  const traceId = runIdFrom(/^\/runs\/([^/]+)\/trace\/?$/.exec(pathname)?.[1]);
+  if (traceId !== null) {
+    return { name: 'trace', runId: traceId };
   }
-  const review = /^\/runs\/([^/]+)\/?$/.exec(pathname);
-  if (review?.[1] !== undefined) {
-    return { name: 'review', runId: decodeURIComponent(review[1]) };
+  const reviewId = runIdFrom(/^\/runs\/([^/]+)\/?$/.exec(pathname)?.[1]);
+  if (reviewId !== null) {
+    return { name: 'review', runId: reviewId };
   }
   return { name: 'upload' };
 }

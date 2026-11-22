@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { listRuns, onSessionExpired, signOut } from './api/client';
 import { defaultThemeSlug, themes } from './astryx-themes';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { copy } from './copy';
 import { errorText } from './text';
 import { ReviewPage } from './pages/ReviewPage';
@@ -88,8 +89,16 @@ export function App() {
   const pathname = usePathname();
   const page = parsePath(pathname);
 
+  // Show the sign-in page only when the server ended the session: otherwise the cookie still
+  // works and a reload would sign the reviewer back in.
+  const [signOutError, setSignOutError] = useState<string | null>(null);
   const handleSignOut = useCallback(async () => {
-    await signOut();
+    const result = await signOut();
+    if (!result.ok) {
+      setSignOutError(result.code);
+      return;
+    }
+    setSignOutError(null);
     setSession({ kind: 'signedOut', notice: null });
     navigate('/');
   }, [setSession]);
@@ -153,7 +162,14 @@ export function App() {
           />
         }
       >
-        {content}
+        <VStack gap={4}>
+          {signOutError !== null && isSignedIn && (
+            <VStack role="alert">
+              <Banner status="error" title={errorText(signOutError)} />
+            </VStack>
+          )}
+          <ErrorBoundary key={pathname}>{content}</ErrorBoundary>
+        </VStack>
       </AppShell>
     </Theme>
   );

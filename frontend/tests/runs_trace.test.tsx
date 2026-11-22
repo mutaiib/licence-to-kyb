@@ -138,10 +138,8 @@ describe('runs page', () => {
 
     const name = await screen.findByRole('link', { name: 'Fuller Services LLC' });
     expect(name).toHaveAttribute('href', '/runs/run-1');
-    expect(screen.getByRole('link', { name: copy['runs.trace.link'] })).toHaveAttribute(
-      'href',
-      '/runs/run-1/trace',
-    );
+    const trace = format('runs.trace.linkFor', { name: 'Fuller Services LLC' });
+    expect(screen.getByRole('link', { name: trace })).toHaveAttribute('href', '/runs/run-1/trace');
   });
 });
 
@@ -163,7 +161,7 @@ describe('trace page', () => {
     const call = await screen.findByText((text) => text.includes(tokens));
     expect(call.textContent).toContain('$0.0123');
     expect(call.textContent).toContain(' · '); // the parts are separated, not run together
-    expect(screen.getByText('registry_unavailable')).toBeInTheDocument();
+    expect(screen.getByText(copy['span.registry_unavailable'])).toBeInTheDocument();
     expect(screen.getByText(copy['trace.masked'])).toBeInTheDocument();
   });
 });

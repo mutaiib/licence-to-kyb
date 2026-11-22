@@ -219,6 +219,26 @@ def test_an_unsupported_file_is_rejected_with_its_reason_code(
     assert response.json()["reason_code"] == "invalid_type"
 
 
+def test_a_request_with_invalid_values_gets_an_error_code_the_page_can_show(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    """A body that fails validation (here a business name over 200 characters) must carry
+    a code, like every other error, so the page shows a reason, not "cannot connect"."""
+    root, cases = catalogue
+    client = make_client(tmp_path, root, cases[0])
+    csrf = sign_in(client)
+
+    response = client.post(
+        "/api/runs",
+        files={"file": ("l.pdf", (root / cases[0]["document"]).read_bytes(), "application/pdf")},
+        data={"applicant_name": "A" * 201},
+        headers={"X-CSRF-Token": csrf},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "invalid_request"
+
+
 def test_page_images_are_served_to_signed_in_reviewers(tmp_path: Path, catalogue: Any) -> None:
     root, cases = catalogue
     client = make_client(tmp_path, root, cases[0])

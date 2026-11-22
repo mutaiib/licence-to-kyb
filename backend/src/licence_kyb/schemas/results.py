@@ -79,6 +79,7 @@ ErrorCode = Literal[
     "too_many_pages",
     "image_too_large",
     "rate_limited",
+    "invalid_request",
 ]
 
 Severity = Literal["block", "warn"]

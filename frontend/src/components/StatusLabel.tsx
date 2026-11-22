@@ -22,7 +22,8 @@ const TONES: Readonly<Record<FieldState, Tone>> = {
 
 /** A field status: an icon plus the status text. */
 export function StatusLabel({ state }: { state: FieldState }) {
-  const tone = TONES[state];
+  // A state this page does not know (a newer server) shows like "needs examination".
+  const tone = (TONES as Partial<Record<string, Tone>>)[state] ?? TONES.needs_examination;
   return (
     <HStack gap={1} vAlign="center">
       <Icon icon={tone.icon} color={tone.color} size="sm" />

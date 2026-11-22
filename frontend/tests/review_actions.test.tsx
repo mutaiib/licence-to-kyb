@@ -234,7 +234,9 @@ describe('review actions', () => {
     };
     openRun(runView({ licence_number: unchecked }));
 
-    fireEvent.click(await button(copy['review.override']));
+    fireEvent.click(
+      await button(format('review.override.field', { field: fieldLabel('licence_number') })),
+    );
     const save = screen.getByRole('button', { name: copy['review.save'] });
     expect(save).toHaveAttribute('aria-disabled', 'true');
 

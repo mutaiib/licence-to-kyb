@@ -51,6 +51,11 @@ All interface text follows **ASD-STE100 Simplified Technical English**.
 | `app.title` | Trade licence to KYB |
 | `app.loading` | Loading |
 | `app.tryAgain` | Try again |
+| `app.crashed` | This part of the page stopped. Load the page again. |
+| `unit.ms` | {value} ms |
+| `unit.seconds` | {value} s |
+| `unit.usd` | ${value} |
+| `unit.percent` | {value}% |
 | `nav.upload` | Upload a licence |
 
 ### Sign-in
@@ -210,6 +215,7 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `review.correct` | Correct |
 | `review.correct.label` | New value |
 | `review.override` | Override check |
+| `review.override.field` | Override check on {field} |
 | `review.override.reason.label` | Reason for the override |
 | `review.override.help` | You can override a check only when the system could not do the check. |
 | `review.reject` | Reject case |
@@ -256,6 +262,7 @@ The key in `copy.ts` is `error.<code>`. `not_found` and `network` are client-sid
 | `rate_limited` | You tried too many times. Wait 1 minute. Try again after that. |
 | `not_found` | The system cannot find this run. Upload the licence again. |
 | `network` | The system cannot connect to the server. Try again. |
+| `invalid_request` | Some values are too long or not valid. Correct them. Try again. |
 | `not_retryable` | Retry is possible only after a processing failure, or when the system used all of the daily reading limit. Examine the fields. |
 | `no_form` | Processing stopped before the form existed. Retry processing, or reject the case. |
 
@@ -322,6 +329,21 @@ The key in `copy.ts` is `reason.<code>`. Each failure states the condition, then
 | `trace.masked` | The system hides personal data on this page. |
 | `nav.runs` | Runs |
 | `runs.trace.link` | Trace |
+| `runs.trace.linkFor` | Trace of {name} (the link's accessible name) |
+| `span.failed` | This step stopped with an error. |
+| `span.refusal` | The model did not give an answer. |
+| `span.invalid_arguments` | The tool call had incorrect arguments. |
+| `span.field_out_of_scope` | The tool call asked for a field that passed its checks. |
+| `span.page_not_found` | The tool call asked for a page that does not exist. |
+| `span.region_unreadable` | The region has no text that the system can read. |
+| `span.registry_unavailable` | The register did not answer. |
+| `span.registry_not_applicable` | This authority has no register. |
+| `span.vision_call_failed` | The second reading of the region stopped with an error. |
+| `span.proposal_refused` | The proposed value did not pass the checks. |
+| `span.duplicate_call` | The tool call repeated an earlier call. The system gave the earlier result again. |
+| `span.budget_soft_limit` | The investigation is near its limit. |
+| `span.budget_hard_limit` | The investigation reached its limit. |
+| `span.tool_internal_error` | The tool stopped with an error. |
 | `runs.empty` | There are no runs. Upload a licence. |
 | `runStatus.received` | Received |
 | `runStatus.processing` | Processing |

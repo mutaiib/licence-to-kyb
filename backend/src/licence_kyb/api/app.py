@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
 
 from licence_kyb.api import (
     routes_health,
@@ -69,6 +70,13 @@ def create_app(
         description="Trade licence to KYB onboarding (contracts/http-api.md).",
         lifespan=lifespan,
     )
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(_request: Request, _exc: RequestValidationError) -> Response:
+        """A body that fails validation gets a code like every other error, so the page can
+        say what is wrong. The details are not sent: they can echo the submitted values."""
+        return error_response(422, "invalid_request")
+
     if pipeline is not None:
         app.state.pipeline = pipeline
         app.state.db = pipeline.db

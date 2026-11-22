@@ -24,7 +24,7 @@ import { ProposalDetails } from '../components/ProposalDetails';
 import { FieldActions, type NewDecision } from '../components/FieldActions';
 import { NextStep, RejectCase } from '../components/FormActions';
 import { StatusLabel } from '../components/StatusLabel';
-import { useReviewActions } from './useReviewActions';
+import { NEXT_STEP, useReviewActions, type FocusRequest } from './useReviewActions';
 import { tracePath, useLinkHandler } from '../router';
 import { copy, format } from '../copy';
 import {
@@ -73,8 +73,8 @@ interface FailingRule {
 
 interface FieldActing {
   canAct: boolean;
-  focusName: string | null;
-  onDecide: (name: string, decision: NewDecision) => void;
+  focus: FocusRequest | null;
+  onDecide: (name: string, decision: NewDecision) => Promise<boolean>;
 }
 
 function FieldDetails({
@@ -124,10 +124,8 @@ function FieldDetails({
         <FieldActions
           name={name}
           field={field}
-          shouldFocus={acting.focusName === name}
-          onDecide={(decision) => {
-            acting.onDecide(name, decision);
-          }}
+          focusRequest={acting.focus?.target === name ? acting.focus.n : null}
+          onDecide={(decision) => acting.onDecide(name, decision)}
         />
       )}
       {field.confidence != null && (
@@ -335,12 +333,12 @@ function RunHeader({ view }: { view: RunView }) {
 }
 
 function Review({ initial }: { initial: RunView }) {
-  const { view, error, focusName, decide, handlers } = useReviewActions(initial);
+  const { view, error, focus, decide, handlers } = useReviewActions(initial);
   const fields = view.form?.fields ?? {};
   const acting: FieldActing = {
     canAct: view.status === 'awaiting_review' || view.status === 'awaiting_submit',
-    focusName,
-    onDecide: (name, decision) => void decide(name, decision),
+    focus,
+    onDecide: decide,
   };
   const undecided = Object.values(fields).filter(isUndecided).length;
   const [selected, setSelected] = useState<string | null>(() => firstSelection(fields));
@@ -360,7 +358,12 @@ function Review({ initial }: { initial: RunView }) {
           <Banner status="error" title={errorText(error)} />
         </VStack>
       )}
-      <NextStep view={view} undecided={undecided} handlers={handlers} />
+      <NextStep
+        view={view}
+        undecided={undecided}
+        handlers={handlers}
+        focusRequest={focus?.target === NEXT_STEP ? focus.n : null}
+      />
       <RunReasons view={view} />
       {view.form !== null && (
         <KybForm fields={fields} selection={selection} acting={acting} between={between} />
