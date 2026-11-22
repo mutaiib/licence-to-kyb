@@ -144,7 +144,7 @@ Today is 2026-06-01 (fixed clock).
 | All fields above threshold, all applicable rules pass | `ready` | — |
 | Expired, both passes agree, evidence check passes | `reject` | `expired` |
 | Expired in the primary pass only | `needs_review` | `expiry_uncertain` |
-| Expired in both passes, evidence check fails, no QR or registry | `needs_review` | `expiry_uncertain` |
+| Expired in both passes, evidence check fails, no registry confirmation | `needs_review` | `expiry_uncertain` |
 | Expired, registry confirms the same expiry | `reject` | `expired` |
 | Expires in 10 days, everything else clean | `needs_review` | `near_expiry` |
 | `expiry_date` score 0.81, threshold 0.90 | `needs_review` | `low_confidence` |

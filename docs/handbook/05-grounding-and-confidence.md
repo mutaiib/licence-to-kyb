@@ -24,7 +24,7 @@ A model's self-rated confidence is unreliable until it is calibrated. So score c
 - **Calibrate on one split and report on another.** Fitting the thresholds and measuring on the same cases overfits.
 - **Report intervals, not just rates.** 20 out of 20 correct gives a Wilson 95% lower bound of about 84%, not 100%. Showing 99% needs about 380 or more correct `ready` runs with zero errors.
 - **Choose the threshold by the cost of errors.** A wrong "ready" costs more than one extra review, so maximise ready coverage subject to ≥ 99% precision on critical fields.
-- **Never take an irreversible decision on an uncorroborated value.** Auto-reject only when two readings agree and grounding passes, or when the QR code or registry confirms the value.
+- **Never take an irreversible decision on an uncorroborated value.** Auto-reject only when two readings agree and grounding passes, or when the registry confirms the value. (A QR code that carries only the licence number can confirm the number, never a date.)
 - **A fallback model invalidates calibration.** If a backup model served the call, the run cannot be "ready".
 
 ## In this repository
@@ -45,7 +45,7 @@ A model's self-rated confidence is unreliable until it is calibrated. So score c
 
 <details><summary>1. Both extraction passes read expiry 2026-05-31 (expired), but the quote does not match the OCR text. Route?</summary>
 
-`needs_review` with `expiry_uncertain`. The expiry is not corroborated, because grounding failed and there is no QR or registry confirmation. A person must decide.
+`needs_review` with `expiry_uncertain`. The expiry is not corroborated, because grounding failed and there is no registry confirmation. A person must decide.
 </details>
 
 <details><summary>2. Why weight the model's self-rating low?</summary>

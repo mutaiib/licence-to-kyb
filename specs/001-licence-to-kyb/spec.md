@@ -228,7 +228,7 @@ A maintainer runs the labelled case set and gets a report. The report covers fie
 
 **Re-reading**
 - **FR-015**: When a value fails a check that a second reading can fix, System MUST re-examine that part of the licence and propose a corrected value.
-- **FR-016**: A proposed value MUST pass every check on its field before it replaces the original. A proposal for a field that passed MUST be ignored.
+- **FR-016**: A proposed value MUST pass every check on its field that says the value may be wrong (every blocking check, and every check a re-read can fix) before it replaces the original. A business warning that is true of a correct value too (for example `near_expiry`) does not stop a proposal: the reviewer decides it, as for any read value. A proposal for a field that passed MUST be ignored.
 - **FR-017**: Re-reading MUST stop at fixed limits on reasoning turns, rounds, time and tokens, and keep the best accepted values. The limits are defined once, in the resolver contract.
 - **FR-018**: Re-reading MUST NOT be able to submit, approve or create any record outside its own proposals.
 
@@ -244,7 +244,7 @@ A maintainer runs the labelled case set and gets a report. The report covers fie
 - **FR-037**: System MUST reject automatically only in three cases:
   - the file is invalid
   - the document is out of scope, and code corroborates that (FR-006)
-  - the licence is expired, and the expiry is corroborated: both readings agree **and** the evidence check passes, **or** the QR code or registry confirms the expiry
+  - the licence is expired, and the expiry is corroborated: both readings agree **and** the evidence check passes, **or** the registry confirms the expiry (the QR code carries only the licence number, so it can confirm the number, not the date)
 
   An uncorroborated expired value MUST go to review with reason code `expiry_uncertain`.
 

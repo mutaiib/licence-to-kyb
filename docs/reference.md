@@ -102,23 +102,27 @@ resolver may try to fix it ([`nodes/resolve.py`](../backend/src/licence_kyb/node
 |---|---|---|---|---|
 | `expiry` | expiry date | block / warn | `expired` (block), `near_expiry` (warn, fewer than 30 days) | — |
 | `date_order` | issue and expiry dates | block | `date_order` | yes |
-| `number_format` | licence number | block | `number_format` | yes |
+| `number_format` | licence number (case, dash style, spaces and Arabic-Indic digits are ignored) | block | `number_format`; a reviewer can override it with a reason when the authority's pattern is inferred, not confirmed | yes |
 | `evidence` | every read field | warn | `evidence_mismatch` | yes |
 | `qr` | licence number | block | `qr_mismatch` | yes |
-| `registry` | licence number, expiry date | block | `registry_not_found`, `registry_expiry_mismatch`, or `registry_unavailable` (could not run; a reviewer can override it) | `registry_not_found` |
+| `registry` | licence number, expiry date | block | `registry_not_found`, `registry_inactive` (the record is cancelled or suspended), `registry_expiry_mismatch`, or `registry_unavailable` (could not run; a reviewer can override it) | `registry_not_found` |
 | `legal_form` | legal form | block | `legal_form_not_allowed` | — |
 | `shares_total` | people | block | `shares_total` | — |
 | `sole_owner_count` | legal form, people | block | `sole_owner_count` | — |
 | `ubo` | people | warn | `ubo_needs_examination` | — |
 | `owners` | people | warn | `owners_unclear` | — |
 | `arabic_name` | Arabic trade name | warn | `arabic_name_missing` | — |
-| `high_risk_activity` | activities | warn | `high_risk_activity` | — |
-| `applicant_name` | English trade name | warn | `applicant_name_mismatch` | — |
+| `high_risk_activity` | activities (whole words and plurals: "gold" matches "Gold Trading", not "Golden Sands") | warn | `high_risk_activity` | — |
+| `applicant_name` | English trade name, or the Arabic one for an Arabic application name; the distinctive words must match | warn | `applicant_name_mismatch` | — |
 | `required` | every required field | warn | `low_confidence` | — |
 
 **After the rules:** an `expired` result that neither two agreeing readings nor the registry
-corroborates becomes `expiry_uncertain` (re-readable). The confidence step adds
-`low_confidence` to a field below its threshold that has no other failed check.
+corroborates becomes `expiry_uncertain` (re-readable). So does an expiry that only the second
+reading puts in the past. The confidence step adds `low_confidence` to a field below its
+threshold that has no other failed check.
+
+**"Today"** is the date in the UAE (UTC+4, no daylight saving time), so a licence that expired
+at midnight in Dubai is expired, even while the UTC date is still the day before.
 
 ## Reason codes
 
@@ -130,6 +134,6 @@ defined in [`schemas/results.py`](../backend/src/licence_kyb/schemas/results.py)
 | File | `invalid_type`, `too_large`, `too_many_pages`, `image_too_large`, `unreadable_file` | The upload is refused or the run is rejected |
 | Document | `out_of_scope`, `unclear_document`, `unknown_authority` | `out_of_scope` rejects; the others need review |
 | Expiry | `expired`, `expiry_uncertain`, `near_expiry` | A corroborated `expired` rejects; the others need review |
-| Values | `number_format`, `date_order`, `shares_total`, `sole_owner_count`, `legal_form_not_allowed`, `arabic_name_missing`, `high_risk_activity`, `evidence_mismatch`, `qr_mismatch`, `registry_not_found`, `registry_expiry_mismatch`, `registry_unavailable`, `applicant_name_mismatch`, `owners_unclear`, `ubo_needs_examination`, `low_confidence` | Need review |
+| Values | `number_format`, `date_order`, `shares_total`, `sole_owner_count`, `legal_form_not_allowed`, `arabic_name_missing`, `high_risk_activity`, `evidence_mismatch`, `qr_mismatch`, `registry_not_found`, `registry_inactive`, `registry_expiry_mismatch`, `registry_unavailable`, `applicant_name_mismatch`, `owners_unclear`, `ubo_needs_examination`, `low_confidence` | Need review |
 | Process | `processing_failed`, `budget_exhausted`, `fallback_model`, `resolver_budget`, `verification_failed`, `reviewer_rejected` | Need review (a reviewer can retry `processing_failed` and `budget_exhausted`); `reviewer_rejected` marks a rejection by a person |
 | Escape | `other` | Needs review |

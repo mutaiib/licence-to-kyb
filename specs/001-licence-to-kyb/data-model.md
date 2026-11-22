@@ -141,7 +141,7 @@ Date order (`issue_date < expiry_date`, `establishment_date <= issue_date`) is n
 **Reject conditions (FR-037):**
 - a file reason code
 - `out_of_scope`
-- `expired`, and only when it is corroborated: both passes agree **and** grounding passes, **or** the QR code or registry confirms the expiry
+- `expired`, and only when it is corroborated: both passes agree **and** grounding passes, **or** the registry confirms the expiry (the QR code carries only the licence number)
 
 An uncorroborated expiry produces `expiry_uncertain`, which routes to `needs_review`.
 
