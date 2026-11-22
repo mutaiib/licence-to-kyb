@@ -114,7 +114,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
   Add `/healthz` and `/readyz` in `backend/src/licence_kyb/api/routes_health.py`.
 - [ ] T029 Implement `RunState` in `backend/src/licence_kyb/state.py`, and the graph skeleton with the SQLite checkpointer and the rule that side effects run only in their own nodes, in `backend/src/licence_kyb/graph.py`
-- [ ] T030 [P] Implement the synthetic licence generator in `scripts/gen_licences.py`, with templates in `scripts/templates/`:
+- [ ] T030 [P] Implement the synthetic licence generator in `scripts/gen_licences.py`, with layouts in `scripts/layouts/` (`reportlab`, per research R9a):
   - at least two bilingual layouts per authority, with Noto Naskh Arabic
   - QR codes and a SPECIMEN watermark
   - Faker values with a fixed seed

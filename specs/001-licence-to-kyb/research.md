@@ -121,6 +121,18 @@ The Technical Context has no open questions. This file records each technical de
 - **Rationale:** no public dataset of trade licences exists, and private documents are not allowed.
 - **Alternatives considered:** scraping licences found online. They contain private personal data, so this was rejected.
 
+## R9a. Rendering and OCR without system packages (amended 2026-11-22)
+
+- **Decision:**
+  - Synthetic licences are drawn with `reportlab`, using `arabic-reshaper` and `python-bidi` for correct Arabic shaping, instead of Jinja2 and WeasyPrint. The result is a PDF with a real text layer.
+  - Scans and photos are made by rasterising that PDF with `pypdfium2` and applying degradations with Pillow and OpenCV.
+  - Fonts: Noto Naskh Arabic and Noto Sans. The path is configurable, and the Docker image installs `fonts-noto`.
+  - Tesseract language data (`eng`, `ara`) is fetched by `scripts/fetch_tessdata.sh` into `var/tessdata` (gitignored), pinned by SHA-256, and selected with `TESSDATA_PREFIX`. The Docker image installs `tesseract-ocr-ara` instead.
+- **Rationale:** WeasyPrint needs Pango and Cairo system libraries, and Tesseract's Arabic data is a system package. Neither can be assumed on a developer machine or in CI. The pure-Python route gives the same outputs: a text-layer PDF, plus scan images.
+- **Alternatives considered:**
+  - WeasyPrint in Docker only: it would split the local and CI paths.
+  - Headless Chrome printing: a heavy dependency for test-data generation.
+
 ## R10. Testing approach
 
 - **Decision:**

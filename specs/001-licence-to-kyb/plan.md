@@ -32,7 +32,7 @@ The full design, with one licence traced end to end, is in [`docs/architecture.m
 
 **Primary Dependencies**:
 - **Backend:** `langgraph` and `langgraph-checkpoint-sqlite`; `anthropic` (official SDK); `pydantic` v2; `fastapi` and `uvicorn`; `pypdfium2` and `pdfplumber`; `pytesseract` (Tesseract `eng+ara`); `opencv-python-headless` (QR decoding, deskew); `rapidfuzz`; `cryptography` (Fernet); `pyyaml`
-- **Test data:** `jinja2`, `weasyprint`, `qrcode`, `faker`, `pillow`
+- **Test data:** `reportlab`, `arabic-reshaper`, `python-bidi`, `qrcode`, `faker`, `pillow` (see research R9a: no system packages are needed)
 - **Frontend:** `@astryxdesign/core`, `@astryxdesign/theme-neutral`, `@stylexjs/stylex`, `vite`, `openapi-typescript`
 
 **Storage**: SQLite holds the application database (runs, submissions, audit events, traces) and, in a separate file, the LangGraph checkpoints. Encrypted files live on the local filesystem.
