@@ -1,0 +1,71 @@
+# Release (T102): on a version tag, build the artifacts, make an SBOM for each app, attest
+# where they were built, and publish a GitHub release with the notes from CHANGELOG.md.
+# Tags are cut from main after the release pull request (constitution, Branching and Releases).
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write      # create the GitHub release
+  id-token: write      # sign the attestation (Sigstore, keyless)
+  attestations: write  # store the attestation
+
+jobs:
+  release:
+    name: build, SBOM, attest, publish
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build the frontend
+        working-directory: frontend
+        run: npm ci && npm run build && tar -czf ../frontend-dist.tar.gz -C dist .
+
+      - name: Build the backend source archive
+        run: git archive --format=tar.gz -o backend-src.tar.gz HEAD backend
+
+      - name: SBOM for the backend (CycloneDX, runtime dependencies from the lock file)
+        working-directory: backend
+        run: |
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt > /tmp/requirements.txt
+          uvx --from cyclonedx-bom==8.0.1 cyclonedx-py requirements /tmp/requirements.txt \
+            --output-format JSON --output-file ../sbom-backend.cdx.json
+
+      - name: SBOM for the frontend (CycloneDX, runtime dependencies)
+        working-directory: frontend
+        run: npm sbom --sbom-format cyclonedx --omit dev > ../sbom-frontend.cdx.json
+
+      - name: Attest where the artifacts were built
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            frontend-dist.tar.gz
+            backend-src.tar.gz
+            sbom-backend.cdx.json
+            sbom-frontend.cdx.json
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # The section for this version: from its heading to the next "## [" heading.
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "CHANGELOG.md has no section for $version" >&2; exit 1; }
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md \
+            frontend-dist.tar.gz backend-src.tar.gz sbom-backend.cdx.json sbom-frontend.cdx.json

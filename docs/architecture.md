@@ -64,6 +64,31 @@ In code, both pauses (10 and 11) are one `wait_for_reviewer` node, and one `appl
 
 ---
 
+
+## As built
+
+The graph in [`pipeline.py`](../backend/src/licence_kyb/pipeline.py), node by node:
+
+```
+preprocess → route → extract → validate ⇄ resolve (at most 2 rounds) → confidence → map_form
+  → gate → persist → wait_for_reviewer ⇄ apply_action → END (done)
+                                          └→ route or extract (retry after a failure)
+```
+
+| Node | What it does | Model? |
+|---|---|---|
+| `preprocess` | Renders pages, reads the text layer or runs Tesseract, decodes the QR code | no |
+| `route` | Identifies the document type and authority; code corroborates the answer | yes |
+| `extract` | Two independent readings in parallel; one retry that names the failing fields | yes |
+| `validate` | Every rule; an uncorroborated "expired" becomes `expiry_uncertain` | no |
+| `resolve` | The one agent: read-only tools, hard limits, proposals checked by the rules | yes |
+| `confidence` | Scores each read field from six signals; flags fields below threshold | no |
+| `map_form`, `gate`, `persist` | Fills the KYB form, picks the route, stores status and reasons | no |
+| `wait_for_reviewer` | Pauses (`interrupt`); no side effects, so a resume can re-run it | no |
+| `apply_action` | Applies one checked reviewer action; every write keyed by the client's ID | no |
+
+**Model profiles** ([ADR-004](decisions/ADR-004-provider-neutral-model-calls.md)): `MODEL_PROFILE` picks the provider and the model of each step. Claude through the official SDK is the default; `local` runs an open-weight model through llama.cpp's OpenAI-compatible server.
+
 ## 3. Why a workflow with one agent
 
 **The question that decides it:** can the steps be written down before the document is read?
@@ -335,7 +360,7 @@ When the loop stops at a hard limit, code keeps the best accepted fixes, and the
 
 **Calibration.**
 - `scripts/calibrate.py` fits the weights and a threshold for each field on the **calibration split** of the labelled cases.
-- It maximises the share of `ready` runs, subject to at least **99% precision on critical fields**, and writes `config/thresholds.yaml`.
+- It maximises the share of `ready` runs, subject to at least **99% precision on critical fields**, and writes `config/thresholds.<profile>.yaml` (thresholds are fitted per model profile). Until a live eval provides real readings, `config/thresholds.yaml` holds documented defaults marked `fitted: false`.
 - The critical fields are the licence number, legal names, legal form, expiry date and owners.
 - Metrics are reported on the separate **test split**, with a 95% interval. This avoids grading the thresholds on the data they were fitted to.
 

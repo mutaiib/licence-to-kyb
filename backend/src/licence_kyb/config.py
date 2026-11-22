@@ -18,7 +18,8 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
-REPO_ROOT = BACKEND_DIR.parent
+# A tool that runs a copy of the code elsewhere (mutation testing) sets this to the checkout.
+REPO_ROOT = Path(os.environ.get("LICENCE_KYB_REPO_ROOT") or BACKEND_DIR.parent)
 CONFIG_DIR = BACKEND_DIR / "config"
 DATA_DIR = REPO_ROOT / "data"
 """Versioned reference data: activity lists, high-risk activities and the mock register."""

@@ -31,6 +31,9 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 - User Story 6: an eval report on the held-out split (route, reasons, per-field accuracy,
   `ready` precision with a Wilson interval, mixed review rate, cost, p95 per stage), a
   report comparison, synthetic twins of approved corrections, and an eval workflow.
+- Release workflow: CycloneDX SBOMs, a build-provenance attestation and release notes on
+  a version tag. Mutation testing of the rules (`make mutation`).
+- Handbook pages on model providers, UX for human review, and the bugs each check caught.
 
 ### Changed
 - UI and UX: the review page leads with the business name, the status and the form

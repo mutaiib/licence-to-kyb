@@ -8,29 +8,39 @@ How to run the system and check each user story by hand. Commands are run from t
   - Python 3.12 and `uv`
   - Node 22
   - Tesseract with the `eng` and `ara` language packs
-- An Anthropic API key. It is needed only for live runs and evals. Offline tests do not need it.
+- No API key for the tests, the offline eval or the demo. A model is needed only for real readings: an Anthropic API key, or a local model (below).
 
 ## Set up
 
 ```bash
-cp .env.example .env              # set ANTHROPIC_API_KEY, FERNET_KEYS, REVIEWER_ACCOUNTS (argon2id hashes), DAILY_TOKEN_BUDGET
-make setup                        # uv sync --frozen; npm ci; pre-commit install
+make setup                        # uv sync --frozen; npm ci; pre-commit install; OCR language data
 make data                         # generate synthetic licences and ground truth (fixed seed)
 ```
+
+For a run with a real model, `cp .env.example .env` and set `ANTHROPIC_API_KEY`, `FERNET_KEYS`,
+`SESSION_SECRET` and `REVIEWER_ACCOUNTS` (argon2id hashes). The demo below makes its own.
 
 ## Run the checks
 
 ```bash
 make lint                         # ruff, mypy --strict, eslint, tsc, copy check, gitleaks
 make test                         # unit, graph and API tests, offline, with a fixed clock
-make eval                         # live: every labelled case, report in evals/reports/
+make eval                         # offline: scripted model, no cost; report in evals/reports/
+make eval-live                    # the models of MODEL_PROFILE (paid on the API, free locally)
 ```
 
 ## Run the app
 
 ```bash
-make demo                         # docker compose up; UI on http://localhost:5173, API on :8000
+make dev                          # demo backend: answers from the case labels, no model, no key
+cd frontend && npm run dev        # UI on http://127.0.0.1:5173; the demo password is printed once
 ```
+
+- **With Claude:** set `ANTHROPIC_API_KEY` and run the backend without demo mode (`make demo` runs
+  the Docker Compose stack: UI on http://localhost:5173, API on :8000).
+- **With a local model:** `scripts/fetch_llama_server.sh`, then `make local-model` in its own
+  terminal, then the backend with `MODEL_PROFILE=local`.
+- **Browser check of every row below:** `scripts/browser_check.sh` (needs `chrome-devtools-axi`).
 
 ## Check each story
 
