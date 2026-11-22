@@ -1,0 +1,56 @@
+{
+  "applicant_name": "OCONNOR CONSULTANCY EST.",
+  "authority": "ADDED",
+  "case_id": "scans_002",
+  "document": "data/generated/scans_002.jpg",
+  "document_sha256": "7ec2cc1f91889462e7626b3b6e8029763f00fd3b996b67a749cfa4b5663cf44b",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 890, Garner Trail, Abu Dhabi",
+    "chamber_number": "667023",
+    "establishment_date": "2024-11-19",
+    "expiry_date": "2027-03-03",
+    "issue_date": "2026-03-03",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-3348376",
+    "people": [
+      {
+        "name": "Emily Hall",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Bruce Curtis",
+        "nationality": "Egypt",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Oconnor Consultancy Est."
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601101,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

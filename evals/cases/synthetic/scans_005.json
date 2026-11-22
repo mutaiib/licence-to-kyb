@@ -1,0 +1,56 @@
+{
+  "applicant_name": "GONZALEZ CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "scans_005",
+  "document": "data/generated/scans_005.jpg",
+  "document_sha256": "342f5fec78e405c11b21c1f806489293391d127968700ea87d63b490462bdbcb",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 896, Brent Garden, Dubai",
+    "chamber_number": "63352",
+    "establishment_date": "2021-03-27",
+    "expiry_date": "2027-01-06",
+    "issue_date": "2026-01-06",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "4299640",
+    "people": [
+      {
+        "name": "Charles Bass",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Carolyn Perez",
+        "nationality": "Egypt",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Gonzalez Consultancy LLC"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601104,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

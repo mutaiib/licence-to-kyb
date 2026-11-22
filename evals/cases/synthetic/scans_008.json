@@ -1,0 +1,62 @@
+{
+  "applicant_name": "RICE CONSULTANCY FZCO",
+  "authority": "IFZA",
+  "case_id": "scans_008",
+  "document": "data/generated/scans_008.jpg",
+  "document_sha256": "0bea58aee976917a2924aa86e80f5bf071fd9baf168b6f102dbc2e2a98f5dcf7",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 808, Michael Oval, Dubai Silicon Oasis",
+    "chamber_number": "518022",
+    "establishment_date": "2021-01-05",
+    "expiry_date": "2026-08-05",
+    "issue_date": "2025-08-05",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "76743",
+    "people": [
+      {
+        "name": "James Terry",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 30.0
+      },
+      {
+        "name": "Theresa Mendoza",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 35.0
+      },
+      {
+        "name": "Misty Hall",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 35.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Rice Consultancy FZCO"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601107,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

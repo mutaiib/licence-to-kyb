@@ -1,0 +1,55 @@
+{
+  "applicant_name": "GIBSON TECHNOLOGIES LLC",
+  "authority": "DET",
+  "case_id": "clean_013",
+  "document": "data/generated/clean_013.pdf",
+  "document_sha256": "bb11811543e6ef9e31d3d4d0ad0a6133f8309df09b9daa61bbbfdbccd3af3979",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 464, Harvey Spur, Dubai",
+    "chamber_number": "659270",
+    "establishment_date": "2020-12-04",
+    "expiry_date": "2027-01-03",
+    "issue_date": "2026-01-03",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "8636305",
+    "people": [
+      {
+        "name": "Julie Whitaker",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Aaron Young",
+        "nationality": "Lebanon",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Gibson Technologies LLC"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601012,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

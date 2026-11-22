@@ -1,0 +1,59 @@
+{
+  "applicant_name": "SIMS CONSULTANCY EST.",
+  "authority": "DET",
+  "case_id": "no_shares_001",
+  "document": "data/generated/no_shares_001.pdf",
+  "document_sha256": "7599dd3bedaaf7c4e7af136ea753304f755ff70263f24f1135884182c924c351",
+  "expected_reason_codes": [
+    "ubo_needs_examination"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      }
+    ],
+    "address": "Office 671, Thomas Prairie, Dubai",
+    "chamber_number": "158331",
+    "establishment_date": "2021-02-13",
+    "expiry_date": "2026-10-04",
+    "issue_date": "2025-10-04",
+    "issuing_authority": "DET",
+    "legal_form": "sole_establishment",
+    "licence_number": "7633072",
+    "people": [
+      {
+        "name": "Abigail Armstrong",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": null
+      },
+      {
+        "name": "Victor Wilcox",
+        "nationality": "Bangladesh",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Sims Consultancy Est."
+  },
+  "faults": [
+    "no_shares"
+  ],
+  "group": "no_shares",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601700,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

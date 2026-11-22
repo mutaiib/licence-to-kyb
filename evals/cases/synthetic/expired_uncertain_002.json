@@ -1,0 +1,53 @@
+{
+  "applicant_name": "PAGE CONSULTANCY FZE",
+  "authority": "IFZA",
+  "case_id": "expired_uncertain_002",
+  "document": "data/generated/expired_uncertain_002.pdf",
+  "document_sha256": "c007f44044c7cc31fc8a1267ed615de2ecf48d79ddf13a3119e700901a56eeec",
+  "expected_reason_codes": [
+    "expiry_uncertain"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 168, Pittman Port, Dubai Silicon Oasis",
+    "chamber_number": "130064",
+    "establishment_date": "2021-04-06",
+    "expiry_date": "2026-04-14",
+    "issue_date": "2025-04-14",
+    "issuing_authority": "IFZA",
+    "legal_form": "fze",
+    "licence_number": "14294",
+    "people": [
+      {
+        "name": "Stephanie Chaney",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Page Consultancy FZE"
+  },
+  "faults": [
+    "expired_uncertain"
+  ],
+  "group": "expired_uncertain",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601401,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

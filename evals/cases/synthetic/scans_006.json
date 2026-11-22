@@ -1,0 +1,62 @@
+{
+  "applicant_name": "COHEN TECHNOLOGIES LLC",
+  "authority": "ADDED",
+  "case_id": "scans_006",
+  "document": "data/generated/scans_006.jpg",
+  "document_sha256": "bb0fa58970c823f81fc488aa42a092fc590abe401291db530d6049f4099c8ebe",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 244, Dennis Street, Abu Dhabi",
+    "chamber_number": "777876",
+    "establishment_date": "2021-10-01",
+    "expiry_date": "2026-08-31",
+    "issue_date": "2025-08-31",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc",
+    "licence_number": "CN-1968452",
+    "people": [
+      {
+        "name": "Isaac Munoz",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 60.0
+      },
+      {
+        "name": "Karen Ortiz",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 30.0
+      },
+      {
+        "name": "Lindsay Hicks",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 10.0
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Cohen Technologies LLC"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601105,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

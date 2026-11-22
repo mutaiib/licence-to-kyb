@@ -1,0 +1,53 @@
+{
+  "applicant_name": "LEE TECHNOLOGIES FZE",
+  "authority": "DMCC",
+  "case_id": "expired_003",
+  "document": "data/generated/expired_003.pdf",
+  "document_sha256": "8658c80bc657804708ab61c9425781d4634acae92c678dd227b8d9e37178e0b7",
+  "expected_reason_codes": [
+    "expired"
+  ],
+  "expected_route": [
+    "reject"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 471, Steele Meadows, JLT, Dubai",
+    "chamber_number": "535283",
+    "establishment_date": "2024-09-20",
+    "expiry_date": "2026-04-17",
+    "issue_date": "2025-04-17",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-66527",
+    "people": [
+      {
+        "name": "Amanda Whitney",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Lee Technologies FZE"
+  },
+  "faults": [
+    "expired"
+  ],
+  "group": "expired",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601302,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

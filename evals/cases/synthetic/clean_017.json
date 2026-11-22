@@ -1,0 +1,61 @@
+{
+  "applicant_name": "CORDOVA CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "clean_017",
+  "document": "data/generated/clean_017.pdf",
+  "document_sha256": "5f9c0fc3fa9dd4d73a7279424ea3d89b216fca14ba863fe3a79d8b44c3253913",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 789, Chambers Oval, Dubai",
+    "chamber_number": "344121",
+    "establishment_date": "2024-01-12",
+    "expiry_date": "2027-01-01",
+    "issue_date": "2026-01-01",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "7514658",
+    "people": [
+      {
+        "name": "Bruce Garcia",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 85.0
+      },
+      {
+        "name": "Thomas Ramsey",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 15.0
+      },
+      {
+        "name": "Cynthia Price",
+        "nationality": "Egypt",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Cordova Consultancy LLC"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601016,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

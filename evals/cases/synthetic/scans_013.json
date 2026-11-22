@@ -1,0 +1,62 @@
+{
+  "applicant_name": "MOORE TECHNOLOGIES LLC",
+  "authority": "DET",
+  "case_id": "scans_013",
+  "document": "data/generated/scans_013.jpg",
+  "document_sha256": "1b000bbd1de38314a55dd640c60f97cf3d7abeeb6aac80cf01c9aacac7cccf4f",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 137, Johnson Trace, Dubai",
+    "chamber_number": "331330",
+    "establishment_date": "2022-01-18",
+    "expiry_date": "2027-02-15",
+    "issue_date": "2026-02-15",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "1531161",
+    "people": [
+      {
+        "name": "Shelia Williams",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Kristen Johnson",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 20.0
+      },
+      {
+        "name": "Brandon Luna",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 70.0
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Moore Technologies LLC"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601112,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

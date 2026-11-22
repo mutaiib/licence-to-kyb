@@ -1,0 +1,53 @@
+{
+  "applicant_name": "SMITH TECHNOLOGIES FZE",
+  "authority": "DMCC",
+  "case_id": "wrong_number_format_003",
+  "document": "data/generated/wrong_number_format_003.pdf",
+  "document_sha256": "882c92135b136d23051e5ba2b7adb8a5b736f9663991ed8d9936aa75fa7b0c93",
+  "expected_reason_codes": [
+    "number_format"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      }
+    ],
+    "address": "Office 834, Robin Loop, JLT, Dubai",
+    "chamber_number": "382505",
+    "establishment_date": "2025-05-25",
+    "expiry_date": "2026-10-20",
+    "issue_date": "2025-10-20",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DM-79100",
+    "people": [
+      {
+        "name": "Anthony Vargas",
+        "nationality": "United Arab Emirates",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Smith Technologies FZE"
+  },
+  "faults": [
+    "wrong_number_format"
+  ],
+  "group": "wrong_number_format",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601902,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

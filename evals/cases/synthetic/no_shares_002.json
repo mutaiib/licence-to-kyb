@@ -1,0 +1,65 @@
+{
+  "applicant_name": "MILLER TRADING LLC",
+  "authority": "ADDED",
+  "case_id": "no_shares_002",
+  "document": "data/generated/no_shares_002.pdf",
+  "document_sha256": "ae02aaebde145ba8a8fb619964a1e604c63d6c95d57063404904ba01b8eaee09",
+  "expected_reason_codes": [
+    "ubo_needs_examination"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 791, Matthew Streets, Abu Dhabi",
+    "chamber_number": "887392",
+    "establishment_date": "2024-10-10",
+    "expiry_date": "2027-03-20",
+    "issue_date": "2026-03-20",
+    "issuing_authority": "ADDED",
+    "legal_form": "llc",
+    "licence_number": "CN-1526133",
+    "people": [
+      {
+        "name": "Marcus Hendrix",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": null
+      },
+      {
+        "name": "Maria Hughes",
+        "nationality": "Bangladesh",
+        "role": "owner",
+        "share_pct": null
+      },
+      {
+        "name": "Kenneth Chang",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Miller Trading LLC"
+  },
+  "faults": [
+    "no_shares"
+  ],
+  "group": "no_shares",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601701,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

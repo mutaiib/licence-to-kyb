@@ -1,0 +1,53 @@
+{
+  "applicant_name": "JONES SERVICES EST.",
+  "authority": "ADDED",
+  "case_id": "qr_mismatch_002",
+  "document": "data/generated/qr_mismatch_002.pdf",
+  "document_sha256": "dbc3f246fde65cd9ca954dc9c45bf24fd1843a55cf72da676d05447fd7cdd0ac",
+  "expected_reason_codes": [
+    "qr_mismatch"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 855, Hall Knoll, Abu Dhabi",
+    "chamber_number": "684099",
+    "establishment_date": "2024-05-05",
+    "expiry_date": "2026-08-20",
+    "issue_date": "2025-08-20",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-4087442",
+    "people": [
+      {
+        "name": "Priscilla Vega",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Jones Services Est."
+  },
+  "faults": [
+    "qr_mismatch"
+  ],
+  "group": "qr_mismatch",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602001,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

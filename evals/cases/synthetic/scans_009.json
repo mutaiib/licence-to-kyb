@@ -1,0 +1,56 @@
+{
+  "applicant_name": "WILLIAMS CONSULTANCY LLC",
+  "authority": "DET",
+  "case_id": "scans_009",
+  "document": "data/generated/scans_009.jpg",
+  "document_sha256": "6c22a62a98891a4dfa26b19f2ef64ce53d5b4bcd3952c3b03b43ba13a77279be",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4719.01",
+        "description_en": "Supermarket"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 957, Smith Shoals, Dubai",
+    "chamber_number": "774539",
+    "establishment_date": "2025-09-21",
+    "expiry_date": "2026-09-27",
+    "issue_date": "2025-09-27",
+    "issuing_authority": "DET",
+    "legal_form": "llc",
+    "licence_number": "9062761",
+    "people": [
+      {
+        "name": "Brandon Wu",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 15.0
+      },
+      {
+        "name": "Wendy Wheeler",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 85.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Williams Consultancy LLC"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601108,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

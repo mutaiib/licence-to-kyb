@@ -1,0 +1,53 @@
+{
+  "applicant_name": "JUAREZ TECHNOLOGIES FZE",
+  "authority": "IFZA",
+  "case_id": "expired_uncertain_001",
+  "document": "data/generated/expired_uncertain_001.pdf",
+  "document_sha256": "38795b08e4ab2192054dfcf37bc626cf47e87f1cf8f9967bc635cbfcd673fe06",
+  "expected_reason_codes": [
+    "expiry_uncertain"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 563, Vasquez Freeway, Dubai Silicon Oasis",
+    "chamber_number": "42443",
+    "establishment_date": "2022-08-02",
+    "expiry_date": "2026-05-07",
+    "issue_date": "2025-05-07",
+    "issuing_authority": "IFZA",
+    "legal_form": "fze",
+    "licence_number": "20033",
+    "people": [
+      {
+        "name": "Timothy Reynolds",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Juarez Technologies FZE"
+  },
+  "faults": [
+    "expired_uncertain"
+  ],
+  "group": "expired_uncertain",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601400,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

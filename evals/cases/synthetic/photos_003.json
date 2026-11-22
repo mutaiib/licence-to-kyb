@@ -1,0 +1,62 @@
+{
+  "applicant_name": "JOHNSON SERVICES FZCO",
+  "authority": "DMCC",
+  "case_id": "photos_003",
+  "document": "data/generated/photos_003.jpg",
+  "document_sha256": "5f2fec9a40918b29609012c1662f24a769f49a2154cfd99e358c91b15810692f",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      }
+    ],
+    "address": "Office 146, Robert Springs, JLT, Dubai",
+    "chamber_number": "725718",
+    "establishment_date": "2025-09-05",
+    "expiry_date": "2026-11-13",
+    "issue_date": "2025-11-13",
+    "issuing_authority": "DMCC",
+    "legal_form": "fzco",
+    "licence_number": "DMCC-38305",
+    "people": [
+      {
+        "name": "William Beasley",
+        "nationality": "Egypt",
+        "role": "owner",
+        "share_pct": 50.0
+      },
+      {
+        "name": "Jennifer Poole",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 40.0
+      },
+      {
+        "name": "Ronald Nicholson",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 10.0
+      }
+    ],
+    "trade_name_ar": "شركة الواحة للتقنية",
+    "trade_name_en": "Johnson Services FZCO"
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601202,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

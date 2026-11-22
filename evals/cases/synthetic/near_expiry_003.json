@@ -1,0 +1,59 @@
+{
+  "applicant_name": "YOUNG SERVICES FZE",
+  "authority": "DMCC",
+  "case_id": "near_expiry_003",
+  "document": "data/generated/near_expiry_003.pdf",
+  "document_sha256": "5f15d13367a9f96f5c97fe2ebf0858ad6713bf1b131199de9f61a4d4ddf2878b",
+  "expected_reason_codes": [
+    "near_expiry"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 316, Shelton Forest, JLT, Dubai",
+    "chamber_number": "869434",
+    "establishment_date": "2024-02-10",
+    "expiry_date": "2026-06-11",
+    "issue_date": "2025-06-11",
+    "issuing_authority": "DMCC",
+    "legal_form": "fze",
+    "licence_number": "DMCC-14191",
+    "people": [
+      {
+        "name": "Cindy Rivera",
+        "nationality": "India",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Yvonne Roberts",
+        "nationality": "Saudi Arabia",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Young Services FZE"
+  },
+  "faults": [
+    "near_expiry"
+  ],
+  "group": "near_expiry",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601502,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,22 @@
+{
+  "applicant_name": "Sample Holder Trading LLC",
+  "authority": null,
+  "case_id": "labelled_number_other_doc_002",
+  "document": "data/generated/labelled_number_other_doc_002.pdf",
+  "document_sha256": "bac9c71ee661e66e683e2385b3678d90864534efccd6734dbf31eb4e9402129c",
+  "expected_reason_codes": [
+    "unclear_document"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": null,
+  "faults": [],
+  "group": "labelled_number_other_doc",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602601,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

@@ -1,0 +1,7 @@
+# Requests reviews automatically. Not a merge requirement while there is one maintainer
+# (constitution: Branching and Releases).
+*                                   @mutaiib
+/backend/src/licence_kyb/rules/     @mutaiib
+/backend/src/licence_kyb/security.py @mutaiib
+/.github/workflows/                 @mutaiib
+/.specify/memory/constitution.md    @mutaiib

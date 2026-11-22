@@ -1,0 +1,68 @@
+{
+  "applicant_name": "ARELLANO TECHNOLOGIES FZCO",
+  "authority": "DMCC",
+  "case_id": "scans_011",
+  "document": "data/generated/scans_011.jpg",
+  "document_sha256": "2a1d8b8a2aec7327a5424d54daeb1f64c6caae89dc453549e13303ac88048a95",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      }
+    ],
+    "address": "Office 778, Cabrera Rapid, JLT, Dubai",
+    "chamber_number": "703066",
+    "establishment_date": "2023-09-08",
+    "expiry_date": "2026-11-13",
+    "issue_date": "2025-11-13",
+    "issuing_authority": "DMCC",
+    "legal_form": "fzco",
+    "licence_number": "DMCC-32563",
+    "people": [
+      {
+        "name": "Rebecca Cherry",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 85.0
+      },
+      {
+        "name": "Vincent Rice",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 5.0
+      },
+      {
+        "name": "Erica Harris",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Samantha Zhang",
+        "nationality": "United Kingdom",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Arellano Technologies FZCO"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601110,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

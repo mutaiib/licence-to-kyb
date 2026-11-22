@@ -1,0 +1,55 @@
+{
+  "applicant_name": "ALLEN TRADING EST.",
+  "authority": "ADDED",
+  "case_id": "clean_002",
+  "document": "data/generated/clean_002.pdf",
+  "document_sha256": "bd6a8d0c629a58a52239eb8fe939d9fc62e69f07f5318e2394e108a89e3acc62",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 657, Lara Forks, Abu Dhabi",
+    "chamber_number": "393530",
+    "establishment_date": "2024-11-26",
+    "expiry_date": "2027-04-03",
+    "issue_date": "2026-04-03",
+    "issuing_authority": "ADDED",
+    "legal_form": "sole_establishment",
+    "licence_number": "CN-8727776",
+    "people": [
+      {
+        "name": "Danielle Ellis",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Jessica Weiss",
+        "nationality": "Egypt",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة النخبة للاستشارات",
+    "trade_name_en": "Allen Trading Est."
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601001,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

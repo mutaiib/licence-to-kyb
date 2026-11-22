@@ -1,0 +1,68 @@
+{
+  "applicant_name": "TURNER CONSULTANCY FZCO",
+  "authority": "IFZA",
+  "case_id": "scans_016",
+  "document": "data/generated/scans_016.jpg",
+  "document_sha256": "b5a5f97c2511f04e19f167fd60be2f356c8e95bab9bbed09b111c6a919a01f57",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      }
+    ],
+    "address": "Office 585, Serrano Common, Dubai Silicon Oasis",
+    "chamber_number": "876742",
+    "establishment_date": "2024-05-06",
+    "expiry_date": "2027-03-01",
+    "issue_date": "2026-03-01",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "93818",
+    "people": [
+      {
+        "name": "Robert Silva",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 5.0
+      },
+      {
+        "name": "Aaron Nelson",
+        "nationality": "United Kingdom",
+        "role": "owner",
+        "share_pct": 60.0
+      },
+      {
+        "name": "Jose Stewart",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 35.0
+      },
+      {
+        "name": "Mark Kelly",
+        "nationality": "Saudi Arabia",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Turner Consultancy FZCO"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601115,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

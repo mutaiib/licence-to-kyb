@@ -1,0 +1,16 @@
+# Dubai Department of Economy and Tourism (mainland).
+# Number format: the public sources show plain digits; the exact length is not published.
+# Demo assumption: exactly 7 digits (docs/research.md).
+code: DET
+name_en: Dubai Department of Economy and Tourism
+number_pattern: '^\d{7}$'
+number_pattern_source: inferred
+date_format: DD/MM/YYYY
+licence_number_labels: ["License No", "Licence No", "رقم الرخصة"]
+licence_titles: ["Commercial License", "Trade License", "Trade Licence", "رخصة تجارية"]
+allowed_legal_forms: [llc, llc_single_owner, sole_establishment, civil_company, branch]
+arabic_name_required: true
+has_qr: true
+has_register: true
+free_zone: false
+tenancy_document: tenancy_contract_ejari

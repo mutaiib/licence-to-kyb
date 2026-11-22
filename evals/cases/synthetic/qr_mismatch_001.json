@@ -1,0 +1,59 @@
+{
+  "applicant_name": "ROCHA CONSULTANCY EST.",
+  "authority": "DET",
+  "case_id": "qr_mismatch_001",
+  "document": "data/generated/qr_mismatch_001.pdf",
+  "document_sha256": "784198d7b4e02f513f521b438f2ecac85ae82e0d81697ec0693d854c83fa6962",
+  "expected_reason_codes": [
+    "qr_mismatch"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "7020.01",
+        "description_en": "Management Consultancy"
+      }
+    ],
+    "address": "Office 274, Davis Extension, Dubai",
+    "chamber_number": "61937",
+    "establishment_date": "2023-05-31",
+    "expiry_date": "2027-03-13",
+    "issue_date": "2026-03-13",
+    "issuing_authority": "DET",
+    "legal_form": "sole_establishment",
+    "licence_number": "6414574",
+    "people": [
+      {
+        "name": "Jessica Anderson",
+        "nationality": "Philippines",
+        "role": "owner",
+        "share_pct": 100.0
+      },
+      {
+        "name": "Brett Sherman",
+        "nationality": "Pakistan",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة الأفق للتجارة",
+    "trade_name_en": "Rocha Consultancy Est."
+  },
+  "faults": [
+    "qr_mismatch"
+  ],
+  "group": "qr_mismatch",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602000,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

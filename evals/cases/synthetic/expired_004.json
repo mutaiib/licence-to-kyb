@@ -1,0 +1,53 @@
+{
+  "applicant_name": "MORALES TRADING EST.",
+  "authority": "DET",
+  "case_id": "expired_004",
+  "document": "data/generated/expired_004.pdf",
+  "document_sha256": "9eeb45b95df31cfaa10d6dceb27919bf445ad2815fe54dac9e5e523c994673fe",
+  "expected_reason_codes": [
+    "expired"
+  ],
+  "expected_route": [
+    "reject"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 325, Guerrero Ville, Dubai",
+    "chamber_number": "795711",
+    "establishment_date": "2023-06-21",
+    "expiry_date": "2026-04-24",
+    "issue_date": "2025-04-24",
+    "issuing_authority": "DET",
+    "legal_form": "sole_establishment",
+    "licence_number": "2590674",
+    "people": [
+      {
+        "name": "Jessica Garrison",
+        "nationality": "Lebanon",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Morales Trading Est."
+  },
+  "faults": [
+    "expired"
+  ],
+  "group": "expired",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601303,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

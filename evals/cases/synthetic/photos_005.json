@@ -1,0 +1,50 @@
+{
+  "applicant_name": "FERGUSON TECHNOLOGIES LLC",
+  "authority": "DET",
+  "case_id": "photos_005",
+  "document": "data/generated/photos_005.jpg",
+  "document_sha256": "3e5db4d49585a8b37333d9b22b3dc4436bcf9d7bb434343e5e69b2b58ed08b4c",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "4932.01",
+        "description_en": "Passenger Land Transport"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 734, David Via, Dubai",
+    "chamber_number": "856809",
+    "establishment_date": "2022-05-20",
+    "expiry_date": "2026-08-21",
+    "issue_date": "2025-08-21",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "3909257",
+    "people": [
+      {
+        "name": "Juan Smith",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الضياء التجارية",
+    "trade_name_en": "Ferguson Technologies LLC"
+  },
+  "faults": [],
+  "group": "photos",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601204,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

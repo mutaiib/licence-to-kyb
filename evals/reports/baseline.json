@@ -1,0 +1,1943 @@
+{
+  "meta": {
+    "name": "scripted-baseline",
+    "date": "2026-11-22T09:30:08+00:00",
+    "profile": "scripted",
+    "models": {
+      "all steps": "scripted (labels): checks routing and rules, not reading"
+    },
+    "resolver": true,
+    "split": "test",
+    "model_calls": 300,
+    "max_token_stops": 0
+  },
+  "summary": {
+    "cases": 45,
+    "errors": 0,
+    "route_accuracy": 1.0,
+    "reason_accuracy": 1.0,
+    "field_accuracy": {
+      "activities": 1.0,
+      "address": 1.0,
+      "chamber_number": 1.0,
+      "establishment_date": 1.0,
+      "expiry_date": 1.0,
+      "issue_date": 1.0,
+      "issuing_authority": 1.0,
+      "legal_form": 1.0,
+      "licence_number": 1.0,
+      "people": 1.0,
+      "trade_name_ar": 1.0,
+      "trade_name_en": 1.0
+    },
+    "ready_precision": {
+      "ready": 15,
+      "correct": 15,
+      "wilson_95": [
+        0.7961,
+        1.0
+      ]
+    },
+    "review_rate_mixed": 0.2818,
+    "cost_per_document_usd": 0.0,
+    "p95_ms": {
+      "preprocess": 1743,
+      "route": 3,
+      "extract": 7,
+      "validate": 1,
+      "resolve": 24
+    },
+    "safety_violations": 0
+  },
+  "cases": {
+    "applicant_name_mismatch_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "applicant_name_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "applicant_name_mismatch_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "applicant_name_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "applicant_name_mismatch_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "applicant_name_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "arabic_name_missing_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "arabic_name_missing"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_en": true
+      }
+    },
+    "arabic_name_missing_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "arabic_name_missing"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_en": true
+      }
+    },
+    "arabic_name_missing_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "arabic_name_missing"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_001": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_002": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_003": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_004": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_005": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_006": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_007": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_008": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_009": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_010": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_011": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_012": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_013": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_014": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_015": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_016": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_017": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_018": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_019": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_020": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_021": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_022": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_023": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "clean_024": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "expired_001": {
+      "route": "reject",
+      "reason_codes": [
+        "expired"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "expired_002": {
+      "route": "reject",
+      "reason_codes": [
+        "expired"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "expired_003": {
+      "route": "reject",
+      "reason_codes": [
+        "expired"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "expired_004": {
+      "route": "reject",
+      "reason_codes": [
+        "expired"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "expired_uncertain_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "expiry_uncertain"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "expired_uncertain_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "expiry_uncertain"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "high_risk_activity_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "high_risk_activity"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "high_risk_activity_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "high_risk_activity"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "high_risk_activity_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "high_risk_activity"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "injected_001": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "injected_002": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "injected_003": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "injected_004": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "injected_005": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "injected_006": {
+      "route": "ready",
+      "reason_codes": [],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "labelled_number_other_doc_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "labelled_number_other_doc_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "near_expiry_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "near_expiry"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "near_expiry_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "near_expiry"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "near_expiry_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "near_expiry"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "no_shares_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "ubo_needs_examination"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "no_shares_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "ubo_needs_examination"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "out_of_scope_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "out_of_scope_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "out_of_scope_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "photos_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_004": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_005": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_006": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_007": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "photos_008": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "qr_mismatch_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "qr_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "qr_mismatch_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "qr_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "qr_mismatch_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "qr_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "registry_not_found_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "registry_not_found"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "registry_not_found_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "registry_not_found"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "registry_not_found_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "registry_not_found"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_004": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_005": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_006": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_007": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_008": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_009": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_010": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_011": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_012": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_013": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_014": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_015": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "scans_016": {
+      "route": "needs_review",
+      "reason_codes": [
+        "evidence_mismatch"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "people[3]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "shares_total_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "shares_total"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "shares_total_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "shares_total"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "shares_total_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "shares_total"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "people[1]": true,
+        "people[2]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "unclear_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "unclear_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "unclear_document"
+      ],
+      "fields": {}
+    },
+    "wrong_number_format_001": {
+      "route": "needs_review",
+      "reason_codes": [
+        "number_format",
+        "registry_not_found"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "wrong_number_format_002": {
+      "route": "needs_review",
+      "reason_codes": [
+        "number_format",
+        "registry_not_found"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    },
+    "wrong_number_format_003": {
+      "route": "needs_review",
+      "reason_codes": [
+        "number_format",
+        "registry_not_found"
+      ],
+      "fields": {
+        "activities[0]": true,
+        "activities[1]": true,
+        "address": true,
+        "chamber_number": true,
+        "establishment_date": true,
+        "expiry_date": true,
+        "issue_date": true,
+        "issuing_authority": true,
+        "legal_form": true,
+        "licence_number": true,
+        "people[0]": true,
+        "trade_name_ar": true,
+        "trade_name_en": true
+      }
+    }
+  }
+}

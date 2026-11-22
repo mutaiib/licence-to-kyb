@@ -1,0 +1,61 @@
+{
+  "applicant_name": "RIVERA TRADING FZCO",
+  "authority": "DMCC",
+  "case_id": "clean_015",
+  "document": "data/generated/clean_015.pdf",
+  "document_sha256": "2d7c0cef196087e2c0d0ea23f66926cac1fd8232a35710704b8815b4c8298656",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "7311.01",
+        "description_en": "Advertising Services"
+      },
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      }
+    ],
+    "address": "Office 762, Dawn Valleys, JLT, Dubai",
+    "chamber_number": "716783",
+    "establishment_date": "2020-08-24",
+    "expiry_date": "2026-08-07",
+    "issue_date": "2025-08-07",
+    "issuing_authority": "DMCC",
+    "legal_form": "fzco",
+    "licence_number": "DMCC-53234",
+    "people": [
+      {
+        "name": "Rebecca Jones",
+        "nationality": "Pakistan",
+        "role": "owner",
+        "share_pct": 55.0
+      },
+      {
+        "name": "Cathy Thomas",
+        "nationality": "Jordan",
+        "role": "owner",
+        "share_pct": 45.0
+      },
+      {
+        "name": "Joshua Warren",
+        "nationality": "Philippines",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Rivera Trading FZCO"
+  },
+  "faults": [],
+  "group": "clean",
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "seed": 20260601014,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

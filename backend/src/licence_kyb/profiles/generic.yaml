@@ -1,0 +1,14 @@
+# Any other or unknown authority. Accepts any number format; such runs always go to review.
+code: generic
+name_en: Unknown authority
+number_pattern: '^\S.*$'
+number_pattern_source: none
+date_format: DD/MM/YYYY
+licence_number_labels: ["Licence No", "License No", "Licence Number", "License Number", "رقم الرخصة"]
+licence_titles: ["Trade Licence", "Trade License", "Commercial Licence", "Commercial License", "Economic Licence", "رخصة"]
+allowed_legal_forms: [llc, llc_single_owner, sole_establishment, civil_company, branch, fze, fzco, fz_llc, public_joint_stock, private_joint_stock]
+arabic_name_required: false
+has_qr: false
+has_register: false
+free_zone: false
+tenancy_document: null

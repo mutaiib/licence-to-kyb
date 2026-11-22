@@ -1,0 +1,32 @@
+{
+  "applicant_name": "ABU DHABI COMMERCIAL BANK",
+  "authority": "ADDED",
+  "case_id": "public_adcb_licence",
+  "document": "evals/cases/public/adcb_licence.pdf",
+  "document_sha256": "03bb6153cff41335c98e102df7c3d599e6742822d8e8a508e289e6b6f4363c00",
+  "document_url": "https://www.adcb.com/ar/Images/adcb-commercial-license.pdf",
+  "expected_reason_codes": [],
+  "expected_route": ["ready", "needs_review"],
+  "expected_values": {
+    "activities": [{"code": "6419001.1", "description_en": "Commercial Bank - Local"}],
+    "chamber_number": "3448",
+    "establishment_date": "1988-07-02",
+    "expiry_date": "2026-12-25",
+    "issue_date": "2025-11-19",
+    "issuing_authority": "ADDED",
+    "legal_form": "public_joint_stock",
+    "licence_number": "CN-1002016",
+    "people": [{"name": "COMPANY SHAREHOLDER", "nationality": "United Arab Emirates", "role": "owner", "share_pct": null}],
+    "trade_name_en": "ABU DHABI COMMERCIAL BANK"
+  },
+  "faults": [],
+  "group": "public",
+  "labelled_by": "hand, from the published document; company-level fields only",
+  "live_eval_only": true,
+  "mime": "application/pdf",
+  "mix_bucket": "clean",
+  "registry_entry": {"expiry_date": "2026-12-25", "status": "active", "trade_name_en": "ABU DHABI COMMERCIAL BANK"},
+  "source": "public",
+  "split": "test",
+  "twin_of": null
+}

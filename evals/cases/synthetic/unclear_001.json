@@ -1,0 +1,22 @@
+{
+  "applicant_name": "Sample Holder Trading LLC",
+  "authority": null,
+  "case_id": "unclear_001",
+  "document": "data/generated/unclear_001.pdf",
+  "document_sha256": "16359abadd2e364d27ff7cce324ed9f64b6ec8c709e43805c0232b99f4c3537a",
+  "expected_reason_codes": [
+    "unclear_document"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": null,
+  "faults": [],
+  "group": "unclear",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260602700,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}

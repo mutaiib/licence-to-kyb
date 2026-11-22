@@ -1,0 +1,12 @@
+name: Feature
+description: "A new capability (goes through Spec Kit: specify, clarify, plan, tasks)"
+labels: [feature]
+body:
+  - type: textarea
+    id: problem
+    attributes: { label: Problem and who has it }
+    validations: { required: true }
+  - type: textarea
+    id: outcome
+    attributes: { label: Measurable outcome, description: "How we will know it works." }
+    validations: { required: true }

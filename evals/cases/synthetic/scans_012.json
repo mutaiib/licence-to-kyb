@@ -1,0 +1,62 @@
+{
+  "applicant_name": "WILKINS TRADING FZCO",
+  "authority": "IFZA",
+  "case_id": "scans_012",
+  "document": "data/generated/scans_012.jpg",
+  "document_sha256": "e398958ce65f8a456b10da0d4bf23f4422022bf6ec185185851c68086b4f27cc",
+  "expected_reason_codes": [],
+  "expected_route": [
+    "ready",
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "6201.01",
+        "description_en": "Computer Programming"
+      },
+      {
+        "code": "8549.01",
+        "description_en": "Training Services"
+      }
+    ],
+    "address": "Office 170, James Dam, Dubai Silicon Oasis",
+    "chamber_number": "684878",
+    "establishment_date": "2025-12-19",
+    "expiry_date": "2027-03-03",
+    "issue_date": "2026-03-03",
+    "issuing_authority": "IFZA",
+    "legal_form": "fzco",
+    "licence_number": "34989",
+    "people": [
+      {
+        "name": "Julie Ryan",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 90.0
+      },
+      {
+        "name": "Amanda Terry",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 10.0
+      },
+      {
+        "name": "Seth Fitzpatrick",
+        "nationality": "United Arab Emirates",
+        "role": "manager",
+        "share_pct": null
+      }
+    ],
+    "trade_name_ar": "شركة البحر الأزرق",
+    "trade_name_en": "Wilkins Trading FZCO"
+  },
+  "faults": [],
+  "group": "scans",
+  "mime": "image/jpeg",
+  "mix_bucket": "scans_and_photos",
+  "seed": 20260601111,
+  "source": "synthetic",
+  "split": "calibration",
+  "twin_of": null
+}

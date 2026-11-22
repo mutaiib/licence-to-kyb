@@ -1,0 +1,53 @@
+{
+  "applicant_name": "CAMPBELL TRADING LLC",
+  "authority": "DET",
+  "case_id": "wrong_number_format_001",
+  "document": "data/generated/wrong_number_format_001.pdf",
+  "document_sha256": "1f28e73712260835ce24aed3f115b632e370030340ef447baaf23f8bd0b1cb28",
+  "expected_reason_codes": [
+    "number_format"
+  ],
+  "expected_route": [
+    "needs_review"
+  ],
+  "expected_values": {
+    "activities": [
+      {
+        "code": "5610.01",
+        "description_en": "Restaurant"
+      },
+      {
+        "code": "4772.01",
+        "description_en": "Perfume Trading"
+      }
+    ],
+    "address": "Office 725, William Burgs, Dubai",
+    "chamber_number": "846895",
+    "establishment_date": "2023-04-21",
+    "expiry_date": "2027-02-20",
+    "issue_date": "2026-02-20",
+    "issuing_authority": "DET",
+    "legal_form": "llc_single_owner",
+    "licence_number": "132372",
+    "people": [
+      {
+        "name": "Kristin Simon",
+        "nationality": "Saudi Arabia",
+        "role": "owner",
+        "share_pct": 100.0
+      }
+    ],
+    "trade_name_ar": "مؤسسة الريان للخدمات",
+    "trade_name_en": "Campbell Trading LLC"
+  },
+  "faults": [
+    "wrong_number_format"
+  ],
+  "group": "wrong_number_format",
+  "mime": "application/pdf",
+  "mix_bucket": "problem",
+  "seed": 20260601900,
+  "source": "synthetic",
+  "split": "test",
+  "twin_of": null
+}
