@@ -112,8 +112,17 @@ async function send(method: string, path: string, body?: BodyInit): Promise<Raw 
   return { status: response.status, body: json };
 }
 
+/** A success reply must carry data. A body that is not JSON (for example a web page from a
+ * misconfigured proxy) is treated like no reply at all. */
+function hasData(raw: Raw): boolean {
+  return raw.status === 204 || raw.body !== null;
+}
+
 function toResult<T>(raw: Raw | null, okStatuses: readonly number[]): Result<T> {
   if (raw === null) {
+    return { ok: false, code: 'network' };
+  }
+  if (okStatuses.includes(raw.status) && !hasData(raw)) {
     return { ok: false, code: 'network' };
   }
   if (okStatuses.includes(raw.status)) {
@@ -155,7 +164,7 @@ export async function createRun(file: File, applicantName: string): Promise<Uplo
   form.append('file', file);
   form.append('applicant_name', applicantName);
   const raw = await send('POST', '/api/runs', form);
-  if (raw === null) {
+  if (raw === null || !hasData(raw)) {
     return { kind: 'failed', code: 'network' };
   }
   if (raw.status === 200 || raw.status === 202) {

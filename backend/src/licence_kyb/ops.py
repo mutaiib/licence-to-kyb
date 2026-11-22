@@ -70,8 +70,8 @@ class Operations:
             run_id=run["run_id"],
             action="status_change",
             actor="system",
-            new="awaiting_review",
-            reason=note,
+            # Not in ``new``: that column holds encrypted values, and Operations has no cipher.
+            reason=f"{note}; moved to awaiting_review",
         )
 
     def apply_retention(self, *, days: int) -> int:

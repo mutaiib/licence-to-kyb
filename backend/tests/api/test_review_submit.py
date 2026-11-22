@@ -68,8 +68,9 @@ class Reviewer:
         return self.client.post(f"/api/runs/{self.run_id}/{path}", json=body, headers=headers)
 
     def review(self, *decisions: dict[str, Any], **form_action: Any) -> Any:
+        version = form_action.pop("version", None)
         body = {
-            "form_version": form_action.pop("version", self.view()["form"]["version"]),
+            "form_version": self.view()["form"]["version"] if version is None else version,
             "decisions": list(decisions),
             "action_id": form_action.pop("action_id", new_id()),
             **form_action,
@@ -396,6 +397,38 @@ def test_reject_reopen_reject_records_every_event_with_its_reason(
     assert r.view()["status"] == "rejected"
 
 
+def test_a_reopened_case_needs_a_new_approval_before_submit(tmp_path: Path, catalogue: Any) -> None:
+    r = start(tmp_path, catalogue, "clean")
+    approve_flagged(r)
+    r.review(approve_form=True)
+    approved_version = r.view()["form"]["version"]
+
+    r.review(reject_case=True, reject_reason="wrong company")
+    r.post("reopen", {"action_id": new_id(), "reason": "look again"})
+
+    assert r.view()["form_approved"] is False
+    assert r.submit(version=approved_version).status_code == 409
+    assert r.submit().json()["code"] == "not_approved"
+    assert r.count("submissions") == 0
+
+
+def test_a_run_that_crashed_before_its_form_can_be_rejected_but_not_approved(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    r = start(tmp_path, catalogue, "clean", crash=True)
+    assert r.view()["form"] is None
+
+    approve = r.review(approve_form=True, version=1)
+    submit = r.submit(version=1)
+    reject = r.review(reject_case=True, reject_reason="unreadable copy", version=1)
+
+    assert (approve.status_code, approve.json()["code"]) == (409, "no_form")
+    assert (submit.status_code, submit.json()["code"]) == (409, "no_form")
+    assert reject.status_code == 200
+    assert r.view()["status"] == "rejected"
+    assert [e["reason"] for e in r.audit("reject")] == ["unreadable copy"]
+
+
 def test_a_reject_without_a_reason_is_refused(tmp_path: Path, catalogue: Any) -> None:
     r = start(tmp_path, catalogue, "near_expiry")
 
@@ -474,6 +507,31 @@ def test_retry_after_a_crash_processes_the_run_again(tmp_path: Path, catalogue: 
 
     assert response.status_code == 202
     assert r.view()["status"] == "awaiting_submit"
+
+
+def test_a_retry_keeps_the_reasons_found_while_routing(tmp_path: Path, catalogue: Any) -> None:
+    """The router names an authority that the licence number contradicts, then the reading
+    fails. A retry reads again, but the routing doubt must stay on the run."""
+    root, case = catalogue[0], case_of(catalogue, "clean")
+    other = "DET" if case["expected_values"].get("issuing_authority") == "DMCC" else "DMCC"
+    transport = ScriptedTransport(case["expected_values"], faults={"refusal"}, authority=other)
+    client = make_client(tmp_path / "var", root, transport)
+    csrf = sign_in(client)
+    created = client.post(
+        "/api/runs",
+        files={"file": ("l.pdf", (root / case["document"]).read_bytes(), "application/pdf")},
+        data={"applicant_name": case["applicant_name"]},
+        headers={"X-CSRF-Token": csrf},
+    )
+    r = Reviewer(client, csrf, created.json()["run_id"], transport)
+    assert "unknown_authority" in {x["code"] for x in r.view()["reasons"]}
+
+    transport.faults.clear()
+    assert r.post("retry", {"action_id": new_id()}).status_code == 202
+
+    view = r.view()
+    assert "unknown_authority" in {x["code"] for x in view["reasons"]}
+    assert view["route"] != "ready"
 
 
 def test_retry_is_refused_when_processing_did_not_fail(tmp_path: Path, catalogue: Any) -> None:

@@ -294,7 +294,13 @@ class Pipeline:
             if outcome.refused:
                 step.error_code = "refusal"
         return {
-            "route": {"doc_type": outcome.doc_type, "authority": outcome.authority},
+            # The route keeps its own reasons, so a retry that starts again at extract
+            # does not lose them.
+            "route": {
+                "doc_type": outcome.doc_type,
+                "authority": outcome.authority,
+                "reasons": list(outcome.reasons),
+            },
             "reasons": [reason_entry(code) for code in outcome.reasons],
         }
 
@@ -606,8 +612,8 @@ class Pipeline:
         reviewer, run_id = action["reviewer"], state["run_id"]
         for d in result.new_decisions:
             self._record_decision(state, d, reviewer)
-        form = result.state["form"]
-        if result.approved_version is not None:
+        form = result.state.get("form")
+        if result.approved_version is not None and form is not None:
             self.db.record_approval(
                 action_id=action["action_id"],
                 run_id=run_id,
@@ -703,15 +709,26 @@ class Pipeline:
         )
         reasons = [r for r in state.get("reasons", []) if r["code"] != "reviewer_rejected"]
         applied = [*state.get("applied_ids", []), action["action_id"]]
-        return {"status": "awaiting_review", "reasons": reasons, "applied_ids": applied}
+        reopened: dict[str, Any] = {
+            "status": "awaiting_review",
+            "reasons": reasons,
+            "applied_ids": applied,
+        }
+        # A reopened case is a new review: a new form version, so no earlier approval
+        # applies to it (FR-026).
+        if state.get("form") is not None:
+            reopened["form"] = {**state["form"], "version": state["form"]["version"] + 1}
+        return reopened
 
     def _apply_retry(self, state: RunState, action: dict[str, Any]) -> dict[str, Any]:
-        """Start processing again from the step that failed, with no reviewer decisions."""
+        """Start processing again from the step that failed, with no reviewer decisions.
+        Reasons from routing stay: a retry that starts at extract does not route again."""
         self._audit(state, action["action_id"], "retry", actor=action["reviewer"])
         applied = [*state.get("applied_ids", []), action["action_id"]]
+        route_reasons = state.get("route", {}).get("reasons", [])
         return {
             "status": "processing",
-            "reasons": [],
+            "reasons": [reason_entry(code) for code in route_reasons],
             "decisions": {},
             "read_extraction": {},
             "rule_results": [],

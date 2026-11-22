@@ -50,6 +50,7 @@ All interface text follows **ASD-STE100 Simplified Technical English**.
 |---|---|
 | `app.title` | Trade licence to KYB |
 | `app.loading` | Loading |
+| `app.tryAgain` | Try again |
 | `nav.upload` | Upload a licence |
 
 ### Sign-in
@@ -256,6 +257,7 @@ The key in `copy.ts` is `error.<code>`. `not_found` and `network` are client-sid
 | `not_found` | The system cannot find this run. Upload the licence again. |
 | `network` | The system cannot connect to the server. Try again. |
 | `not_retryable` | Retry is possible only after a processing failure, or when the system used all of the daily reading limit. Examine the fields. |
+| `no_form` | Processing stopped before the form existed. Retry processing, or reject the case. |
 
 ### Reason codes
 

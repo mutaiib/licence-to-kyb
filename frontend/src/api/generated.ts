@@ -232,7 +232,7 @@ export interface components {
              * Code
              * @enum {string}
              */
-            code: "blocking_rule_failed" | "not_overridable" | "undecided_fields" | "stale_version" | "reason_required" | "not_approved" | "not_awaiting_submit" | "not_rejected" | "not_retryable";
+            code: "blocking_rule_failed" | "not_overridable" | "undecided_fields" | "stale_version" | "reason_required" | "not_approved" | "not_awaiting_submit" | "not_rejected" | "not_retryable" | "no_form";
             /** Field */
             field?: string | null;
             /** Rule Id */

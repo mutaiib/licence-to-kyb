@@ -279,6 +279,8 @@ def apply_review(
     form_action = new_form_action(state, action)
     if not fresh and form_action is None:
         return ReviewResult(state={})  # a repeated call: nothing to do
+    if state.get("form") is None:
+        return _reject_without_form(state, action, fresh, form_action)
     check_review_request(state, action, fresh)
 
     # Apply all decisions so far to the extraction as read, then re-run every rule.
@@ -322,11 +324,37 @@ def apply_review(
     )
 
 
+def _reject_without_form(
+    state: dict[str, Any],
+    action: dict[str, Any],
+    fresh: list[dict[str, Any]],
+    form_action: str | None,
+) -> ReviewResult:
+    """Processing crashed before the form existed. The reviewer can retry or reject the case;
+    there is nothing to decide or approve yet."""
+    if fresh or form_action != "reject":
+        raise ActionRefused("no_form")
+    if state.get("status") != "awaiting_review":
+        raise ActionRefused("stale_version")
+    if not action.get("reject_reason"):
+        raise ActionRefused("reason_required")
+    return ReviewResult(
+        state={
+            "status": "rejected",
+            "reasons": [*state.get("reasons", []), reason_entry("reviewer_rejected")],
+            "applied_ids": [*state.get("applied_ids", []), action["action_id"]],
+        },
+        rejected=True,
+    )
+
+
 # ------------------------------------------------------------------ submit, reopen, retry
 def check_submit(state: dict[str, Any], action: dict[str, Any], *, approved: bool) -> None:
     """``approved``: an approval exists for the requested form version."""
     if state.get("status") not in ("awaiting_review", "awaiting_submit"):
         raise ActionRefused("not_awaiting_submit")  # rejected, done or still processing
+    if state.get("form") is None:
+        raise ActionRefused("no_form")  # processing crashed before the form existed
     if action["form_version"] != state["form"]["version"]:
         raise ActionRefused("stale_version")
     if not approved:

@@ -74,7 +74,7 @@ def test_a_clean_det_licence_routes_ready_with_the_labelled_values(
 
     state, _ = run_case(root, case, tmp_path, ScriptedTransport(case["expected_values"]))
 
-    assert state["route"] == {"doc_type": "trade_licence", "authority": "DET"}
+    assert (state["route"]["doc_type"], state["route"]["authority"]) == ("trade_licence", "DET")
     assert state["decision"]["route"] == "ready", codes(state)
     exp = case["expected_values"]
     assert values(state) == {

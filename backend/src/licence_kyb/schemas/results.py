@@ -65,6 +65,7 @@ ActionErrorCode = Literal[
     "not_awaiting_submit",
     "not_rejected",
     "not_retryable",
+    "no_form",
 ]
 """Why a reviewer action was refused (409). See contracts/http-api.md."""
 
