@@ -35,6 +35,8 @@ PRICES: dict[str, tuple[float, float, float]] = {
 }
 
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
+CACHE_WRITE_FACTOR = 1.25
+"""A token written to the prompt cache costs 1.25 times an input token."""
 
 
 class LLMError(Exception):
@@ -65,6 +67,8 @@ class Usage:
     output_tokens: int = 0
     thinking_tokens: int = 0
     cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
+    """Input tokens written to the prompt cache: part of ``input_tokens``, billed at 1.25x."""
 
     @property
     def billed_tokens(self) -> int:
@@ -76,6 +80,7 @@ class Usage:
             output_tokens=self.output_tokens + other.output_tokens,
             thinking_tokens=self.thinking_tokens + other.thinking_tokens,
             cache_read_tokens=self.cache_read_tokens + other.cache_read_tokens,
+            cache_write_tokens=self.cache_write_tokens + other.cache_write_tokens,
         )
 
 
@@ -113,11 +118,13 @@ class ModelResponse:
         price_in, price_out, price_cache = self.prices or PRICES.get(
             self.serving_model, PRICES["claude-opus-5-5"]
         )
-        uncached = max(self.usage.input_tokens - self.usage.cache_read_tokens, 0)
+        usage = self.usage
+        plain = max(usage.input_tokens - usage.cache_read_tokens - usage.cache_write_tokens, 0)
         return (
-            uncached * price_in
-            + self.usage.output_tokens * price_out
-            + self.usage.cache_read_tokens * price_cache
+            plain * price_in
+            + usage.cache_write_tokens * price_in * CACHE_WRITE_FACTOR
+            + usage.output_tokens * price_out
+            + usage.cache_read_tokens * price_cache
         ) / 1_000_000
 
 
@@ -280,12 +287,19 @@ class RecordingTransport:
 
 
 class AnthropicTransport:
-    """The official SDK (``client.beta.messages``), with server-side refusal fallback."""
+    """The official SDK (``client.beta.messages``), with server-side refusal fallback.
 
-    def __init__(self, api_key: str | None = None) -> None:
-        import anthropic  # noqa: PLC0415 - lazy: offline tests never import the live SDK path
+    A reply comes back as data, never as an exception: ``parsed`` is the reply's JSON (or
+    None), and our own code checks it. So a reply cut off at the token limit gets the retry
+    with more tokens, and a reply that breaks the schema gets the retry that names the error.
+    """
 
-        self._client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+    def __init__(self, api_key: str | None = None, *, client: Any = None) -> None:
+        if client is None:
+            import anthropic  # noqa: PLC0415 - lazy: offline tests never import the live SDK
+
+            client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+        self._client = client
 
     def send(self, req: ModelRequest) -> ModelResponse:
         system: list[dict[str, Any]] = [{"type": "text", "text": req.system}]
@@ -301,26 +315,44 @@ class AnthropicTransport:
             "fallbacks": "default",
         }
         if req.output_model is not None:
-            msg = self._client.beta.messages.parse(output_format=req.output_model, **kwargs)
-            parsed_obj = getattr(msg, "parsed_output", None)
-            parsed = parsed_obj.model_dump(mode="json") if parsed_obj is not None else None
-        else:
-            if req.tools:
-                kwargs["tools"] = req.tools
-                kwargs["tool_choice"] = {"type": "auto"}
+            from anthropic.lib._parse._transform import to_json_output_format  # noqa: PLC0415
+
+            kwargs["output_config"] = {
+                **kwargs["output_config"],
+                "format": to_json_output_format(req.output_model),
+            }
+        elif req.tools:
+            kwargs["tools"] = req.tools
+            kwargs["tool_choice"] = {"type": "auto"}
+        try:
             msg = self._client.beta.messages.create(**kwargs)
-            parsed = None
+        except Exception as exc:  # the SDK has already retried what it can
+            raise LLMError(f"the model API failed: {type(exc).__name__}") from exc
+        content = [block.model_dump(mode="json") for block in msg.content]
         usage = msg.usage
         details = getattr(usage, "output_tokens_details", None)
+        cache_read = usage.cache_read_input_tokens or 0
+        cache_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
         return ModelResponse(
-            content=[block.model_dump(mode="json") for block in msg.content],
-            parsed=parsed,
+            content=content,
+            parsed=_json_reply(content) if req.output_model is not None else None,
             stop_reason=str(msg.stop_reason),
             serving_model=str(msg.model),
             usage=Usage(
-                input_tokens=usage.input_tokens + (usage.cache_read_input_tokens or 0),
+                input_tokens=usage.input_tokens + cache_read + cache_write,
                 output_tokens=usage.output_tokens,
                 thinking_tokens=getattr(details, "thinking_tokens", 0) or 0,
-                cache_read_tokens=usage.cache_read_input_tokens or 0,
+                cache_read_tokens=cache_read,
+                cache_write_tokens=cache_write,
             ),
         )
+
+
+def _json_reply(content: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """The reply's JSON object, or None when it is not one (cut off, or not JSON)."""
+    text = "".join(b.get("text", "") for b in content if b.get("type") == "text")
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None

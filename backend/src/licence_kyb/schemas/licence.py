@@ -15,6 +15,7 @@ from typing import Annotated, Any, Literal, Self
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, model_validator
 from pydantic import Field as PydField
+from pydantic.json_schema import SkipJsonSchema
 from pydantic_core import PydanticCustomError
 
 Status = Literal["present", "not_present", "unclear"]
@@ -70,7 +71,9 @@ class Field[T](StrictModel):
 
     value: T | None
     status: Status
-    origin: Origin = "read"
+    # Hidden from the schema the model sees: only a reviewer's action sets an origin
+    # (nodes/extract.py also drops any origin the model sends).
+    origin: SkipJsonSchema[Origin] = "read"
     evidence_quote: str | None
     page: Annotated[int, PydField(ge=1, le=5)] | None
     self_confidence: SelfConfidence
