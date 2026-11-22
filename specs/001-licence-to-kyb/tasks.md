@@ -32,7 +32,7 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 **Purpose**: repository standards, tooling and project skeletons.
 
-- [ ] T001 Create `main` with the first commit, then `develop` from `main`. Merge the specification branch `feature/001-licence-to-kyb` by pull request, then create `feature/001-licence-to-kyb-foundation` from `develop`. Configure GitHub rulesets for `main` and `develop` per `docs/engineering-practices.md` section 1, with CODEOWNERS used to request reviewers only.
+- [X] T001 Create `main` with the first commit, then `develop` from `main`. Merge the specification branch `feature/001-licence-to-kyb` by pull request, then create `feature/001-licence-to-kyb-foundation` from `develop`. Configure GitHub rulesets for `main` and `develop` per `docs/engineering-practices.md` section 1, with CODEOWNERS used to request reviewers only.
 - [X] T002 Create the backend project with `uv`, Python 3.12, the dependencies from plan.md (including `argon2-cffi`), and a committed lock file, in `backend/pyproject.toml` and `backend/uv.lock`
 - [X] T003 [P] Create the frontend with Vite, React 19 and TypeScript `strict` in `frontend/package.json`. Install `@astryxdesign/core`, `@astryxdesign/theme-neutral`, `@stylexjs/stylex`, Vitest and Testing Library, then run `npx @astryxdesign/cli init`.
 - [X] T004 [P] Configure ruff (strict rule set) and `mypy --strict` in `backend/pyproject.toml`
