@@ -44,6 +44,12 @@ All interface text follows **ASD-STE100 Simplified Technical English**.
 
 ## Strings
 
+### App shell
+
+| Key | Text |
+|---|---|
+| `app.title` | Trade licence to KYB |
+
 ### Sign-in
 
 | Key | Text |
