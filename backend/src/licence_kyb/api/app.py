@@ -1,25 +1,58 @@
-"""FastAPI application factory. Routes are added per user story."""
+"""FastAPI application factory (contracts/http-api.md)."""
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 
-from licence_kyb.api import routes_health
+from licence_kyb.api import routes_health, routes_runs, routes_session
+from licence_kyb.api.auth import SAFE_METHODS, Auth, error_response
+from licence_kyb.config import Settings
 from licence_kyb.graph import open_checkpointer
+from licence_kyb.pipeline import Pipeline
 from licence_kyb.store.db import Database
 
+PUBLIC = {("POST", "/api/session")}
 
-def create_app(*, data_dir: Path) -> FastAPI:
+
+def create_app(
+    *, data_dir: Path, settings: Settings | None = None, pipeline: Pipeline | None = None
+) -> FastAPI:
+    settings = settings or Settings()
     app = FastAPI(
         title="licence-to-kyb",
         version="0.0.0",
         description="Trade licence to KYB onboarding (contracts/http-api.md).",
     )
-    db = Database(data_dir / "app.sqlite3")
-    db.migrate()
-    app.state.db = db
-    app.state.checkpointer = open_checkpointer(data_dir / "checkpoints.sqlite3")
+    if pipeline is not None:
+        app.state.pipeline = pipeline
+        app.state.db = pipeline.db
+        app.state.checkpointer = pipeline.checkpointer
+    else:
+        db = Database(data_dir / "app.sqlite3")
+        db.migrate()
+        app.state.db = db
+        app.state.checkpointer = open_checkpointer(data_dir / "checkpoints.sqlite3")
+    app.state.auth = Auth(settings)
+
+    @app.middleware("http")
+    async def guard(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        path, method = request.url.path, request.method
+        if path.startswith("/api/") and (method, path) not in PUBLIC:
+            if app.state.auth.reviewer(request) is None:
+                return error_response(401, "session_expired")
+            if method not in SAFE_METHODS and not Auth.csrf_ok(request):
+                return error_response(403, "forbidden")
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Cache-Control", "no-store")
+        return response
+
     app.include_router(routes_health.router)
+    app.include_router(routes_session.router)
+    app.include_router(routes_runs.router)
     return app

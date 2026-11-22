@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     applicant_name_threshold: float = Field(default=0.85, ge=0, le=1)
     data_dir: Path = Path("var")
     session_hours: int = Field(default=8, ge=1)
+    session_secret: SecretStr | None = None
+    """HMAC key for session cookies. Required in production; set it in the environment."""
     cookie_secure: bool = True
 
     @field_validator("fernet_keys", mode="before")
