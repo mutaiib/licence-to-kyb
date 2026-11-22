@@ -63,9 +63,9 @@ const STEP_KEYS: Readonly<Record<string, CopyKey>> = {
   route: 'progress.route',
   extract: 'progress.extract',
   validate: 'progress.validate',
+  confidence: 'progress.confidence',
   resolve: 'progress.resolve',
   gate: 'progress.gate',
-  decide: 'progress.gate',
   form: 'progress.form',
   map_form: 'progress.form',
 };
