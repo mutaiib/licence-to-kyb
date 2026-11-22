@@ -25,7 +25,9 @@ def test_every_profile_loads_with_the_fields_rules_depend_on(authority: str) -> 
     assert isinstance(profile.has_register, bool)
 
 
-@pytest.mark.parametrize(("authority", "number"), [(a, n) for a, ns in EXAMPLES.items() for n in ns])
+@pytest.mark.parametrize(
+    ("authority", "number"), [(a, n) for a, ns in EXAMPLES.items() for n in ns]
+)
 def test_pattern_accepts_its_own_examples(authority: str, number: str) -> None:
     assert load_profile(authority).matches_number(number)
 

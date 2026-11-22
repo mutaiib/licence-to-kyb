@@ -70,8 +70,13 @@ class Operations:
         expired = [
             r["run_id"]
             for r in self.db.runs_with_status(
-                "received", "processing", "rejected", "awaiting_review", "awaiting_submit",
-                "submitted", "done",
+                "received",
+                "processing",
+                "rejected",
+                "awaiting_review",
+                "awaiting_submit",
+                "submitted",
+                "done",
             )
             if r["created_at"] < cutoff
         ]

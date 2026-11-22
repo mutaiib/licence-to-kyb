@@ -30,7 +30,9 @@ def make_run(db: Database, run_id: str, status: str, deadline: datetime | None =
     db.update_run(run_id, **fields)
 
 
-def test_startup_resumes_every_received_or_processing_run_with_a_fresh_deadline(db: Database) -> None:
+def test_startup_resumes_every_received_or_processing_run_with_a_fresh_deadline(
+    db: Database,
+) -> None:
     make_run(db, "a", "received")
     make_run(db, "b", "processing", deadline=NOW - timedelta(minutes=5))
     make_run(db, "c", "awaiting_review")

@@ -65,8 +65,11 @@ class Database:
     # ------------------------------------------------------------------ migrations
     def migrate(self) -> None:
         scripts = sorted(
-            (p for p in resources.files("licence_kyb.store.migrations").iterdir()
-             if p.name.endswith(".sql")),
+            (
+                p
+                for p in resources.files("licence_kyb.store.migrations").iterdir()
+                if p.name.endswith(".sql")
+            ),
             key=lambda p: p.name,
         )
         with self.connect() as conn:
@@ -117,8 +120,15 @@ class Database:
         return RunRow(row["run_id"], row["file_sha256"], row["status"], row["form_version"])
 
     def update_run(self, run_id: str, **fields: Any) -> None:
-        allowed = {"status", "route", "reasons_json", "form_version", "deadline_at",
-                   "cost_usd", "duration_ms"}
+        allowed = {
+            "status",
+            "route",
+            "reasons_json",
+            "form_version",
+            "deadline_at",
+            "cost_usd",
+            "duration_ms",
+        }
         unknown = set(fields) - allowed
         if unknown:
             raise ValueError(f"cannot update {sorted(unknown)}")
@@ -151,8 +161,16 @@ class Database:
 
     # ------------------------------------------------------------------ keyed writes
     def record_decision(
-        self, *, decision_id: str, run_id: str, form_version: int, target: str, action: str,
-        value: str | None, reason: str | None, reviewer: str,
+        self,
+        *,
+        decision_id: str,
+        run_id: str,
+        form_version: int,
+        target: str,
+        action: str,
+        value: str | None,
+        reason: str | None,
+        reviewer: str,
     ) -> bool:
         """Return True when the decision is new, False when its key was already applied."""
         with self.connect() as conn:
@@ -164,7 +182,9 @@ class Database:
             )
             return cur.rowcount == 1
 
-    def record_approval(self, *, action_id: str, run_id: str, form_version: int, reviewer: str) -> bool:
+    def record_approval(
+        self, *, action_id: str, run_id: str, form_version: int, reviewer: str
+    ) -> bool:
         with self.connect() as conn:
             cur = conn.execute(
                 "INSERT INTO approvals (action_id, run_id, form_version, reviewer) "
@@ -182,13 +202,19 @@ class Database:
         return dict(row) if row else None
 
     def record_submission(
-        self, *, action_id: str, run_id: str, form_version: int, form_json: str, approved_by: str,
+        self,
+        *,
+        action_id: str,
+        run_id: str,
+        form_version: int,
+        form_json: str,
+        approved_by: str,
     ) -> SubmissionRow:
         """At most one submission per approved form version (FR-027)."""
         with self.connect() as conn:
             conn.execute(
-                "INSERT INTO submissions (submission_id, action_id, run_id, form_version, form_enc, "
-                "approved_by) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING",
+                "INSERT INTO submissions (submission_id, action_id, run_id, form_version, "
+                "form_enc, approved_by) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING",
                 (str(uuid.uuid4()), action_id, run_id, form_version, form_json, approved_by),
             )
             row = conn.execute(
@@ -214,8 +240,15 @@ class Database:
             )
 
     def record_audit(
-        self, *, event_key: str, run_id: str, action: str, actor: str,
-        target: str | None = None, old: str | None = None, new: str | None = None,
+        self,
+        *,
+        event_key: str,
+        run_id: str,
+        action: str,
+        actor: str,
+        target: str | None = None,
+        old: str | None = None,
+        new: str | None = None,
         reason: str | None = None,
     ) -> bool:
         with self.connect() as conn:
@@ -236,8 +269,14 @@ class Database:
         return [dict(r) for r in rows]
 
     def record_capture(
-        self, *, capture_key: str, run_id: str, field: str, read_value_enc: str,
-        corrected_value_enc: str, fault_group: str,
+        self,
+        *,
+        capture_key: str,
+        run_id: str,
+        field: str,
+        read_value_enc: str,
+        corrected_value_enc: str,
+        fault_group: str,
     ) -> bool:
         with self.connect() as conn:
             cur = conn.execute(

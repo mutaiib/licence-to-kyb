@@ -2,7 +2,7 @@
 
 ``LLMClient`` adds the cross-cutting rules on top of a transport:
 - the daily token budget is checked before every call (FR-040);
-- ``refusal`` raises ``ModelRefused``; ``max_tokens`` is retried once with a doubled limit;
+- ``refusal`` raises ``ModelRefusedError``; ``max_tokens`` is retried once with a doubled limit;
 - usage, serving model and cost are returned for tracing and the budget.
 
 Transports: ``AnthropicTransport`` (the official SDK), ``ReplayTransport`` (recorded
@@ -38,19 +38,19 @@ class LLMError(Exception):
     reason_code: ReasonCode = "processing_failed"
 
 
-class BudgetExhausted(LLMError):
+class BudgetExhaustedError(LLMError):
     reason_code: ReasonCode = "budget_exhausted"
 
 
-class ModelRefused(LLMError):
+class ModelRefusedError(LLMError):
     reason_code: ReasonCode = "processing_failed"
 
 
-class OutputTruncated(LLMError):
+class OutputTruncatedError(LLMError):
     reason_code: ReasonCode = "processing_failed"
 
 
-class MissingRecording(LLMError):
+class MissingRecordingError(LLMError):
     def __init__(self, request_hash: str) -> None:
         super().__init__(f"no recorded response for request {request_hash}")
         self.request_hash = request_hash
@@ -99,7 +99,8 @@ class ModelResponse:
         price_in, price_out, price_cache = PRICES.get(self.serving_model, PRICES["claude-opus-5-5"])
         uncached = max(self.usage.input_tokens - self.usage.cache_read_tokens, 0)
         return (
-            uncached * price_in + self.usage.output_tokens * price_out
+            uncached * price_in
+            + self.usage.output_tokens * price_out
             + self.usage.cache_read_tokens * price_cache
         ) / 1_000_000
 
@@ -142,7 +143,7 @@ class DailyBudget:
 
     def check(self, needed: int) -> None:
         if needed > self.remaining:
-            raise BudgetExhausted("the daily token budget is used")
+            raise BudgetExhaustedError("the daily token budget is used")
 
     def charge(self, tokens: int) -> None:
         with self._lock:
@@ -163,9 +164,9 @@ class LLMClient:
         if result.stop_reason == "max_tokens":
             result = self._send(replace(req, max_tokens=req.max_tokens * 2))
             if result.stop_reason == "max_tokens":
-                raise OutputTruncated("the reply was cut off twice at the token limit")
+                raise OutputTruncatedError("the reply was cut off twice at the token limit")
         if result.stop_reason == "refusal":
-            raise ModelRefused("the model declined the request")
+            raise ModelRefusedError("the model declined the request")
         return result
 
     def _send(self, req: ModelRequest) -> ModelResponse:
@@ -205,7 +206,7 @@ class ReplayTransport:
     def send(self, req: ModelRequest) -> ModelResponse:
         path = self.path_for(req)
         if not path.exists():
-            raise MissingRecording(request_hash(req))
+            raise MissingRecordingError(request_hash(req))
         record = json.loads(path.read_text("utf-8"))
         return ModelResponse(
             content=record["content"],
@@ -234,7 +235,7 @@ class AnthropicTransport:
     """The official SDK (``client.beta.messages``), with server-side refusal fallback."""
 
     def __init__(self, api_key: str | None = None) -> None:
-        import anthropic  # imported lazily so offline tests never need credentials
+        import anthropic  # noqa: PLC0415 - lazy: offline tests never import the live SDK path
 
         self._client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
 

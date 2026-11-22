@@ -69,9 +69,7 @@ def masked(obj: Any, pii_fields: Iterable[str] = PII_FIELDS) -> Any:
 
     def walk(node: Any) -> Any:
         if isinstance(node, Mapping):
-            return {
-                k: (_mask_tree(v) if k in fields else walk(v)) for k, v in node.items()
-            }
+            return {k: (_mask_tree(v) if k in fields else walk(v)) for k, v in node.items()}
         if isinstance(node, list | tuple):
             return [walk(item) for item in node]
         return node

@@ -7,7 +7,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-FieldState = Literal["passed", "flagged", "approved", "corrected", "overridden", "needs_examination"]
+FieldState = Literal[
+    "passed", "flagged", "approved", "corrected", "overridden", "needs_examination"
+]
 
 RequiredDocument = Literal[
     "memorandum_of_association",

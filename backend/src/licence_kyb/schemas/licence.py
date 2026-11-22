@@ -79,8 +79,10 @@ class Field[T](_Strict):
             )
         if self.status == "present" and self.value is None:
             raise PydanticCustomError("present_without_value", "a present field needs a value")
-        if self.status == "present" and self.origin == "read" and (
-            not self.evidence_quote or self.page is None
+        if (
+            self.status == "present"
+            and self.origin == "read"
+            and (not self.evidence_quote or self.page is None)
         ):
             raise PydanticCustomError(
                 "missing_evidence", "a value read from the document needs its quote and page"
@@ -125,7 +127,11 @@ class TradeLicenceExtraction(_Strict):
 
     @model_validator(mode="after")
     def _date_order(self) -> Self:
-        issue, expiry, est = self.issue_date.value, self.expiry_date.value, self.establishment_date.value
+        issue, expiry, est = (
+            self.issue_date.value,
+            self.expiry_date.value,
+            self.establishment_date.value,
+        )
         if issue is not None and expiry is not None and issue >= expiry:
             raise PydanticCustomError(
                 "date_order",
