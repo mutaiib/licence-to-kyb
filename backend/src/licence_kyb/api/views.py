@@ -49,11 +49,15 @@ def build_run_view(pipeline: Pipeline, run_id: str) -> RunView | None:
     form, documents = _form_view(state)
     return RunView(
         run_id=run_id,
+        applicant_name=pipeline.deps.cipher.decrypt_text(run["applicant_name"]),
+        created_at=run["created_at"],
         status=run["status"],
         steps=_step_views(state, finished=run["status"] not in ACTIVE_STATUSES),
         route=run["route"],
         reasons=[ReasonView(**r) for r in json.loads(run["reasons_json"])],
         form=form,
+        form_approved=form is not None
+        and pipeline.db.approval_for(run_id, form.version) is not None,
         required_documents=documents,
         pages=state.get("pages", {}).get("page_count", 0),
     )

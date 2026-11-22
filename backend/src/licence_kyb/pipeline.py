@@ -479,7 +479,8 @@ class Pipeline:
     def _map_form(self, state: RunState) -> dict[str, Any]:
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
         results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
-        form = build_form(ex, results, authority=state["route"]["authority"], version=1)
+        with self.tracer.span("step", "map_form", run_id=state["run_id"]):
+            form = build_form(ex, results, authority=state["route"]["authority"], version=1)
         return {"form": form.model_dump(mode="json")}
 
     def _confidence(self, state: RunState) -> dict[str, Any]:
@@ -487,24 +488,30 @@ class Pipeline:
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
         agreement = state.get("agreement", {})
         results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
-        scores = score_fields(
-            ex, agreement, results, self._pages(state).words, self.deps.confidence
-        )
-        flagged = low_confidence_results(scores, results)
+        with self.tracer.span("step", "confidence", run_id=state["run_id"]):
+            scores = score_fields(
+                ex, agreement, results, self._pages(state).words, self.deps.confidence
+            )
+            flagged = low_confidence_results(scores, results)
         return {
             "confidence": scores,
             "rule_results": [r.model_dump(mode="json") for r in [*results, *flagged]],
         }
 
-    @staticmethod
-    def _gate(state: RunState) -> dict[str, Any]:
+    def _gate(self, state: RunState) -> dict[str, Any]:
         """One route per run (``nodes/gate.py``)."""
-        decision = decide_route(
+        with self.tracer.span("step", "gate", run_id=state["run_id"]):
+            decision = self._decide(state)
+        return {"decision": {"route": decision["route"]}, "reasons": decision["reasons"]}
+
+    @staticmethod
+    def _decide(state: RunState) -> dict[str, Any]:
+        """The gate's inputs from the run state."""
+        return decide_route(
             run_reasons=[r for r in state.get("reasons", []) if r.get("rule_id") is None],
             rule_results=[RuleResult.model_validate(r) for r in state.get("rule_results", [])],
             agreement=state.get("agreement", {}),
         )
-        return {"decision": {"route": decision["route"]}, "reasons": decision["reasons"]}
 
     def _persist(self, state: RunState) -> dict[str, Any]:
         run_id = state["run_id"]

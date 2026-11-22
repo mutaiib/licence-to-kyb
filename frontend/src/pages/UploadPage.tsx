@@ -6,6 +6,7 @@ import { FileInput } from '@astryxdesign/core/FileInput';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Link } from '@astryxdesign/core/Link';
 import { Section } from '@astryxdesign/core/Section';
+import { Text } from '@astryxdesign/core/Text';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import { VStack } from '@astryxdesign/core/VStack';
 import { useEffect, useState, type SyntheticEvent } from 'react';
@@ -121,6 +122,7 @@ export function UploadPage() {
             }}
           >
             <Heading level={1}>{copy['upload.title']}</Heading>
+            <Text color="secondary">{copy['upload.intro']}</Text>
             <FileInput
               label={copy['upload.file.label']}
               placeholder={copy['upload.file.placeholder']}
@@ -136,6 +138,7 @@ export function UploadPage() {
             />
             <TextInput
               label={copy['upload.applicantName.label']}
+              description={copy['upload.applicantName.help']}
               value={applicantName}
               onChange={setApplicantName}
               autoComplete="organization"

@@ -107,7 +107,8 @@ def test_the_trace_lists_each_step_in_order_with_its_model_calls(
     spans = client.get(f"/api/runs/{run_id}/trace").json()["spans"]
 
     steps = [s["name"] for s in spans if s["kind"] == "step"]
-    assert steps.index("route") < steps.index("extract") < steps.index("validate")
+    order = ["preprocess", "route", "extract", "validate", "confidence", "map_form", "gate"]
+    assert [name for name in steps if name in order] == order  # every step, in order
     calls = [s for s in spans if s["kind"] == "model_call"]
     by_id = {s["span_id"]: s for s in spans}
     assert {c["name"] for c in calls} >= {"route", "extract_primary", "extract_secondary"}

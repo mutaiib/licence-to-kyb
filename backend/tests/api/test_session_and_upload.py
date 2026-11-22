@@ -299,3 +299,17 @@ def wait_for_status(client: TestClient, run_id: str, *, until: set[str]) -> str:
             return status
         time.sleep(0.1)
     return status
+
+
+def test_the_run_view_names_the_business_and_the_upload_time(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    root, cases = catalogue
+    client = make_client(tmp_path, root, cases[0])
+    csrf = sign_in(client)
+
+    run_id = upload(client, csrf, root, cases[0]).json()["run_id"]
+    view = client.get(f"/api/runs/{run_id}").json()
+
+    assert view["applicant_name"] == cases[0]["applicant_name"]
+    assert view["created_at"].startswith("20")

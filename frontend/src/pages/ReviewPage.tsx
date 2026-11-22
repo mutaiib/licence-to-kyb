@@ -7,13 +7,14 @@ import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { useMediaQuery } from '@astryxdesign/core/hooks';
 import { Layout, LayoutContent, LayoutPanel } from '@astryxdesign/core/Layout';
+import { Link } from '@astryxdesign/core/Link';
 import { List, ListItem } from '@astryxdesign/core/List';
 import { MetadataList, MetadataListItem } from '@astryxdesign/core/MetadataList';
 import { Spinner } from '@astryxdesign/core/Spinner';
 import { StackItem } from '@astryxdesign/core/Stack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { getRun, type FormFieldView, type ReasonCode, type RunView } from '../api/client';
 import { ConfidenceDetails } from '../components/ConfidenceDetails';
@@ -23,6 +24,7 @@ import { FieldActions, type NewDecision } from '../components/FieldActions';
 import { FormActions } from '../components/FormActions';
 import { StatusLabel } from '../components/StatusLabel';
 import { useReviewActions } from './useReviewActions';
+import { tracePath, useLinkHandler } from '../router';
 import { copy, format } from '../copy';
 import {
   documentLabel,
@@ -33,6 +35,7 @@ import {
   reasonText,
   routeDetail,
   routeLabel,
+  shortTime,
   fieldValueText,
 } from '../text';
 
@@ -160,22 +163,26 @@ function FieldTrigger({
   );
 }
 
-function KybForm({
-  fields,
-  selected,
-  onSelect,
-  acting,
-}: {
-  fields: Readonly<Record<string, FormFieldView>>;
+interface Selection {
   selected: string | null;
   onSelect: (name: string) => void;
+}
+
+/** A group of field rows. Each row opens to show its evidence, checks and actions. */
+function FieldGroup({
+  names,
+  fields,
+  selection,
+  acting,
+  isOpenAtStart,
+}: {
+  names: readonly string[];
+  fields: Readonly<Record<string, FormFieldView>>;
+  selection: Selection;
   acting: FieldActing;
+  isOpenAtStart: boolean;
 }) {
-  const [open, setOpen] = useState<string[]>(() =>
-    Object.entries(fields)
-      .filter(([, field]) => isFlagged(field))
-      .map(([name]) => name),
-  );
+  const [open, setOpen] = useState<string[]>(() => (isOpenAtStart ? [...names] : []));
   // The group reports the full list of open fields. The field the reviewer just opened or
   // closed is the one that is in only one of the two lists; it becomes the selected field.
   const change = (value: string | string[]) => {
@@ -184,22 +191,82 @@ function KybForm({
     const closed = open.find((name) => !next.includes(name));
     setOpen(next);
     const toggled = opened ?? closed;
-    if (toggled !== undefined) onSelect(toggled);
+    if (toggled !== undefined) selection.onSelect(toggled);
   };
   return (
-    <VStack gap={2}>
-      <Heading level={2}>{copy['review.form.title']}</Heading>
-      <CollapsibleGroup type="multiple" value={open} onChange={change} hasDividers>
-        {Object.entries(fields).map(([name, field]) => (
+    <CollapsibleGroup type="multiple" value={open} onChange={change} hasDividers>
+      {names.map((name) => {
+        const field = fields[name];
+        if (field === undefined) return null;
+        return (
           <Collapsible
             key={name}
             value={name}
-            trigger={<FieldTrigger name={name} field={field} isSelected={name === selected} />}
+            trigger={
+              <FieldTrigger name={name} field={field} isSelected={name === selection.selected} />
+            }
           >
             <FieldDetails name={name} field={field} acting={acting} />
           </Collapsible>
-        ))}
-      </CollapsibleGroup>
+        );
+      })}
+    </CollapsibleGroup>
+  );
+}
+
+/**
+ * The KYB form in two parts: the fields to examine, open, and the fields that passed, closed.
+ * `between` is shown between them (on a phone: the licence page, next to the flagged fields).
+ */
+function KybForm({
+  fields,
+  selection,
+  acting,
+  between,
+}: {
+  fields: Readonly<Record<string, FormFieldView>>;
+  selection: Selection;
+  acting: FieldActing;
+  between?: ReactNode;
+}) {
+  const names = Object.keys(fields);
+  const toExamine = names.filter((name) => fields[name] !== undefined && isFlagged(fields[name]));
+  const passedNames = names.filter((name) => !toExamine.includes(name));
+  const examineTitle = format('review.toExamine', { count: String(toExamine.length) });
+  return (
+    <VStack gap={4}>
+      <Heading level={2}>{copy['review.form.title']}</Heading>
+      {toExamine.length > 0 && (
+        <VStack gap={2} role="region" aria-label={examineTitle}>
+          <Heading level={3}>{examineTitle}</Heading>
+          <FieldGroup
+            names={toExamine}
+            fields={fields}
+            selection={selection}
+            acting={acting}
+            isOpenAtStart
+          />
+        </VStack>
+      )}
+      {between}
+      {passedNames.length > 0 && (
+        <Collapsible
+          defaultIsOpen={false}
+          trigger={
+            <Text weight="semibold">
+              {format('review.passedFields', { count: String(passedNames.length) })}
+            </Text>
+          }
+        >
+          <FieldGroup
+            names={passedNames}
+            fields={fields}
+            selection={selection}
+            acting={acting}
+            isOpenAtStart={false}
+          />
+        </Collapsible>
+      )}
     </VStack>
   );
 }
@@ -213,20 +280,27 @@ function firstSelection(fields: Readonly<Record<string, FormFieldView>>): string
   return first === undefined ? null : first[0];
 }
 
-function RunSummary({ view }: { view: RunView }) {
+function StatusBanner({ view }: { view: RunView }) {
+  if (view.route === null) return null;
+  return (
+    <Banner
+      status={ROUTE_STATUS[view.route]}
+      title={routeLabel(view.route)}
+      description={routeDetail(view.route)}
+    />
+  );
+}
+
+/** Reasons about the whole run, and the documents to request. A field's own reasons show on
+ * the field, so they are not repeated here. */
+function RunNotes({ view }: { view: RunView }) {
+  const runReasons = view.reasons.filter((reason) => reason.field === null);
   const documents = [...new Set(view.required_documents)];
   return (
     <VStack gap={4}>
-      {view.route !== null && (
-        <Banner
-          status={ROUTE_STATUS[view.route]}
-          title={routeLabel(view.route)}
-          description={routeDetail(view.route)}
-        />
-      )}
-      {view.reasons.length > 0 && (
+      {runReasons.length > 0 && (
         <List header={<Heading level={2}>{copy['review.reasons.title']}</Heading>} listStyle="disc">
-          {view.reasons.map((reason, index) => (
+          {runReasons.map((reason, index) => (
             <ListItem
               key={`${reason.code}-${String(index)}`}
               label={<Text>{reasonText(reason.code, reason.detail)}</Text>}
@@ -248,6 +322,23 @@ function RunSummary({ view }: { view: RunView }) {
   );
 }
 
+function RunHeader({ view }: { view: RunView }) {
+  const trace = tracePath(view.run_id);
+  return (
+    <VStack gap={1}>
+      <Heading level={1}>{view.applicant_name}</Heading>
+      <HStack gap={3} wrap="wrap" vAlign="center">
+        <Text color="secondary">
+          {format('review.uploaded', { time: shortTime(view.created_at) })}
+        </Text>
+        <Link href={trace} onClick={useLinkHandler(trace)} hasUnderline>
+          {copy['review.trace.link']}
+        </Link>
+      </HStack>
+    </VStack>
+  );
+}
+
 function Review({ initial }: { initial: RunView }) {
   const { view, error, focusName, decide, handlers } = useReviewActions(initial);
   const fields = view.form?.fields ?? {};
@@ -264,28 +355,30 @@ function Review({ initial }: { initial: RunView }) {
 
   const document =
     view.pages > 0 ? <EvidenceViewer runId={view.run_id} page={page} box={box} /> : null;
-  const form = (
+  const selection: Selection = { selected, onSelect: setSelected };
+  // The order a reviewer works in: status, actions, then the fields that need a decision.
+  const panel = (between?: ReactNode) => (
     <VStack gap={6}>
-      <RunSummary view={view} />
+      <StatusBanner view={view} />
       {error !== null && (
         <VStack role="alert">
           <Banner status="error" title={errorText(error)} />
         </VStack>
       )}
-      {view.form !== null && (
-        <KybForm fields={fields} selected={selected} onSelect={setSelected} acting={acting} />
-      )}
       <FormActions view={view} undecided={undecided} handlers={handlers} />
+      <RunNotes view={view} />
+      {view.form !== null && (
+        <KybForm fields={fields} selection={selection} acting={acting} between={between} />
+      )}
+      {view.form === null && between}
     </VStack>
   );
-  const heading = <Heading level={1}>{copy['review.title']}</Heading>;
 
   if (isNarrow) {
     return (
       <VStack gap={4}>
-        {heading}
-        {form}
-        {document}
+        <RunHeader view={view} />
+        {panel(document)}
       </VStack>
     );
   }
@@ -295,14 +388,14 @@ function Review({ initial }: { initial: RunView }) {
       content={
         <LayoutContent padding={4} label={format('review.page.label', { page: String(page) })}>
           <VStack gap={4}>
-            {heading}
+            <RunHeader view={view} />
             {document}
           </VStack>
         </LayoutContent>
       }
       end={
         <LayoutPanel width={520} hasDivider padding={4} label={copy['review.form.title']}>
-          {form}
+          {panel()}
         </LayoutPanel>
       }
     />

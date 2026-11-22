@@ -112,6 +112,8 @@ const EXPIRY_DATE: FormFieldView = {
 function runView(overrides: Partial<RunView> = {}): RunView {
   return {
     run_id: 'run-1',
+    applicant_name: 'Fuller Services LLC',
+    created_at: '2026-11-22T08:00:00.000Z',
     status: 'awaiting_review',
     route: 'needs_review',
     reasons: [
@@ -119,6 +121,7 @@ function runView(overrides: Partial<RunView> = {}): RunView {
     ],
     required_documents: ['memorandum_of_association'],
     pages: 1,
+    form_approved: false,
     steps: [],
     form: { version: 1, fields: { licence_number: LICENCE_NUMBER, expiry_date: EXPIRY_DATE } },
     ...overrides,

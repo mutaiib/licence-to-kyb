@@ -1,6 +1,8 @@
 // Every run, newest first, with today's rates above (US5, FR-032).
 import { Heading } from '@astryxdesign/core/Heading';
+import { useMediaQuery } from '@astryxdesign/core/hooks';
 import { Link } from '@astryxdesign/core/Link';
+import { List, ListItem } from '@astryxdesign/core/List';
 import { MetadataList, MetadataListItem } from '@astryxdesign/core/MetadataList';
 import { Spinner } from '@astryxdesign/core/Spinner';
 import { Table } from '@astryxdesign/core/Table';
@@ -11,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { getSummary, listRuns, type RunListItem, type Summary } from '../api/client';
 import { copy } from '../copy';
 import { runPath, tracePath, useLinkHandler } from '../router';
-import { routeLabel, runStatusText } from '../text';
+import { runStatusText, shortTime } from '../text';
 
 const percent = (rate: number) => `${String(Math.round(rate * 100))}%`;
 
@@ -48,24 +50,19 @@ function DailySummary({ summary }: { summary: Summary }) {
   );
 }
 
+const money = (usd: number) => `$${usd.toFixed(2)}`;
+
 const COLUMNS = [
   {
     key: 'created_at',
     header: copy['runs.column.date'],
-    renderCell: (run: RunListItem) => <Text>{run.created_at.slice(0, 16).replace('T', ' ')}</Text>,
+    renderCell: (run: RunListItem) => <Text>{shortTime(run.created_at)}</Text>,
   },
   {
     key: 'applicant_name',
     header: copy['runs.column.business'],
     renderCell: (run: RunListItem) => (
       <InAppLink path={runPath(run.run_id)}>{run.applicant_name}</InAppLink>
-    ),
-  },
-  {
-    key: 'route',
-    header: copy['runs.column.route'],
-    renderCell: (run: RunListItem) => (
-      <Text>{run.route === null ? '' : routeLabel(run.route)}</Text>
     ),
   },
   {
@@ -77,16 +74,14 @@ const COLUMNS = [
     key: 'cost_usd',
     header: copy['runs.column.cost'],
     align: 'end' as const,
-    renderCell: (run: RunListItem) => (
-      <Text hasTabularNumbers>{`$${run.cost_usd.toFixed(2)}`}</Text>
-    ),
+    renderCell: (run: RunListItem) => <Text hasTabularNumbers>{money(run.cost_usd)}</Text>,
   },
   {
     key: 'duration_ms',
     header: copy['runs.column.duration'],
     align: 'end' as const,
     renderCell: (run: RunListItem) => (
-      <Text hasTabularNumbers>{`${(run.duration_ms / 1000).toFixed(1)} s`}</Text>
+      <Text hasTabularNumbers>{(run.duration_ms / 1000).toFixed(1) + ' s'}</Text>
     ),
   },
   {
@@ -98,7 +93,41 @@ const COLUMNS = [
   },
 ];
 
+/** On a phone: one row per run, the business name as the link, the details below it. */
+function RunRows({ runs }: { runs: readonly RunListItem[] }) {
+  return (
+    <List>
+      {runs.map((run) => (
+        <RunRow key={run.run_id} run={run} />
+      ))}
+    </List>
+  );
+}
+
+function RunRow({ run }: { run: RunListItem }) {
+  const path = runPath(run.run_id);
+  const details = [runStatusText(run.status), shortTime(run.created_at), money(run.cost_usd)];
+  return (
+    <ListItem
+      href={path}
+      onClick={useLinkHandler(path)}
+      label={<Text weight="semibold">{run.applicant_name}</Text>}
+      description={<Text color="secondary">{details.join(' · ')}</Text>}
+    />
+  );
+}
+
+function EmptyRuns() {
+  return (
+    <VStack gap={2}>
+      <Text>{copy['runs.empty']}</Text>
+      <InAppLink path="/">{copy['runs.empty.action']}</InAppLink>
+    </VStack>
+  );
+}
+
 export function RunsPage() {
+  const isNarrow = useMediaQuery('(max-width: 768px)');
   const [runs, setRuns] = useState<RunListItem[] | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   useEffect(() => {
@@ -115,8 +144,11 @@ export function RunsPage() {
       <Heading level={1}>{copy['runs.title']}</Heading>
       {summary !== null && <DailySummary summary={summary} />}
       {runs === null && <Spinner size="lg" aria-label={copy['app.loading']} />}
-      {runs !== null && runs.length === 0 && <Text>{copy['runs.empty']}</Text>}
-      {runs !== null && runs.length > 0 && <Table data={runs} columns={COLUMNS} idKey="run_id" />}
+      {runs !== null && runs.length === 0 && <EmptyRuns />}
+      {runs !== null && runs.length > 0 && isNarrow && <RunRows runs={runs} />}
+      {runs !== null && runs.length > 0 && !isNarrow && (
+        <Table data={runs} columns={COLUMNS} idKey="run_id" />
+      )}
     </VStack>
   );
 }

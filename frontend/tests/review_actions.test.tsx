@@ -106,11 +106,14 @@ const nearExpiry: FormFieldView = {
 function runView(fields: Record<string, FormFieldView>, overrides: Partial<RunView> = {}): RunView {
   return {
     run_id: 'run-1',
+    applicant_name: 'Fuller Services LLC',
+    created_at: '2026-11-22T08:00:00.000Z',
     status: 'awaiting_review',
     route: 'needs_review',
     reasons: [],
     required_documents: [],
     pages: 0,
+    form_approved: false,
     steps: [],
     form: { version: 1, fields },
     ...overrides,
@@ -253,8 +256,22 @@ describe('review actions', () => {
     });
   });
 
+  it('asks for a form approval before submit on a ready run that nobody approved', async () => {
+    openRun(runView({ licence_number: passed }, { status: 'awaiting_submit', route: 'ready' }));
+
+    expect(await button(copy['review.approveForm'])).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: copy['review.submit'] })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(screen.queryByText(copy['review.ready'])).toBeNull();
+  });
+
   it('disables submit after a change until the form is approved again', async () => {
-    const approved = runView({ licence_number: passed }, { status: 'awaiting_submit' });
+    const approved = runView(
+      { licence_number: passed },
+      { status: 'awaiting_submit', form_approved: true },
+    );
     answer = () => ({
       ...withField(approved, 'licence_number', { value: '7654321', state: 'corrected' }),
       status: 'awaiting_review',
