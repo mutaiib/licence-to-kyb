@@ -235,23 +235,43 @@ class ScriptedTransport:
         )
 
 
+OTHER_TITLES = {
+    "memorandum of association": "moa",
+    "resident identity card": "emirates_id",
+    "passport": "passport",
+    "renewal confirmation": "other",
+}
+"""Titles of the synthetic documents that are not licences (testdata/render.py)."""
+
+
+def _request_text(req: ModelRequest) -> str:
+    return " ".join(
+        part.get("text", "")
+        for m in req.messages
+        for part in m["content"]
+        if isinstance(part, dict)
+    )
+
+
+def _other_document_type(text: str) -> str:
+    lowered = text.lower()
+    return next((t for title, t in OTHER_TITLES.items() if title in lowered), "unclear")
+
+
 class LabelDemoTransport:
     """Demo mode: finds the synthetic case whose licence number appears in the document's
     OCR text and answers from its labels. Documents with no matching case read as
     ``unclear``. Never used in production; ``main.py`` logs a warning when it is on."""
 
-    def __init__(self, cases_dir: Path) -> None:
+    def __init__(self, *cases_dirs: Path) -> None:
         self.cases: list[dict[str, Any]] = [
-            json.loads(p.read_text("utf-8")) for p in sorted(cases_dir.glob("*.json"))
+            json.loads(p.read_text("utf-8"))
+            for cases_dir in cases_dirs
+            for p in sorted(cases_dir.glob("*.json"))
         ]
 
     def _case_for(self, req: ModelRequest) -> dict[str, Any] | None:
-        text = " ".join(
-            part.get("text", "")
-            for m in req.messages
-            for part in m["content"]
-            if isinstance(part, dict)
-        )
+        text = _request_text(req)
         # A whole token, not part of a longer number; longer numbers first, because a short
         # number (IFZA: 5 digits) can sit inside another authority's number.
         tokens = set(re.findall(r"[\w-]+", text))
@@ -262,13 +282,15 @@ class LabelDemoTransport:
         return None
 
     def send(self, req: ModelRequest) -> ModelResponse:
-        # No model runs in demo mode, so its answers cost nothing.
-        return replace(self._answer(req), prices=(0.0, 0.0, 0.0))
+        # No model runs in demo mode: no tokens, no cost.
+        return replace(self._answer(req), usage=Usage(), prices=(0.0, 0.0, 0.0))
 
     def _answer(self, req: ModelRequest) -> ModelResponse:
         case = self._case_for(req)
         if case is None:
-            return ScriptedTransport(None, doc_type="unclear", authority="unknown").send(req)
+            # No licence number to match: name the document by its title, as a model would.
+            doc_type = _other_document_type(_request_text(req))
+            return ScriptedTransport(None, doc_type=doc_type, authority="unknown").send(req)
         # Faults that change how a model reads the document, as the case file records them.
         faults = set(case.get("faults", [])) & READING_FAULTS
         if case["expected_values"].get("people") is None:

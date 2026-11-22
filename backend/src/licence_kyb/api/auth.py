@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import secrets
+import threading
 import time
 from collections import defaultdict, deque
 from typing import Literal
@@ -45,6 +46,9 @@ class Auth:
         self._key = (secret or secrets.token_hex(32)).encode()
         self._hasher = PasswordHasher()
         self._failures: dict[str, deque[float]] = defaultdict(deque)
+        self._lock = threading.Lock()
+        # Checked when the user name is unknown, so the reply takes as long as for a real one.
+        self._dummy_hash = self._hasher.hash(secrets.token_urlsafe(16))
 
     # ---------------------------------------------------------------- passwords + limits
     def _recent(self, key: str, now: float) -> deque[float]:
@@ -56,17 +60,24 @@ class Auth:
     def check_password(self, username: str, password: str, ip: str) -> SignInResult:
         now = time.monotonic()
         keys = (f"user:{username}", f"ip:{ip}")
-        if any(len(self._recent(k, now)) >= MAX_FAILURES for k in keys):
-            return "rate_limited"
+        # Count the try before the slow check, under a lock: parallel requests then cannot
+        # all pass the limit before the first failure is stored.
+        with self._lock:
+            if any(len(self._recent(k, now)) >= MAX_FAILURES for k in keys):
+                return "rate_limited"
+            for k in keys:
+                self._recent(k, now).append(now)
         stored = self.settings.reviewer_accounts.get(username)
+        hashed = stored.get_secret_value() if stored is not None else self._dummy_hash
         try:
-            ok = stored is not None and self._hasher.verify(stored.get_secret_value(), password)
+            ok = self._hasher.verify(hashed, password) and stored is not None
         except (VerificationError, InvalidHashError):
             ok = False
         if not ok:
-            for k in keys:
-                self._recent(k, now).append(now)
             return "invalid"
+        with self._lock:  # a right password does not use up a try
+            for k in keys:
+                self._recent(k, now).remove(now)
         return "ok"
 
     # ---------------------------------------------------------------- sessions

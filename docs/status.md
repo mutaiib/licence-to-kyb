@@ -23,8 +23,8 @@ What is complete, what is pending, and why. Last updated with release
 | Criterion | Target | Status | Evidence or reason |
 |---|---|---|---|
 | SC-001 Field accuracy | ≥ 95% clean, ≥ 85% scans | 🟡 | Two licences on a local 7B model: 9 of 12 and 6 of 10 ([experiments](experiments.md)). The full suite needs the Claude API or a GPU (T101). |
-| SC-002 `ready` precision, critical fields | ≥ 99% | 🟡 | Offline: 15 of 15 correct, Wilson 95% [0.80, 1.00]. With a real model: no run reached `ready` yet. |
-| SC-003 Review rate, realistic mix | ≤ 40% | 🟡 | Offline: 28.2%. With a real model: pending T101. |
+| SC-002 `ready` precision, critical fields | ≥ 99% | 🟡 | Offline: 14 of 14 correct, Wilson 95% [0.78, 1.00]. With a real model: no run reached `ready` yet. |
+| SC-003 Review rate, realistic mix | ≤ 40% | 🟡 | Offline: 27.7%. With a real model: pending T101. |
 | SC-004 No seeded bad document submitted or `ready` | 0 | ✅ | 0 in the offline eval and in both local-model runs. |
 | SC-005 Reviewer time | < 2 min clean, < 5 min flagged | ⏳ | Needs a person doing 10 timed walkthroughs (T099). The audit timestamps are recorded for it. |
 | SC-006 Processing time, p95 | ≤ 60 s (≤ 90 s with re-reading) | ⏳ | Needs the Claude API (T034, T101). On a local CPU model a licence takes 25 to 50 minutes. |

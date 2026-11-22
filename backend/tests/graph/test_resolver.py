@@ -110,29 +110,32 @@ def rules_on(state: dict[str, Any], field: str) -> dict[str, str]:
 
 
 # ------------------------------------------------------------------ the table
+def fix_expiry(labels: dict[str, Any], case: dict[str, Any]) -> ToolLoopTransport:
+    """A resolver that reads the OCR text, proposes the true expiry date, and finishes."""
+    truth = case["expected_values"]["expiry_date"]
+    return ToolLoopTransport(
+        labels,
+        [
+            [tool("licence_ocr_region", page=1, region="full_page")],
+            [
+                tool(
+                    "propose_fix",
+                    field="expiry_date",
+                    new_value=dmy(truth),
+                    evidence_quote=f"Expiry Date {dmy(truth)}",
+                    self_confidence="high",
+                    rationale="The OCR text shows a different year.",
+                )
+            ],
+            [finish()],
+        ],
+    )
+
+
 def test_a_misread_expiry_is_re_read_and_the_corrected_value_is_kept(
     tmp_path: Path, catalogue: Any
 ) -> None:
-    def transport(labels: dict[str, Any], case: dict[str, Any]) -> ToolLoopTransport:
-        truth = case["expected_values"]["expiry_date"]
-        return ToolLoopTransport(
-            labels,
-            [
-                [tool("licence_ocr_region", page=1, region="full_page")],
-                [
-                    tool(
-                        "propose_fix",
-                        field="expiry_date",
-                        new_value=dmy(truth),
-                        evidence_quote=f"Expiry Date {dmy(truth)}",
-                        self_confidence="high",
-                        rationale="The OCR text shows a different year.",
-                    )
-                ],
-                [finish()],
-            ],
-        )
-
+    transport = fix_expiry
     truth = first_case(catalogue[1], "near_expiry")["expected_values"]["expiry_date"]
     state, _ = run(
         tmp_path, catalogue, "near_expiry", transport, misread={"expiry_date": wrong_year(truth)}
@@ -141,6 +144,21 @@ def test_a_misread_expiry_is_re_read_and_the_corrected_value_is_kept(
     assert state["extraction"]["expiry_date"]["value"] == truth
     assert rules_on(state, "expiry_date")["evidence"] == "passed"
     assert [(p["field"], p["accepted"]) for p in state["proposals"]] == [("expiry_date", True)]
+
+
+def test_the_two_readings_no_longer_count_as_agreeing_on_a_value_the_resolver_changed(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    """Both readings agreed on the misread date. The resolver's new value was seen by
+    neither, so their agreement must not raise its confidence or corroborate it."""
+    truth = first_case(catalogue[1], "near_expiry")["expected_values"]["expiry_date"]
+    state, _ = run(
+        tmp_path, catalogue, "near_expiry", fix_expiry, misread={"expiry_date": wrong_year(truth)}
+    )
+
+    assert state["extraction"]["expiry_date"]["value"] == truth
+    assert state["agreement"]["expiry_date"] is False
+    assert state["confidence"]["expiry_date"]["signals"]["agreement"] == 0.0
 
 
 def test_a_proposal_for_a_field_that_passed_changes_nothing(tmp_path: Path, catalogue: Any) -> None:

@@ -61,7 +61,8 @@ def run_each(
             try:
                 results[case.case_id] = run_one(case, Path(workdir))
             except Exception as exc:
-                results[case.case_id] = {"error": type(exc).__name__}
+                # Keep the split, so the error counts as a failure in that split's report.
+                results[case.case_id] = {"error": type(exc).__name__, "split": case.split}
     return results
 
 

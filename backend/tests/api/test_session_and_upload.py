@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -347,4 +348,5 @@ def test_the_run_view_names_the_business_and_the_upload_time(
     view = client.get(f"/api/runs/{run_id}").json()
 
     assert view["applicant_name"] == cases[0]["applicant_name"]
-    assert view["created_at"].startswith("20")
+    uploaded = datetime.fromisoformat(view["created_at"].replace("Z", "+00:00"))
+    assert abs(datetime.now(UTC) - uploaded) < timedelta(minutes=5)  # the upload time, in UTC

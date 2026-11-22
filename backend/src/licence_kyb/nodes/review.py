@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
+from pydantic import ValidationError
+
 from licence_kyb.nodes.map_form import SOURCES, build_form
 from licence_kyb.schemas.licence import TradeLicenceExtraction
 from licence_kyb.schemas.results import ActionErrorCode, RuleResult, reason_entry
@@ -291,8 +293,14 @@ def apply_review(
     for d in fresh:
         decisions[d.get("field") or d["rule_id"]] = d
     read = state.get("read_extraction") or state["extraction"]
-    extraction = corrected_extraction(read, decisions)
-    parsed = TradeLicenceExtraction.model_validate(extraction)
+    try:
+        extraction = corrected_extraction(read, decisions)
+        parsed = TradeLicenceExtraction.model_validate(extraction)
+    except (ValidationError, ValueError) as exc:
+        # A typed value the form cannot hold (an unknown legal form, a date that is not a
+        # date): refuse it, naming the field, instead of failing the request.
+        corrected = next((d["field"] for d in fresh if d["action"] == "correct"), None)
+        raise ActionRefused("blocking_rule_failed", field=corrected) from exc
     results = run_rules(parsed)
     overridden = overridden_rules(decisions)
     for d in fresh:

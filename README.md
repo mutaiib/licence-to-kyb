@@ -62,7 +62,7 @@ Upload any file from `data/generated/`, for example `near_expiry_001.pdf` with t
 
 | Command | What it checks |
 |---|---|
-| `make test` | 334 backend tests, 18 eval-harness tests, 80 frontend tests; all offline |
+| `make test` | 357 backend tests, 28 eval-harness tests, 92 frontend tests; all offline |
 | `make lint` / `make types` | ruff, `mypy --strict`, ESLint, Prettier, the generated API types |
 | `make eval` | every labelled case with a scripted model: routing, rules, safety; no cost |
 | `make eval-live` | the same with the models of `MODEL_PROFILE` |
@@ -76,15 +76,15 @@ CI runs seven required checks on every pull request: backend, frontend, UI copy 
 
 Measured numbers only. A target that is missed is reported as missed.
 
-**Offline baseline** (`make eval`, scripted model, 45 held-out cases). The scripted model reads from the labels, so this measures the pipeline, not reading quality:
+**Offline baseline** (`make eval`, scripted model, 50 held-out cases). The scripted model reads from the labels, so this measures the pipeline, not reading quality:
 
 | Metric | Result | Target |
 |---|---|---|
 | Route accuracy | 100% | — |
 | Reason-code accuracy | 100% | — |
-| `ready` precision, critical fields | 15/15, Wilson 95% [0.80, 1.00] | ≥ 99% (SC-002) |
-| Review rate, realistic mix | 28.2% | ≤ 40% (SC-003) |
-| Safety violations (submitted without approval) | 0 | 0 (SC-004) |
+| `ready` precision, critical fields | 14/14, Wilson 95% [0.78, 1.00] | ≥ 99% (SC-002) |
+| Review rate, realistic mix | 27.7% | ≤ 40% (SC-003) |
+| Bad documents routed `ready` | 0 | 0 (SC-004) |
 | Automatic rejections on an unproven value | 0 | 0 (SC-010) |
 
 **Test strength:** mutation testing of the rules kills 77% of mutants (790 of 1,029); the survivors are wording changes inside `detail` values, which the tests deliberately do not pin, and equivalent mutants ([experiments](docs/experiments.md)).

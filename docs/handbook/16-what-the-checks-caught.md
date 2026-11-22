@@ -30,6 +30,13 @@ Every bug below passed the unit tests at the time. A different kind of check fou
 | Independent code review | A registry record without an expiry date "confirmed" an expired date | Every mock record had a date | Test the absent case of every external answer |
 | Running the app | A proxy answered with a web page; the UI took it as data and crashed | Tests always served JSON | A success status is not proof of data; check the body |
 | First local-model run | A clean case stopped in processing but scored 100% on reasons | The reason grader allows extra codes | Report failures as their own metric, never inside another |
+| Security review | A 2 KB PDF inflated to 2 GB in memory and crash-looped the API | Intake checked pages and size, not the decoded content | Put work on untrusted bytes in a process that is allowed to die |
+| Security review | 20 parallel wrong passwords all reached the password check | The limit was tested one request at a time | Count the attempt before the slow work, under a lock |
+| Security review | Licence numbers and reviewers' reasons sat in plain text in SQLite | Encryption was tested on the obvious columns only | Search the raw database file for a known value |
+| Eval review | People and activities lost their thresholds after calibration, so they were never flagged | The fit kept only fields that had rows | A fit must start from the configured fields, never from the data |
+| Eval review | Some groups were never in the test report; an injected copy could sit in the other split from its twin | Splits were per-case coin flips | Split evenly within each group; keep copies with their source |
+| Eval review | An unlabelled document routed `ready` counted as precise | `all([])` is true | Check what a metric does with no data |
+| Browser check | Demo traces showed `claude-opus-5-5` and token counts when no model ran | Tests checked cost, not the model name | A demo must say it is a demo in every output |
 
 ## Rules
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import sqlite3
 import time
 from collections.abc import Callable
@@ -58,6 +59,7 @@ from licence_kyb.nodes.confidence import (
 from licence_kyb.nodes.extract import build_extract_request, extract_licence
 from licence_kyb.nodes.gate import decide_route, with_expiry_corroboration
 from licence_kyb.nodes.intake import IntakeResult, IntakeService
+from licence_kyb.nodes.isolate import TooCostly, run_limited
 from licence_kyb.nodes.map_form import SOURCES, build_form
 from licence_kyb.nodes.preprocess import PageSet, Word, preprocess_file
 from licence_kyb.nodes.resolve import re_readable_fields, run_resolver
@@ -82,6 +84,15 @@ STATUS_FOR_ROUTE = {
     "needs_review": "awaiting_review",
     "ready": "awaiting_submit",
 }
+
+log = logging.getLogger(__name__)
+
+
+def codes_only(reasons: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Reasons for the plain-text runs table: codes, fields and rules, but no values. A
+    reason's ``detail`` can hold a licence number; the full reasons stay in the encrypted
+    run state, which the API reads."""
+    return [{**r, "detail": {}} for r in reasons]
 
 
 class FernetCheckpointCipher:
@@ -113,6 +124,9 @@ class Deps:
     resolver_limits: ResolverBudget = field(default_factory=resolver_budget)
     vision: bool = field(default_factory=lambda: active_profile().vision)
     confidence: ConfidenceConfig = field(default_factory=load_config)
+    page_reading_limits: tuple[int, float] = (1024, 60.0)
+    """(MB, seconds) for reading one upload's pages in a child process. A normal licence
+    needs about 170 MB and 2 s; a file past either limit is rejected as unreadable."""
 
     @property
     def files_dir(self) -> Path:
@@ -181,13 +195,18 @@ class Pipeline:
         run = self.db.get_run(run_id)
         if run is None:
             return
+        # Keep the reasons the run state already has (with their values), and add the codes
+        # the database gained (processing_failed).
+        current = self.state(run_id).get("reasons", [])
+        known = {r["code"] for r in current}
+        added = [r for r in json.loads(run["reasons_json"]) if r["code"] not in known]
         self.graph.update_state(
             thread_config(run_id),
             {
                 "run_id": run_id,
                 "applicant_name": self.deps.cipher.decrypt_text(run["applicant_name"]),
                 "status": "awaiting_review",
-                "reasons": json.loads(run["reasons_json"]),
+                "reasons": [*current, *added],
             },
             as_node="persist",  # the next node is wait_for_reviewer
         )
@@ -246,7 +265,9 @@ class Pipeline:
         g.add_node("gate", self._gate)
         g.add_node("persist", self._persist)
         g.add_edge(START, "preprocess")
-        g.add_edge("preprocess", "route")
+        g.add_conditional_edges(
+            "preprocess", self._after_preprocess, {"route": "route", "gate": "gate"}
+        )
         g.add_conditional_edges("route", self._after_route, {"extract": "extract", "gate": "gate"})
         g.add_conditional_edges(
             "extract", self._after_extract, {"validate": "validate", "map_form": "map_form"}
@@ -278,9 +299,26 @@ class Pipeline:
 
     def _preprocess(self, state: RunState) -> dict[str, Any]:
         run_id = state["run_id"]
-        with self.tracer.span("step", "preprocess", run_id=run_id):
+        memory_mb, seconds = self.deps.page_reading_limits
+        with self.tracer.span("step", "preprocess", run_id=run_id) as step:
             data = self.intake.read_original(run_id)
-            pages = preprocess_file(data, self.db.file_mime(run_id))
+            try:
+                # The upload is untrusted: a small file can inflate to gigabytes. Only the
+                # child process that reads it can run out of memory or time.
+                pages = run_limited(
+                    preprocess_file,
+                    data,
+                    self.db.file_mime(run_id),
+                    memory_mb=memory_mb,
+                    seconds=seconds,
+                )
+            except TooCostly as exc:
+                step.error_code = "unreadable_file"
+                log.warning("page reading stopped", extra={"run_id": run_id, "cause": str(exc)})
+                return {
+                    "pages": {"page_count": 0, "qr_payload": None, "source": "none", "words": []},
+                    "reasons": [reason_entry("unreadable_file")],
+                }
             folder = self.deps.files_dir / run_id
             for n, png in enumerate(pages.images, start=1):
                 (folder / f"page-{n}.png.enc").write_bytes(self.deps.cipher.encrypt(png))
@@ -321,6 +359,12 @@ class Pipeline:
             },
             "reasons": [reason_entry(code) for code in outcome.reasons],
         }
+
+    @staticmethod
+    def _after_preprocess(state: RunState) -> Literal["route", "gate"]:
+        """A file whose pages could not be read goes straight to the gate, which rejects it."""
+        unreadable = any(r["code"] == "unreadable_file" for r in state.get("reasons", []))
+        return "gate" if unreadable else "route"
 
     @staticmethod
     def _after_route(state: RunState) -> Literal["extract", "gate"]:
@@ -425,8 +469,15 @@ class Pipeline:
         if outcome.budget_reached:
             reasons.append(reason_entry("resolver_budget"))
         accepted_any = any(p.accepted for p in outcome.proposals)
+        # A value the resolver changed was seen by neither reading, so their agreement no
+        # longer counts as evidence for it (confidence, expiry corroboration).
+        agreement = dict(state.get("agreement", {}))
+        for p in outcome.proposals:
+            if p.accepted and p.field in agreement:
+                agreement[p.field] = False
         return {
             "extraction": outcome.extraction,
+            "agreement": agreement,
             "proposals": [
                 *state.get("proposals", []),
                 *(p.model_dump(mode="json") for p in outcome.proposals),
@@ -551,7 +602,7 @@ class Pipeline:
             run_id,
             status=status,
             route=route,
-            reasons_json=json.dumps(state.get("reasons", [])),
+            reasons_json=json.dumps(codes_only(state.get("reasons", []))),
             form_version=version,
             cost_usd=cost_usd,
             duration_ms=duration_ms,
@@ -615,14 +666,15 @@ class Pipeline:
         self.db.update_run(
             run_id,
             status=updates["status"],
-            reasons_json=json.dumps(reasons),
+            reasons_json=json.dumps(codes_only(reasons)),
             form_version=form.get("version", 0),
         )
         return updates
 
     def _audit(self, state: RunState, key: str, action: str, **fields: Any) -> None:
-        """One audit event per key; values are encrypted (they can hold personal data)."""
-        for name in ("old", "new"):
+        """One audit event per key; values and reasons are encrypted (they can hold personal
+        data, such as an owner's name in a reviewer's reason)."""
+        for name in ("old", "new", "reason"):
             if fields.get(name) is not None:
                 fields[name] = self.deps.cipher.encrypt_text(str(fields[name]))
         self.db.record_audit(event_key=key, run_id=state["run_id"], action=action, **fields)

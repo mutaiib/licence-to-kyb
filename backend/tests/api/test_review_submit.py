@@ -86,7 +86,7 @@ class Reviewer:
         events = []
         for row in self.pipeline.db.audit_events(self.run_id):
             event = dict(row)
-            for key in ("old_enc", "new_enc"):
+            for key in ("old_enc", "new_enc", "reason_enc"):
                 event[key.removesuffix("_enc")] = (
                     cipher.decrypt_text(row[key]) if row[key] else None
                 )
@@ -263,6 +263,18 @@ def test_a_correction_that_breaks_a_blocking_rule_is_refused(
     assert response.json()["field"] == "licence_number"
     assert r.view()["form"]["fields"]["licence_number"]["value"] == before
     assert r.audit("correct") == []
+
+
+@pytest.mark.parametrize(("field", "value"), [("legal_form", "not-a-form"), ("expiry_date", "")])
+def test_a_correction_the_schema_cannot_hold_is_refused_not_a_server_error(
+    tmp_path: Path, catalogue: Any, field: str, value: str
+) -> None:
+    r = start(tmp_path, catalogue, "near_expiry")
+
+    response = r.review(decision(field, "correct", value))
+
+    assert response.status_code == 409
+    assert response.json()["field"] == field
 
 
 def test_the_form_cannot_be_approved_while_a_flagged_field_is_undecided(

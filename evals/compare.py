@@ -41,19 +41,30 @@ def changed_cases(before: dict[str, Any], after: dict[str, Any]) -> dict[str, di
     return changes
 
 
+def newest_report(reports: Path) -> Path:
+    """The report with the latest date in its metadata. Names do not sort by time: a
+    timestamped name sorts before a word such as ``scripted-baseline``."""
+    paths = list(reports.glob("*/report.json"))
+    if not paths:
+        sys.exit(f"no reports in {reports}: run make eval first")
+    return max(paths, key=lambda p: json.loads(p.read_text("utf-8"))["meta"]["date"])
+
+
 def main() -> None:
+    """Print the cases that changed. Exits 1 when any changed, so CI can stop on it."""
     two_paths_given = len(sys.argv) == 3  # noqa: PLR2004 - the program name and two paths
     if two_paths_given:
         before_path, after_path = Path(sys.argv[1]), Path(sys.argv[2])
     else:
-        reports = sorted(REPORTS.glob("*/report.json"))
-        before_path, after_path = REPORTS / "baseline.json", reports[-1]
+        before_path, after_path = REPORTS / "baseline.json", newest_report(REPORTS)
     before = json.loads(before_path.read_text("utf-8"))
     after = json.loads(after_path.read_text("utf-8"))
     changes = changed_cases(before, after)
     print(f"{len(changes)} cases changed ({before_path} → {after_path})")
     for case_id, change in changes.items():
         print(f"- {case_id}: {json.dumps(change, ensure_ascii=False)}")
+    if changes:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

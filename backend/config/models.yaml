@@ -15,6 +15,19 @@ profiles:
       resolve:           { model: claude-opus-5-5, effort: medium, max_tokens: 8000 }
       reread_vision:     { model: claude-opus-5-5, effort: low,    max_tokens: 2000 }
 
+  # Demo mode (scripts/dev_demo.sh): no model runs; answers come from the synthetic case
+  # labels (DEMO_ANSWERS_DIR). The model name says so in every trace, and nothing costs money.
+  demo:
+    provider: demo
+    vision: true
+    price_per_mtok: { input: 0, output: 0 }
+    steps:
+      route:             { model: demo-labels, effort: low,    max_tokens: 4000 }
+      extract_primary:   { model: demo-labels, effort: medium, max_tokens: 16000 }
+      extract_secondary: { model: demo-labels, effort: medium, max_tokens: 8000 }
+      resolve:           { model: demo-labels, effort: medium, max_tokens: 8000 }
+      reread_vision:     { model: demo-labels, effort: low,    max_tokens: 2000 }
+
   # An open-weight model on this machine, served by llama.cpp's llama-server
   # (`make local-model`). Text only: the OCR text is in every prompt. No cost. A CPU is
   # slow, so the deadline is longer. `effort` is not sent to this provider.

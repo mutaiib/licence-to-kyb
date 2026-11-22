@@ -3,7 +3,7 @@
   "authority": null,
   "case_id": "out_of_scope_002",
   "document": "data/generated/out_of_scope_002.pdf",
-  "document_sha256": "5971b217d3f3101c4270dc036c8dc97a897f2f095d91071fe3d23edb5e42ce53",
+  "document_sha256": "b4c05dc5a9120cd2a61d42350d2eb7f87577c7841a732f509cc3b39720e4250d",
   "expected_reason_codes": [
     "out_of_scope"
   ],

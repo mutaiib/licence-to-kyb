@@ -27,6 +27,6 @@ PY
 fi
 set -a; source "$ENV_FILE"; set +a
 # The synthetic catalogue is generated for a fixed "today" (test-cases.md); the demo uses it too.
-export DATA_DIR="$DEMO/data" DEMO_ANSWERS_DIR="$ROOT/evals/cases/synthetic" DEMO_TODAY=2026-06-01 TESSDATA_PREFIX="$ROOT/var/tessdata"
+export MODEL_PROFILE=demo DATA_DIR="$DEMO/data" DEMO_ANSWERS_DIR="$ROOT/evals/cases/synthetic" DEMO_TODAY=2026-06-01 TESSDATA_PREFIX="$ROOT/var/tessdata"
 cd "$ROOT/backend"
 exec uv run uvicorn licence_kyb.api.main:app --host 127.0.0.1 --port 8000

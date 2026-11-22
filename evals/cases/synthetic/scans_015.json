@@ -45,6 +45,6 @@
   "mix_bucket": "scans_and_photos",
   "seed": 20260601114,
   "source": "synthetic",
-  "split": "test",
+  "split": "calibration",
   "twin_of": null
 }

@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from licence_kyb.config import CONFIG_DIR, active_profile_name, load_yaml
+from licence_kyb.config import CONFIG_DIR, load_yaml, profile_name
 from licence_kyb.nodes.preprocess import Word
 from licence_kyb.rules.base import failed, normalise_text
 from licence_kyb.schemas.licence import TradeLicenceExtraction
@@ -50,8 +50,8 @@ def load_config(profile: str | None = None) -> ConfidenceConfig:
     A score means different things for different models (ADR-004)."""
     name = "thresholds.yaml"
     if profile is None:
-        profile = active_profile_name()
-    if profile and (CONFIG_DIR / f"thresholds.{profile}.yaml").exists():
+        profile = profile_name()
+    if (CONFIG_DIR / f"thresholds.{profile}.yaml").exists():
         name = f"thresholds.{profile}.yaml"
     data = load_yaml(name)
     return ConfidenceConfig(

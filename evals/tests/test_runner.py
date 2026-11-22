@@ -39,7 +39,7 @@ def test_a_failing_case_is_recorded_and_the_others_still_run() -> None:
     first = three[0]
     results = run_each(three, run_one)
 
-    assert results[first.case_id] == {"error": "ValueError"}
+    assert results[first.case_id] == {"error": "ValueError", "split": "test"}
     assert sum(r.get("ok", False) for r in results.values()) == 2
 
 

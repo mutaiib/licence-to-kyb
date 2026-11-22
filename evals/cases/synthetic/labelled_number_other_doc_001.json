@@ -3,7 +3,7 @@
   "authority": null,
   "case_id": "labelled_number_other_doc_001",
   "document": "data/generated/labelled_number_other_doc_001.pdf",
-  "document_sha256": "175eef05e47093d9151e623b2c19b3636f32027ddd679bf69a6666ddab15d0ef",
+  "document_sha256": "7554eb44e5585ed9e35b335d840c39091e31d39317204aa3bafdb359bb911be4",
   "expected_reason_codes": [
     "unclear_document"
   ],

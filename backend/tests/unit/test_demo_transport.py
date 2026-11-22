@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from licence_kyb.config import STEPS, load_model_profile
 from licence_kyb.llm.client import ModelRequest
 from licence_kyb.schemas.licence import RouteResult
 from licence_kyb.testdata.answers import LabelDemoTransport
@@ -61,3 +64,56 @@ def test_demo_mode_matches_a_whole_licence_number_not_part_of_a_longer_one(tmp_p
 
     assert case is not None
     assert case["expected_values"]["trade_name_en"] == "Right Case Est."
+
+
+def test_a_demo_answer_reports_no_tokens_and_the_demo_profile_names_no_real_model(
+    tmp_path: Path,
+) -> None:
+    """The trace must not show a Claude model and token counts for a run no model read."""
+    labels = {"licence_number": "1234567"}
+    (tmp_path / "case.json").write_text(json.dumps({"expected_values": labels}))
+    profile = load_model_profile("demo")
+    request = ModelRequest(
+        step="route",
+        model=profile.steps.route.model,
+        effort="low",
+        max_tokens=100,
+        system="s",
+        messages=[{"role": "user", "content": [{"type": "text", "text": "Licence No 1234567"}]}],
+        output_model=RouteResult,
+    )
+
+    response = LabelDemoTransport(tmp_path).send(request)
+
+    assert response.usage.billed_tokens == 0
+    assert response.serving_model == request.model
+    assert {getattr(profile.steps, s).model for s in STEPS} == {"demo-labels"}
+
+
+@pytest.mark.parametrize(
+    ("title", "doc_type"),
+    [
+        ("Memorandum of Association", "moa"),
+        ("Resident Identity Card", "emirates_id"),
+        ("PASSPORT", "passport"),
+        ("Renewal Confirmation", "other"),
+        ("", "unclear"),
+    ],
+)
+def test_demo_mode_names_a_document_that_is_not_a_licence_by_its_title(
+    tmp_path: Path, title: str, doc_type: str
+) -> None:
+    """With no licence number to match, the demo reads the title, as a model would."""
+    request = ModelRequest(
+        step="route",
+        model="demo-labels",
+        effort="low",
+        max_tokens=100,
+        system="s",
+        messages=[{"role": "user", "content": [{"type": "text", "text": f"{title}\nPage 1"}]}],
+        output_model=RouteResult,
+    )
+
+    response = LabelDemoTransport(tmp_path).send(request)
+
+    assert response.parsed_as(RouteResult).doc_type == doc_type

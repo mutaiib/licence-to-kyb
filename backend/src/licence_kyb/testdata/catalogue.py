@@ -155,9 +155,13 @@ class BuildResult:
     registry: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
-def _split(group: str, index: int, seed: int) -> str:
-    digest = hashlib.sha256(f"{seed}:{group}:{index}".encode()).digest()
-    return "calibration" if digest[0] % 2 == 0 else "test"
+def _split(group: str, index: int, count: int, seed: int) -> str:
+    """Half of each group in each split (the odd one in test), in a seeded order, so every
+    group is both fitted on and reported (research R8a)."""
+    order = sorted(
+        range(count), key=lambda i: hashlib.sha256(f"{seed}:{group}:{i}".encode()).digest()
+    )
+    return "test" if order.index(index) % 2 == 0 else "calibration"
 
 
 def _case_seed(seed: int, group_index: int, index: int) -> int:
@@ -188,7 +192,11 @@ def _licence_spec(
 ) -> tuple[LicenceSpec, str | None]:
     """The spec of one licence and, for an injected case, the ID of the clean case it copies."""
     if group.name == "injected":
-        base, base_seed = clean_specs[index % len(clean_specs)]
+        if index >= len(clean_specs):
+            # Each injected case copies a different clean licence; wrapping around would
+            # make two identical documents.
+            raise ValueError("the injected group needs at least as many clean cases")
+        base, base_seed = clean_specs[index]
         spec = make_spec(case_id, base.authority, base.layout, {"injected_text"}, base_seed)
         return spec, base.case_id
     authority = group.authorities[index % len(group.authorities)]
@@ -226,7 +234,7 @@ def _case_record(
         "expected_values": spec.ground_truth() if spec else None,
         "authority": spec.authority if spec else None,
         "faults": list(spec.faults) if spec else [],
-        "split": _split(group.name, index, seed),
+        "split": _split(group.name, index, group.count, seed),
         "mix_bucket": group.bucket,
         "twin_of": document.twin_of,
         "seed": case_seed,
@@ -248,6 +256,7 @@ def build(root: Path, seed: int = DEFAULT_SEED, groups: tuple[Group, ...] = GROU
     cases_dir.mkdir(parents=True, exist_ok=True)
     result = BuildResult()
     clean_specs: list[tuple[LicenceSpec, int]] = []  # the injected group copies these
+    split_of: dict[str, str] = {}
 
     for group_index, group in enumerate(groups):
         for index in range(group.count):
@@ -265,6 +274,10 @@ def build(root: Path, seed: int = DEFAULT_SEED, groups: tuple[Group, ...] = GROU
             case = _case_record(
                 group, document, index=index, case_id=case_id, case_seed=case_seed, seed=seed
             )
+            if document.twin_of is not None:
+                # An injected copy must be in its clean twin's split: no leak between splits.
+                case["split"] = split_of[document.twin_of]
+            split_of[case_id] = case["split"]
             _write_json(cases_dir / f"{case_id}.json", case)
             result.cases.append(case)
 

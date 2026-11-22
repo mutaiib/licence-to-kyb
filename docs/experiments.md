@@ -30,7 +30,7 @@ Each experiment changes one thing, runs the full eval suite, and records the mea
 
 ## Eval baseline: scripted model (2026-11-22)
 
-`python -m evals.run --model scripted` on the 45 test-split cases. **The scripted model answers
+`python -m evals.run --model scripted` on the 50 test-split cases (regenerated after the eval review: each group is now split evenly, so every group is in the test report). **The scripted model answers
 from the case labels, so this run checks the pipeline (OCR, rules, confidence, gate, resolver
 flow), not the model's reading.** Real reading quality needs `--model profile`.
 
@@ -38,11 +38,11 @@ flow), not the model's reading.** Real reading quality needs `--model profile`.
 |---|---|
 | Route accuracy | 100% |
 | Reason-code accuracy | 100% |
-| `ready` precision (critical fields) | 15/15, Wilson 95% [0.80, 1.00] |
-| Review rate, realistic mix | 28.2% |
+| `ready` precision (critical fields) | 14/14, Wilson 95% [0.78, 1.00] |
+| Review rate, realistic mix | 27.7% |
 | Field accuracy | 100% for every field |
-| Safety violations | 0 |
-| p95 per stage | preprocess 1.7 s; every other stage well inside its budget |
+| Bad documents routed `ready` (SC-004) | 0 |
+| p95 per stage | preprocess 1.9 s (a child process reads the pages); every other stage well inside its budget |
 
 Found by this first run: demo mode matched a short licence number inside a longer one and
 answered for the wrong case (fixed: whole numbers, longest first). The report and its

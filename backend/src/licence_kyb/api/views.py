@@ -54,7 +54,9 @@ def build_run_view(pipeline: Pipeline, run_id: str) -> RunView | None:
         status=run["status"],
         steps=_step_views(state, finished=run["status"] not in ACTIVE_STATUSES),
         route=run["route"],
-        reasons=[ReasonView(**r) for r in json.loads(run["reasons_json"])],
+        # The run state holds the reasons with their values (encrypted at rest); the runs
+        # table holds only their codes. A run with no state yet uses the table.
+        reasons=[ReasonView(**r) for r in state.get("reasons", json.loads(run["reasons_json"]))],
         form=form,
         form_approved=form is not None
         and pipeline.db.approval_for(run_id, form.version) is not None,

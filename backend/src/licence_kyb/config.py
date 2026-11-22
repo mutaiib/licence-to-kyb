@@ -104,7 +104,7 @@ class ModelProfile(BaseModel):
     (ADR-004). ``MODEL_PROFILE`` picks one; ``models.yaml`` names the default."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
-    provider: Literal["anthropic", "openai_compatible"]
+    provider: Literal["anthropic", "openai_compatible", "demo"]
     base_url: str | None = None
     vision: bool = True
     price_per_mtok: Prices | None = None
@@ -155,6 +155,16 @@ def load_model_profile(name: str | None) -> ModelProfile:
 
 def active_profile_name() -> str | None:
     return os.environ.get("MODEL_PROFILE") or None
+
+
+def default_profile_name() -> str:
+    """The profile used when MODEL_PROFILE is not set (``default:`` in models.yaml)."""
+    return str(load_yaml("models.yaml")["default"])
+
+
+def profile_name() -> str:
+    """The name of the profile in use: MODEL_PROFILE, else the default."""
+    return active_profile_name() or default_profile_name()
 
 
 def active_profile() -> ModelProfile:
