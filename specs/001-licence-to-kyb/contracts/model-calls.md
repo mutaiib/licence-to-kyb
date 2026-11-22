@@ -41,7 +41,7 @@ Both calls go through `LLMClient` and use structured outputs: `client.messages.p
 | `tool_calls` | `tool_use` |
 | `content_filter` | `refusal` |
 
-The serving model is the profile's model name. A server error, a timeout or a reply that is not JSON follows the same paths as on the Anthropic API: retry, then `processing_failed`.
+The serving model is the profile's model name. A cut-off reply (`length`) takes the `max_tokens` retry. A server error, a timeout, or a reply that ends normally but is not JSON raises a model error, and the run goes to review with `processing_failed`. The server enforces the schema while it generates, so a complete reply is valid JSON.
 
 ## Route
 
