@@ -1,6 +1,6 @@
 // Scaffolded from `astryx template detail-page`: a Layout with the record in the content region and a
 // LayoutPanel rail. Here the content region shows the licence page, and the rail shows the KYB form.
-// Read-only for User Story 1: the approve and correct actions come with User Story 2.
+// Each field has its own actions (FieldActions), and the form has the run-level actions (FormActions).
 import { Banner } from '@astryxdesign/core/Banner';
 import { Collapsible, CollapsibleGroup } from '@astryxdesign/core/Collapsible';
 import { Heading } from '@astryxdesign/core/Heading';
@@ -17,13 +17,17 @@ import { useEffect, useState } from 'react';
 
 import { getRun, type FormFieldView, type ReasonCode, type RunView } from '../api/client';
 import { EvidenceViewer } from '../components/EvidenceViewer';
+import { FieldActions, type NewDecision } from '../components/FieldActions';
+import { FormActions } from '../components/FormActions';
 import { StatusLabel } from '../components/StatusLabel';
+import { useReviewActions } from './useReviewActions';
 import { copy, format } from '../copy';
 import {
   documentLabel,
   errorText,
   fieldLabel,
   isFlagged,
+  isUndecided,
   reasonText,
   routeDetail,
   routeLabel,
@@ -65,7 +69,21 @@ interface FailingRule {
   detail?: Readonly<Record<string, string>>;
 }
 
-function FieldDetails({ field }: { field: FormFieldView }) {
+interface FieldActing {
+  canAct: boolean;
+  focusName: string | null;
+  onDecide: (name: string, decision: NewDecision) => void;
+}
+
+function FieldDetails({
+  name,
+  field,
+  acting,
+}: {
+  name: string;
+  field: FormFieldView;
+  acting: FieldActing;
+}) {
   const failing: FailingRule[] = [];
   for (const rule of field.rule_results) {
     if (rule.reason_code !== null) {
@@ -104,6 +122,16 @@ function FieldDetails({ field }: { field: FormFieldView }) {
           </MetadataListItem>
         )}
       </MetadataList>
+      {acting.canAct && (
+        <FieldActions
+          name={name}
+          field={field}
+          shouldFocus={acting.focusName === name}
+          onDecide={(decision) => {
+            acting.onDecide(name, decision);
+          }}
+        />
+      )}
     </VStack>
   );
 }
@@ -137,10 +165,12 @@ function KybForm({
   fields,
   selected,
   onSelect,
+  acting,
 }: {
   fields: Readonly<Record<string, FormFieldView>>;
   selected: string | null;
   onSelect: (name: string) => void;
+  acting: FieldActing;
 }) {
   const [open, setOpen] = useState<string[]>(() =>
     Object.entries(fields)
@@ -167,7 +197,7 @@ function KybForm({
             value={name}
             trigger={<FieldTrigger name={name} field={field} isSelected={name === selected} />}
           >
-            <FieldDetails field={field} />
+            <FieldDetails name={name} field={field} acting={acting} />
           </Collapsible>
         ))}
       </CollapsibleGroup>
@@ -219,8 +249,15 @@ function RunSummary({ view }: { view: RunView }) {
   );
 }
 
-function Review({ view }: { view: RunView }) {
+function Review({ initial }: { initial: RunView }) {
+  const { view, error, focusName, decide, handlers } = useReviewActions(initial);
   const fields = view.form?.fields ?? {};
+  const acting: FieldActing = {
+    canAct: view.status === 'awaiting_review' || view.status === 'awaiting_submit',
+    focusName,
+    onDecide: (name, decision) => void decide(name, decision),
+  };
+  const undecided = Object.values(fields).filter(isUndecided).length;
   const [selected, setSelected] = useState<string | null>(() => firstSelection(fields));
   const isNarrow = useMediaQuery('(max-width: 1024px)');
   const box = selected === null ? null : (fields[selected]?.evidence_box ?? null);
@@ -231,7 +268,15 @@ function Review({ view }: { view: RunView }) {
   const form = (
     <VStack gap={6}>
       <RunSummary view={view} />
-      {view.form !== null && <KybForm fields={fields} selected={selected} onSelect={setSelected} />}
+      {error !== null && (
+        <VStack role="alert">
+          <Banner status="error" title={errorText(error)} />
+        </VStack>
+      )}
+      {view.form !== null && (
+        <KybForm fields={fields} selected={selected} onSelect={setSelected} acting={acting} />
+      )}
+      <FormActions view={view} undecided={undecided} handlers={handlers} />
     </VStack>
   );
   const heading = <Heading level={1}>{copy['review.title']}</Heading>;
@@ -277,5 +322,5 @@ export function ReviewPage({ runId }: { runId: string }) {
       </VStack>
     );
   }
-  return <Review key={load.view.run_id} view={load.view} />;
+  return <Review key={load.view.run_id} initial={load.view} />;
 }

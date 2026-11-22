@@ -139,3 +139,8 @@ export function isFlagged(field: FormFieldView): boolean {
     field.rule_results.length > 0
   );
 }
+
+/** A flagged field that has no decision yet. The form cannot be approved while one remains. */
+export function isUndecided(field: FormFieldView): boolean {
+  return field.state === 'flagged' || field.state === 'needs_examination';
+}
