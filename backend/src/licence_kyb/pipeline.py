@@ -450,7 +450,9 @@ class Pipeline:
             applicant_name=state["applicant_name"],
             applicant_threshold=self.deps.applicant_threshold,
         )
-        return run_rules(ctx)
+        # An uncorroborated "expired" becomes "expiry_uncertain" here, once, so the resolver,
+        # the gate, the review page and the review re-check all see the same result.
+        return with_expiry_corroboration(run_rules(ctx), state.get("agreement", {}))
 
     def _map_form(self, state: RunState) -> dict[str, Any]:
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
@@ -462,9 +464,7 @@ class Pipeline:
         """Score each read field from its evidence; flag fields below their threshold."""
         ex = TradeLicenceExtraction.model_validate(state["extraction"])
         agreement = state.get("agreement", {})
-        results = with_expiry_corroboration(
-            [RuleResult.model_validate(r) for r in state.get("rule_results", [])], agreement
-        )
+        results = [RuleResult.model_validate(r) for r in state.get("rule_results", [])]
         scores = score_fields(
             ex, agreement, results, self._pages(state).words, self.deps.confidence
         )
@@ -535,10 +535,7 @@ class Pipeline:
                 for source, s in state.get("confidence", {}).items()
                 if getattr(ex, source).origin == "read"
             }
-            results = with_expiry_corroboration(
-                self._run_rules(state, ex),  # type: ignore[arg-type]
-                state.get("agreement", {}),
-            )
+            results = self._run_rules(state, ex)  # type: ignore[arg-type]
             return results + low_confidence_results(still_read, results)
 
         return run

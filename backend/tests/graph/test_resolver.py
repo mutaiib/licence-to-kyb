@@ -66,7 +66,11 @@ class ToolLoopTransport(ScriptedTransport):
 def catalogue(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, list[dict[str, Any]]]:
     root = tmp_path_factory.mktemp("cat")
     (root / "data").mkdir()
-    groups = tuple(replace(g, count=1) for g in GROUPS if g.name in {"clean", "near_expiry"})
+    groups = tuple(
+        replace(g, count=1)
+        for g in GROUPS
+        if g.name in {"clean", "near_expiry", "expired_uncertain"}
+    )
     cases = build(root, seed=13, groups=groups).cases
     return root, cases
 
@@ -301,3 +305,20 @@ def test_text_asking_to_submit_cannot_make_the_resolver_submit(
 
     assert state["status"] != "submitted"
     assert state.get("submission") is None
+
+
+def test_an_uncertain_expiry_is_re_read_but_an_expired_date_is_never_accepted(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    """Found in the US4 visual check: the resolver skipped expiry_uncertain, because the
+    corroboration rule ran after validation. The scripted resolver proposes the true date,
+    which is expired, so the checks must refuse it and the run stays in review."""
+
+    def transport(labels: dict[str, Any], case: dict[str, Any]) -> ScriptedTransport:
+        return ScriptedTransport(labels, faults={"expired_uncertain"})
+
+    state, _ = run(tmp_path, catalogue, "expired_uncertain", transport)
+
+    assert [(p["field"], p["accepted"]) for p in state["proposals"]] == [("expiry_date", False)]
+    assert state["decision"]["route"] == "needs_review"
+    assert "expiry_uncertain" in {r["code"] for r in state["reasons"]}
