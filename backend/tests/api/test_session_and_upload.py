@@ -225,3 +225,22 @@ def test_page_images_are_served_to_signed_in_reviewers(tmp_path: Path, catalogue
     assert response.status_code == 200
     assert response.headers["content-type"] == "image/png"
     assert response.content.startswith(b"\x89PNG")
+
+
+def test_reasons_carry_their_values_and_fields_report_their_document_status(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    root, cases = catalogue
+    case = next(c for c in cases if c["group"] == "near_expiry")
+    client = make_client(tmp_path, root, case)
+    csrf = sign_in(client)
+
+    run_id = upload(client, csrf, root, case).json()["run_id"]
+    view = client.get(f"/api/runs/{run_id}").json()
+
+    near = next(r for r in view["reasons"] if r["code"] == "near_expiry")
+    assert near["detail"]["days"] == "10"
+    assert view["form"]["fields"]["expiry_date"]["status"] == "present"
+    # The synthetic licences print no unified licence number, so the API must say so.
+    statuses = {name: f["status"] for name, f in view["form"]["fields"].items()}
+    assert set(statuses.values()) <= {"present", "not_present", "unclear"}

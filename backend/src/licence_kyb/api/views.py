@@ -101,6 +101,7 @@ def build_run_view(pipeline: Pipeline, run_id: str) -> RunView | None:
             fields[form_field] = FormFieldView(
                 value=_display(form_field, form, extraction),
                 state=view_state,
+                status=src.get("status", "not_present"),
                 origin=src.get("origin", "read"),
                 evidence_quote=src.get("evidence_quote"),
                 evidence_box=_evidence_box(words, src.get("evidence_quote"), src.get("page")),

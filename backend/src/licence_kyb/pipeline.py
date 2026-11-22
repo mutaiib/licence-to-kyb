@@ -255,7 +255,14 @@ class Pipeline:
         for r in state.get("rule_results", []):
             if r["outcome"] in ("failed", "could_not_run"):
                 for f in r["fields"] or [None]:
-                    reasons.append({"code": r["reason_code"], "field": f, "rule_id": r["rule_id"]})
+                    reasons.append(
+                        {
+                            "code": r["reason_code"],
+                            "field": f,
+                            "rule_id": r["rule_id"],
+                            "detail": r.get("detail", {}),
+                        }
+                    )
         codes = {r["code"] for r in reasons}
         if codes & (FILE_REASONS | {"out_of_scope"}):
             route = "reject"

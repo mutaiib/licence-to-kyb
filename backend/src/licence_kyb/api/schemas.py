@@ -44,6 +44,8 @@ class ReasonView(BaseModel):
     code: ReasonCode
     field: str | None = None
     rule_id: str | None = None
+    detail: dict[str, str] = {}
+    """Values for the reason's UI string, e.g. ``{"days": "10"}``."""
 
 
 class StepView(BaseModel):
@@ -78,6 +80,8 @@ class ConfidenceView(BaseModel):
 class FormFieldView(BaseModel):
     value: Any
     state: FieldViewState
+    status: Literal["present", "not_present", "unclear"]
+    """Whether the document shows the field, does not show it, or shows it unreadably."""
     origin: Literal["read", "entered_by_reviewer"] = "read"
     evidence_quote: str | None = None
     evidence_box: EvidenceBox | None = None
