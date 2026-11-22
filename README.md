@@ -62,7 +62,7 @@ Upload any file from `data/generated/`, for example `near_expiry_001.pdf` with t
 
 | Command | What it checks |
 |---|---|
-| `make test` | 323 backend tests, 18 eval-harness tests, 77 frontend tests; all offline |
+| `make test` | 334 backend tests, 18 eval-harness tests, 80 frontend tests; all offline |
 | `make lint` / `make types` | ruff, `mypy --strict`, ESLint, Prettier, the generated API types |
 | `make eval` | every labelled case with a scripted model: routing, rules, safety; no cost |
 | `make eval-live` | the same with the models of `MODEL_PROFILE` |
