@@ -5,7 +5,9 @@ from __future__ import annotations
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from licence_kyb.schemas.licence import StrictModel
 
 FieldState = Literal[
     "passed", "flagged", "approved", "corrected", "overridden", "needs_examination"
@@ -21,29 +23,24 @@ RequiredDocument = Literal[
 ]
 
 
-class FormActivity(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+class FormActivity(StrictModel):
     code: str | None
     description: str | None
 
 
-class FormPerson(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+class FormPerson(StrictModel):
     name: str
     nationality: str | None
     roles: tuple[str, ...]
     share_pct: float | None = None
 
 
-class RequiredDocumentItem(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+class RequiredDocumentItem(StrictModel):
     document: RequiredDocument
     for_person: str | None = None
 
 
-class KYBOnboardingForm(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
+class KYBOnboardingForm(StrictModel):
     version: int = Field(ge=1)
     legal_name_en: str | None
     legal_name_ar: str | None

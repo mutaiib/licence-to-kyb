@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 from functools import cache
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import yaml
 
+from licence_kyb.config import DATA_DIR
 from licence_kyb.rules.base import failed, normalise_text, not_applicable, passed, present
 
 if TYPE_CHECKING:
     from licence_kyb.rules import RuleContext
     from licence_kyb.schemas.results import RuleResult
 
-DATA = Path(__file__).resolve().parents[4] / "data" / "high_risk_activities.yaml"
+DATA = DATA_DIR / "high_risk_activities.yaml"
 
 
 @cache

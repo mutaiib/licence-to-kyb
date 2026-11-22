@@ -6,13 +6,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-from licence_kyb.schemas.results import ReasonCode
+from licence_kyb.schemas.kyb_form import FieldState
+from licence_kyb.schemas.licence import Origin, Status
+from licence_kyb.schemas.results import Outcome, ReasonCode, Route, Severity
 
 RunStatus = Literal[
     "received", "processing", "rejected", "awaiting_review", "awaiting_submit", "submitted", "done"
-]
-FieldViewState = Literal[
-    "passed", "flagged", "approved", "corrected", "overridden", "needs_examination"
 ]
 
 
@@ -64,8 +63,8 @@ class EvidenceBox(BaseModel):
 
 class RuleView(BaseModel):
     rule_id: str
-    severity: Literal["block", "warn"]
-    outcome: Literal["passed", "failed", "could_not_run", "not_applicable"]
+    severity: Severity
+    outcome: Outcome
     reason_code: ReasonCode | None
     overridable: bool
     detail: dict[str, str] = {}
@@ -79,10 +78,10 @@ class ConfidenceView(BaseModel):
 
 class FormFieldView(BaseModel):
     value: Any
-    state: FieldViewState
-    status: Literal["present", "not_present", "unclear"]
+    state: FieldState
+    status: Status
     """Whether the document shows the field, does not show it, or shows it unreadably."""
-    origin: Literal["read", "entered_by_reviewer"] = "read"
+    origin: Origin = "read"
     evidence_quote: str | None = None
     evidence_box: EvidenceBox | None = None
     confidence: ConfidenceView | None = None
@@ -99,7 +98,7 @@ class RunView(BaseModel):
     run_id: str
     status: RunStatus
     steps: list[StepView]
-    route: Literal["ready", "needs_review", "reject"] | None
+    route: Route | None
     reasons: list[ReasonView]
     form: FormView | None
     required_documents: list[str]

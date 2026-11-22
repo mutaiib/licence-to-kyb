@@ -18,6 +18,7 @@ from pathlib import Path
 import pypdfium2 as pdfium
 from PIL import Image
 
+from licence_kyb.nodes.preprocess import POINTS_PER_INCH, RENDER_DPI
 from licence_kyb.schemas.results import ReasonCode
 from licence_kyb.security import Cipher
 from licence_kyb.store.db import Database
@@ -25,7 +26,6 @@ from licence_kyb.store.db import Database
 MAX_BYTES = 10 * 1024 * 1024
 MAX_PAGES = 5
 MAX_MEGAPIXELS = 50.0
-RENDER_DPI = 200
 Image.MAX_IMAGE_PIXELS = int(MAX_MEGAPIXELS * 1_000_000)  # PIL refuses larger images outright
 
 SIGNATURES: tuple[tuple[bytes, str], ...] = (
@@ -57,7 +57,7 @@ def measure(data: bytes, mime: str) -> tuple[int, float]:
             worst = 0.0
             for i in range(min(pages, MAX_PAGES + 1)):
                 width, height = doc[i].get_size()  # points
-                worst = max(worst, width * height * (RENDER_DPI / 72) ** 2 / 1e6)
+                worst = max(worst, width * height * (RENDER_DPI / POINTS_PER_INCH) ** 2 / 1e6)
         finally:
             doc.close()
         return pages, worst

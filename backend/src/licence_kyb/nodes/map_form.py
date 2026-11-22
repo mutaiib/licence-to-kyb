@@ -18,11 +18,10 @@ from licence_kyb.schemas.kyb_form import (
     KYBOnboardingForm,
     RequiredDocumentItem,
 )
-from licence_kyb.schemas.licence import Person, TradeLicenceExtraction
+from licence_kyb.schemas.licence import OWNER_ROLES, Person, TradeLicenceExtraction
 from licence_kyb.schemas.results import RuleResult
 
 UBO_THRESHOLD = 25.0
-OWNER_ROLES = frozenset({"owner", "partner", "shareholder"})
 MOA_FORMS = frozenset({"llc", "llc_single_owner", "fzco", "fz_llc"})
 
 # form field → source extraction field

@@ -10,9 +10,10 @@ import json
 from datetime import date
 from pathlib import Path
 
+from licence_kyb.config import DATA_DIR
 from licence_kyb.rules.base import RegistryResult
 
-DEFAULT_PATH = Path(__file__).resolve().parents[3] / "data" / "registry_mock.json"
+DEFAULT_PATH = DATA_DIR / "registry_mock.json"
 
 
 class RegistryUnavailableError(Exception):

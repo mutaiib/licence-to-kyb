@@ -15,11 +15,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
+from licence_kyb.profiles import AUTHORITIES
 from licence_kyb.testdata.degrade import Degradation, degrade
 from licence_kyb.testdata.render import render_licence, render_other
 from licence_kyb.testdata.spec import LicenceSpec, make_spec
 
-AUTHORITIES = ("DET", "ADDED", "DMCC", "IFZA")
 MixBucket = Literal["clean", "scans_and_photos", "problem"]
 
 

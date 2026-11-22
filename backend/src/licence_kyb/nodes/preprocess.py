@@ -19,6 +19,7 @@ import pytesseract
 from PIL import Image, ImageOps
 
 RENDER_DPI = 200
+POINTS_PER_INCH = 72  # PDF page sizes are in points
 OCR_LANG = "eng+ara"
 MIN_TEXT_LAYER_WORDS = 5
 OCR_TIMEOUT_SECONDS = 30
@@ -75,7 +76,8 @@ def _render_pdf(data: bytes) -> list[Image.Image]:
     doc = pdfium.PdfDocument(data)
     try:
         return [
-            doc[i].render(scale=RENDER_DPI / 72).to_pil().convert("RGB") for i in range(len(doc))
+            doc[i].render(scale=RENDER_DPI / POINTS_PER_INCH).to_pil().convert("RGB")
+            for i in range(len(doc))
         ]
     finally:
         doc.close()

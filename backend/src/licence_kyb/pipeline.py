@@ -23,7 +23,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from licence_kyb.clock import Clock, SystemClock
-from licence_kyb.config import ModelsConfig, models_config
+from licence_kyb.config import APPLICANT_NAME_THRESHOLD, ModelsConfig, models_config
 from licence_kyb.graph import thread_config
 from licence_kyb.llm.client import LLMClient, ModelRequest, ModelResponse
 from licence_kyb.llm.prompts import prompt_hash
@@ -66,7 +66,7 @@ class Deps:
     clock: Clock = field(default_factory=SystemClock)
     registry: MockRegistry = field(default_factory=MockRegistry)
     models: ModelsConfig = field(default_factory=models_config)
-    applicant_threshold: float = 0.85
+    applicant_threshold: float = APPLICANT_NAME_THRESHOLD
 
     @property
     def files_dir(self) -> Path:

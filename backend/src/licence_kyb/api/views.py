@@ -7,7 +7,6 @@ from typing import Any
 
 from licence_kyb.api.schemas import (
     EvidenceBox,
-    FieldViewState,
     FormFieldView,
     FormView,
     ReasonView,
@@ -20,6 +19,7 @@ from licence_kyb.nodes.map_form import SOURCES
 from licence_kyb.nodes.preprocess import Word, visual_rows
 from licence_kyb.pipeline import Pipeline
 from licence_kyb.rules.base import normalise_text
+from licence_kyb.schemas.kyb_form import FieldState
 
 STEPS = ("preprocess", "route", "extract", "validate", "map_form", "decide")
 
@@ -104,7 +104,7 @@ def build_run_view(pipeline: Pipeline, run_id: str) -> RunView | None:
                 if source in r["fields"] and r["outcome"] in ("failed", "could_not_run")
             ]
             raw_state = form["field_states"].get(form_field, "needs_examination")
-            view_state: FieldViewState = (
+            view_state: FieldState = (
                 "flagged" if raw_state == "needs_examination" and failing else raw_state
             )
             src = extraction.get(source, {})

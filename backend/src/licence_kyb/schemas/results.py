@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from licence_kyb.schemas.licence import StrictModel
 
 ReasonCode = Literal[
     # file
@@ -78,11 +80,7 @@ Outcome = Literal["passed", "failed", "could_not_run", "not_applicable"]
 Route = Literal["ready", "needs_review", "reject"]
 
 
-class _Frozen(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-class RuleResult(_Frozen):
+class RuleResult(StrictModel):
     rule_id: str
     fields: tuple[str, ...] = ()
     severity: Severity
@@ -97,18 +95,18 @@ class RuleResult(_Frozen):
         return self.outcome in ("failed", "could_not_run")
 
 
-class Reason(_Frozen):
+class Reason(StrictModel):
     code: ReasonCode
     field: str | None = None
     rule_id: str | None = None
 
 
-class Decision(_Frozen):
+class Decision(StrictModel):
     route: Route
     reasons: tuple[Reason, ...] = ()
 
 
-class ProposedFix(_Frozen):
+class ProposedFix(StrictModel):
     field: str
     new_value: str
     evidence_quote: str
@@ -117,7 +115,7 @@ class ProposedFix(_Frozen):
     accepted: bool = False
 
 
-class FieldConfidence(_Frozen):
+class FieldConfidence(StrictModel):
     score: float = Field(ge=0, le=1)
     signals: dict[str, float]
     threshold: float = Field(ge=0, le=1)
