@@ -106,6 +106,8 @@ const nearExpiry: FormFieldView = {
 function runView(fields: Record<string, FormFieldView>, overrides: Partial<RunView> = {}): RunView {
   return {
     run_id: 'run-1',
+    applicant_name: 'Fuller Services LLC',
+    created_at: '2026-11-22T08:00:00.000Z',
     status: 'awaiting_review',
     route: 'needs_review',
     reasons: [],

@@ -101,6 +101,15 @@ export const copy = {
 
   // Review page
   'review.title': 'Examine the form',
+  'review.toExamine': 'Fields to examine ({count})',
+  'review.passedFields': 'Fields that passed ({count})',
+  'review.trace.link': 'Open the trace',
+  'review.uploaded': 'Uploaded {time}',
+  'trace.totals': 'Total: {seconds} s, ${cost}, {calls} model calls',
+  'upload.intro':
+    'The system reads the licence and fills the KYB form. Then you examine the flagged fields.',
+  'upload.applicantName.help': 'Write the name as it is on the application form.',
+  'runs.empty.action': 'Upload the first licence',
   'review.instruction': 'Examine each flagged field. Approve or correct the value.',
   'review.form.title': 'KYB form',
   'review.page.label': 'Licence page {page}',

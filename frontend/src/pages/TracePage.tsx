@@ -7,18 +7,37 @@ import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { useEffect, useState } from 'react';
 
-import { getTrace, type SpanView } from '../api/client';
+import { getRun, getTrace, type SpanView } from '../api/client';
 import { SpanList } from '../components/SpanTree';
-import { copy } from '../copy';
+import { copy, format } from '../copy';
 import { runPath, useLinkHandler } from '../router';
 import { errorText } from '../text';
 
 type Load =
   { kind: 'loading' } | { kind: 'failed'; code: string } | { kind: 'loaded'; spans: SpanView[] };
 
+/** Time of all steps, cost and number of model calls: what a trace is read for. */
+function totals(spans: readonly SpanView[]): string {
+  const steps = spans.filter((span) => span.kind === 'step');
+  const calls = spans.filter((span) => span.kind === 'model_call');
+  const seconds = steps.reduce((sum, span) => sum + span.latency_ms, 0) / 1000;
+  const cost = calls.reduce((sum, span) => sum + span.cost_usd, 0);
+  return format('trace.totals', {
+    seconds: seconds.toFixed(1),
+    cost: cost.toFixed(4),
+    calls: String(calls.length),
+  });
+}
+
 export function TracePage({ runId }: { runId: string }) {
   const [load, setLoad] = useState<Load>({ kind: 'loading' });
   const back = useLinkHandler(runPath(runId));
+  const [business, setBusiness] = useState<string | null>(null);
+  useEffect(() => {
+    void getRun(runId).then((result) => {
+      if (result.ok) setBusiness(result.data.applicant_name);
+    });
+  }, [runId]);
   useEffect(() => {
     void getTrace(runId).then((result) => {
       setLoad(
@@ -31,7 +50,10 @@ export function TracePage({ runId }: { runId: string }) {
 
   return (
     <VStack gap={4}>
-      <Heading level={1}>{copy['trace.title']}</Heading>
+      <VStack gap={1}>
+        <Heading level={1}>{business ?? copy['trace.title']}</Heading>
+        {business !== null && <Text color="secondary">{copy['trace.title']}</Text>}
+      </VStack>
       <Link href={runPath(runId)} onClick={back} hasUnderline>
         {copy['trace.back']}
       </Link>
@@ -42,6 +64,7 @@ export function TracePage({ runId }: { runId: string }) {
           <Banner status="error" title={errorText(load.code)} />
         </VStack>
       )}
+      {load.kind === 'loaded' && <Text weight="semibold">{totals(load.spans)}</Text>}
       {load.kind === 'loaded' && <SpanList spans={load.spans} />}
     </VStack>
   );

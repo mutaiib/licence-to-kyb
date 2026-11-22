@@ -156,6 +156,9 @@ function openAt(path: string) {
   return render(<App />);
 }
 
+/** A label as a literal pattern: labels can hold brackets. */
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /** True when `a` comes before `b` in the document. */
 const before = (a: Element, b: Element) =>
   Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
@@ -191,7 +194,7 @@ describe('review page', () => {
       within(toExamine).getByRole('button', { name: new RegExp(`^${fieldLabel('expiry_date')}`) }),
     ).toBeInTheDocument();
     const passedGroup = screen.getByRole('button', {
-      name: new RegExp(format('review.passedFields', { count: '2' })),
+      name: new RegExp(escape(format('review.passedFields', { count: '2' }))),
     });
     expect(passedGroup).toHaveAttribute('aria-expanded', 'false');
   });
@@ -217,7 +220,7 @@ describe('review page', () => {
     });
     const page = screen.getByRole('img', { name: format('review.page.label', { page: '1' }) });
     const passedGroup = screen.getByRole('button', {
-      name: new RegExp(format('review.passedFields', { count: '2' })),
+      name: new RegExp(escape(format('review.passedFields', { count: '2' }))),
     });
     expect(before(toExamine, page)).toBe(true);
     expect(before(page, passedGroup)).toBe(true);

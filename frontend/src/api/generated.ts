@@ -487,6 +487,10 @@ export interface components {
         };
         /** RunView */
         RunView: {
+            /** Applicant Name */
+            applicant_name: string;
+            /** Created At */
+            created_at: string;
             form: components["schemas"]["FormView"] | null;
             /** Pages */
             pages: number;

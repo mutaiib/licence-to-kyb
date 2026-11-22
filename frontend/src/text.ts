@@ -150,3 +150,8 @@ export function isUndecided(field: FormFieldView): boolean {
 export function runStatusText(status: RunStatus): string {
   return copy[`runStatus.${status}` as CopyKey];
 }
+
+/** A stored UTC time as "YYYY-MM-DD HH:MM UTC". */
+export function shortTime(iso: string): string {
+  return `${iso.slice(0, 16).replace('T', ' ')} UTC`;
+}
