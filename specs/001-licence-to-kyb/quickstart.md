@@ -32,14 +32,16 @@ make eval-live                    # the models of MODEL_PROFILE (paid on the API
 ## Run the app
 
 ```bash
-make dev                          # demo backend: answers from the case labels, no model, no key
-cd frontend && npm run dev        # UI on http://127.0.0.1:5173; the demo password is printed once
+make dev                          # demo backend on :8000; prints the password for "demo" on first run
+cd frontend && npm run dev        # in a second terminal: UI on http://127.0.0.1:5173
 ```
 
-- **With Claude:** set `ANTHROPIC_API_KEY` and run the backend without demo mode (`make demo` runs
-  the Docker Compose stack: UI and API on http://localhost:5173).
+For a real model, copy `.env.example` to `backend/.env` and fill it in first.
+- **With Claude:** set `ANTHROPIC_API_KEY`, then `make serve` (and the frontend as above). Or
+  `make demo`: the Docker Compose stack, UI and API on http://localhost:5173. Both call the paid
+  API; neither is the label demo.
 - **With a local model:** `scripts/fetch_llama_server.sh`, then `make local-model` in its own
-  terminal, then the backend with `MODEL_PROFILE=local`.
+  terminal, then `MODEL_PROFILE=local make serve`.
 - **Browser check of every row below:** `scripts/browser_check.sh` (needs `chrome-devtools-axi`).
 
 ## Check each story
@@ -53,11 +55,11 @@ cd frontend && npm run dev        # UI on http://127.0.0.1:5173; the demo passwo
 | US2 | Stop the stack while a run waits for review, start it again, and open the run. | Same flagged fields. |
 | US3 | Upload `data/generated/expired_001.pdf` (expiry corroborated). | Route "reject", reason code `expired`. |
 | US3 | Upload `data/generated/expired_uncertain_001.pdf`. | Route "needs review", reason code `expiry_uncertain`. |
-| Providers | `make local-model`, then `MODEL_PROFILE=local make dev`. Upload `data/generated/clean_001.pdf`. | The run finishes with real readings from the local model; the trace names the local model; the cost is 0. |
+| Providers | `make local-model`, then `MODEL_PROFILE=local make serve`. Upload `data/generated/clean_001.pdf`. | The run finishes with real readings from the local model; the trace names the local model; the cost is 0. |
 | US2 | Reopen the rejected run with a reason. | Status "awaiting review". The audit shows the reopen event and its reason. |
 | US4 | Upload `data/generated/scans_003.jpg`. | The trace shows a resolver span, and the expiry date matches the ground truth. |
 | US5 | Open a trace and the daily summary, and search each page for an owner's name. | The name is masked. The summary shows the refusal, fallback and review rates. |
-| US6 | Run `make eval`, change one threshold, then run `make eval-compare`. | The comparison lists only the cases whose route changed. |
+| US6 | Run `make eval`, change one threshold, then run `make eval-compare`. | The comparison lists only the cases whose route, reason codes or field values changed, and exits with an error when any changed. |
 
 ## Branching
 

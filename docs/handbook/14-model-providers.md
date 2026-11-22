@@ -23,7 +23,7 @@ Put every model call behind one small interface, and choose the provider by conf
 |---|---|
 | The interface and the Anthropic transport | `backend/src/licence_kyb/llm/client.py` |
 | The OpenAI-compatible transport (JSON schema, tools both ways, stop reasons) | `backend/src/licence_kyb/llm/openai_compatible.py` |
-| Profiles: `anthropic` (default) and `local` | `backend/config/models.yaml` |
+| Profiles: `anthropic` (default), `local` and `demo` (`make dev`) | `backend/config/models.yaml` |
 | Choosing the transport for the active profile | `backend/src/licence_kyb/llm/select.py` |
 | A pinned llama.cpp server, and `make local-model` | `scripts/fetch_llama_server.sh`, `Makefile` |
 | Per-profile thresholds | `backend/config/thresholds.<profile>.yaml` (written by `scripts/calibrate.py`) |

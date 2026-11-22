@@ -26,7 +26,7 @@ Read it in this order:
 A reviewer uploads a trade licence. Plain code checks and reads the file.
 
 1. A model classifies the document.
-2. Two independent model calls copy its fields into a fixed schema, and every value carries the text it was copied from.
+2. A model reads the fields into a fixed schema, and every value carries the text it was read from. A second, independent call reads the key fields again; agreement between the two is evidence.
 3. Code checks every value against business rules.
 4. If a check fails on a value that can be read again, a small agent with read-only tools tries to fix it, and code checks the fix.
 5. Code scores each field's confidence from evidence, picks one of three routes (**ready**, **needs review** or **reject**), and builds a draft KYB form.
@@ -51,7 +51,7 @@ The example input is `acme.pdf`, a scanned Dubai (DET) licence. The applicant ty
 | 1 Intake | Code checks the file type from its bytes, the size, the page count and the pixel count. Code stores the file encrypted. | Accepted. 1 page, 2.1 MB. |
 | 2 Preprocess | Code renders the page, runs OCR in English and Arabic, and decodes the QR code as untrusted text. | 412 OCR words. The QR payload contains licence number `1234567`. |
 | 3 Route (model) | One model call with no tools: "What document is this, and who issued it?" Code cross-checks the authority against the number format. | `trade_licence`, authority `DET`, Arabic present. |
-| 4 Extract (model) | Two independent calls with no tools fill the schema, and each value carries an evidence quote. | Primary pass: `expiry_date = 25/12/2028` with quote `"Expiry Date 25/12/2026"`. Secondary pass: `25/12/2026`. |
+| 4 Extract (model) | One call fills the schema; a second, independent call reads the critical fields again. Neither has tools, and each value carries an evidence quote. | Primary pass: `expiry_date = 25/12/2028` with quote `"Expiry Date 25/12/2026"`. Secondary pass: `25/12/2026`. |
 | 5 Validate | Code runs every rule. | The evidence check fails on `expiry_date`, and the passes disagree. "General trading" is a high-risk activity (warn). |
 | 6 Resolve (agent) | It runs because `expiry_date` failed and can be re-read. It calls `licence_reread_region` on the top-right of page 1, gets "25/12/2026", and proposes the fix. | Code validates the proposal again. The evidence check passes, so the fix is accepted. |
 | 7 Confidence | Code scores each field from evidence: pass agreement, quote match, rules, OCR confidence, QR and registry. | `expiry_date` scores 0.81, below its 0.90 threshold because the passes disagreed. All other fields are above threshold. |
@@ -74,8 +74,10 @@ Section 4 shows the pipeline as designed. This is the graph as built in [`pipeli
 flowchart TD
     START([upload accepted]) --> preprocess
     preprocess --> route
+    preprocess -- "unreadable file" --> gate
     route -- "trade licence" --> extract
-    route -- "not a licence / unclear" --> gate
+    route -- "not a licence" --> gate
+    route -- "unclear, or not identified" --> map_form
     extract -- "both readings parsed" --> validate
     extract -- "processing failed" --> map_form
     validate -- "a re-readable check failed,<br/>round < 2, last round helped" --> resolve
@@ -120,48 +122,23 @@ For a trade licence, yes. The steps are always the same: check, read, classify, 
 
 **Why not several agents.** Each extra agent needs a stated reason: the work does not fit in one context, it needs different permissions, or it gains from running in parallel. None of those applies here.
 
-**The agent and the second pass must earn their place.** The eval runs with each of them on and off. If either adds nothing, it is removed. See [ADR-001](decisions/ADR-001-workflow-with-one-agent.md).
+**The agent and the second reading must earn their place.** The eval can turn the resolver off (`--no-resolver`); the comparison waits for real readings (T101, [status](status.md)). A part that adds nothing is removed. See [ADR-001](decisions/ADR-001-workflow-with-one-agent.md).
 
 ---
 
 ## 4. The pipeline
 
-```mermaid
-flowchart TD
-    U[Upload] --> I[1 Intake<br/>code]
-    I -- invalid file --> REJ
-    I --> P[2 Preprocess<br/>code: render, OCR, QR]
-    P --> R[3 Route<br/>model, no tools]
-    R -- out of scope --> REJ[Reject<br/>reason recorded, can be reopened]
-    R -- unclear --> MF
-    R -- trade licence --> E[4 Extract<br/>model, no tools<br/>2 passes on critical fields]
-    E --> V[5 Validate<br/>code: rules + evidence]
-    V -- failures that can be re-read<br/>and budget left --> RS[6 Resolve<br/>AGENT, read-only tools]
-    RS -- proposed fixes --> V
-    V -- no fixable failures --> C[7 Confidence<br/>code]
-    C --> G{8 Gate<br/>code}
-    G -- corroborated expiry --> REJ
-    G -- needs_review / ready --> MF[9 Draft form<br/>code]
-    MF -- needs_review --> HR[10 Human review<br/>pause, then apply decisions]
-    HR -- more decisions --> HR
-    HR -- reject --> REJ
-    MF -- ready --> AS
-    HR -- form approved --> AS[11 Await submit<br/>pause: a person clicks]
-    AS -- form changed --> HR
-    AS --> S[12 Submit + verify<br/>code: write, read back, compare]
-    S -- mismatch --> HR
-    S --> END2[Done]
-    REJ -- reopened by a reviewer --> HR
-```
+The graph as built, node by node, is [above](#as-built). The numbered steps follow the [example](#2-one-licence-start-to-finish).
 
 - **Run state.** Each run is a LangGraph `StateGraph`. A SQLite checkpointer saves the state after every step.
 - **Pauses.** Steps 10 and 11 call `interrupt()`. The run stops and its state stays on disk, so a run waiting for a person survives a server restart. The API resumes the run with `Command(resume=…)` and the reviewer's decisions.
 - **Side effects live in their own nodes.** LangGraph runs a node again from its start when the node resumes. So the review node only collects decisions. Separate nodes write the decisions, audit events, form versions, captured corrections and the submission, and each write has a unique key. A repeated node writes nothing new ([data model](../specs/001-licence-to-kyb/data-model.md#writes-and-resumption)).
-- **Processing never stalls, and a person can always continue.**
-  - On startup, every run left in `received` or `processing` resumes from its last checkpoint.
-  - A run past its deadline (120 s; a model profile can set more, for example 1,800 s for a local CPU model) goes to review with `processing_failed`.
-  - When the daily token budget is exhausted, new runs skip the model steps and go to review with `budget_exhausted`.
-  - In review, the reviewer can retry processing from the last completed step, or enter the values by hand.
+- **Processing does not get stuck, and a person can continue.**
+  - On startup, every run left in `received` or `processing` gets a new deadline, then resumes from its last checkpoint.
+  - Every minute, a run that is past its deadline (120 s; a model profile can set more, for example 1,800 s for a local CPU model) and that no thread is processing goes to review with `processing_failed`. A run still being processed is left alone: it reaches review or its route when it finishes, and model calls have their own time limits.
+  - When the daily token budget is exhausted, new runs skip the model steps and go to review with `budget_exhausted` and an empty form.
+  - In review, the reviewer can retry processing from the step that failed, or enter the values by hand. Only a run that crashed before routing has no form; it can be retried or rejected.
+- **One action per run at a time.** A lock per run covers processing and each reviewer action, so two browser tabs cannot both apply an action to the same form.
 - **The resolver loop has hard limits.** They are defined once, in the [resolver contract](../specs/001-licence-to-kyb/contracts/resolver-tools.md#budgets-the-only-definition). Code decides when the loop stops, not the model.
 
 ---
@@ -413,7 +390,7 @@ When the loop stops at a hard limit, code keeps the best accepted fixes, and the
 | Self-rating | The model's `self_confidence`, with a small weight. |
 
 **Calibration.**
-- `scripts/calibrate.py` fits a threshold for each field (the signal weights stay at their documented defaults) on the **calibration split** of the labelled cases.
+- `scripts/calibrate.py` starts from the fields in `thresholds.yaml` (the critical fields) and fits a threshold for each (the signal weights stay at their documented defaults) on the **calibration split** of the labelled cases.
 - It maximises the share of `ready` runs, subject to at least **99% precision on critical fields**, and writes `config/thresholds.<profile>.yaml` (thresholds are fitted per model profile). Until a live eval provides real readings, `config/thresholds.yaml` holds documented defaults marked `fitted: false`.
 - The critical fields are the licence number, legal names, legal form, expiry date and owners.
 - Metrics are reported on the separate **test split**, with a 95% interval. This avoids grading the thresholds on the data they were fitted to.
@@ -531,7 +508,7 @@ flowchart LR
   | Submit | Always needs a person's click |
 
 - **Personal data** (names, nationalities, licence numbers):
-  - Files, extractions and captured corrections are encrypted at rest (MultiFernet, so keys can be rotated).
+  - Files, page images, graph checkpoints (which hold the extractions), trace tool results, the applicant name, audit values and reasons, captured corrections and submissions are encrypted at rest (MultiFernet, so keys can be rotated). The runs table keeps reason codes only.
   - Logs and traces mask fields tagged as personal data.
   - A scheduled job deletes data after the retention period.
   - Page images are sent to the model provider's API. A production deployment needs a data processing agreement and a data-residency check (see [engineering practices](engineering-practices.md)).
@@ -554,7 +531,7 @@ flowchart LR
 
 - **Configuration:** models and effort live in `config/models.yaml`.
 - **Thinking:** it cannot be turned off on this model, and it bills as output. The cost estimate in the [plan](../specs/001-licence-to-kyb/plan.md#cost-estimate) includes it: about $0.23 for a typical run without the resolver.
-- **Experiments:** cheaper configurations are measured against the quality targets, and [experiments](experiments.md) records the results:
+- **Experiments:** cheaper configurations will be measured against the quality targets once real readings exist (T101), and [experiments](experiments.md) records the results:
   - `claude-haiku-5-5` as the router
   - `claude-sonnet-5-5` for the second pass
   - one pass instead of two

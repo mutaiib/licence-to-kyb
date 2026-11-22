@@ -7,12 +7,23 @@ project uses [Semantic Versioning](https://semver.org/). Each release links its 
 ## [Unreleased]
 
 ### Added
+- CodeQL static analysis of the Python and TypeScript code, on every pull request and weekly.
+- `make serve`: the backend with a real model profile.
 - Diagrams of the graph, the agent loop, the run states, the components and a reviewer
   action; `docs/status.md`, `docs/glossary.md` and `docs/reference.md`.
 - Scheduled maintenance: late runs go to review, old runs are deleted with their files and
   checkpoints, and the daily token budget starts again each day.
 
 ### Fixed
+- Concurrency: two tabs could both apply an action; the deadline sweep could take a run
+  from a thread still processing it; after a restart, waiting runs could be swept with old
+  deadlines. A lock per run and an in-flight-aware sweep fix these.
+- Domain: the model could mark its own value as entered by a reviewer; "today" was the UTC
+  date; QR and evidence checks matched substrings; Arabic digits and diacritics were not
+  normalised; high-risk activities were missed; a cancelled registry record passed.
+- Model connectors: the Claude connector's retries never ran; the OpenAI-compatible
+  connector's strict schema, refusals and HTTP retries were wrong.
+- Sign-out now ends the session on the server. Unclear documents get an empty form.
 - Security: a small PDF that inflates to gigabytes could exhaust the API's memory; pages are
   now read in a limited child process. Parallel sign-ins passed the rate limit; an unknown
   user name answered faster; QR licence numbers and reviewers' reasons were stored in plain

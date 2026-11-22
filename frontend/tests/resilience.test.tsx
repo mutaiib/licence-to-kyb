@@ -4,7 +4,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { RunView } from '../src/api/client';
+import { getRun, REQUEST_TIMEOUT_MS, type RunView } from '../src/api/client';
 import { App } from '../src/App';
 import { copy } from '../src/copy';
 
@@ -104,5 +104,28 @@ describe('the review page while a run processes', () => {
     expect(
       await screen.findByText(copy['route.reject.detail'], {}, { timeout: 5000 }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('a request that never gets a reply', () => {
+  it('ends with the connection error after the time limit, so later actions can run', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_input: RequestInfo | URL, init: RequestInit = {}) =>
+          new Promise((_resolve, reject) => {
+            init.signal?.addEventListener('abort', () => {
+              reject(new DOMException('aborted', 'AbortError'));
+            });
+          }),
+      ),
+    );
+
+    const pending = getRun('run-1');
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS + 1);
+
+    expect(await pending).toEqual({ ok: false, code: 'network' });
+    vi.useRealTimers();
   });
 });

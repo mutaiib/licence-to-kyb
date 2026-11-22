@@ -6,7 +6,7 @@ A review screen exists so that a person decides quickly and well. Put the decisi
 
 ## Rules
 
-- **Lead with the case and its state.** The business name, when it was uploaded, the route (ready, needs examination, rejected) and a link to how the system got there.
+- **Lead with the case and its state.** The business name, when it was uploaded, the route (ready, needs review, rejected; the UI says "Needs examination" for needs review) and a link to how the system got there.
 - **Show one next step, with at most one main button.** A card at the top says what to do now: "Examine 1 flagged field", then "Approve the form" with its button, then "Submit the form" with its button. Never show buttons that are disabled for a reason the reviewer must guess; show the step that removes the reason.
 - **Put the exception last.** "Reject case" is a quiet button at the end of the panel, with a reason and a confirmation. Next to Approve, in red, it looks like a normal next step.
 - **Keep engineering detail one click away.** Reading confidence and weak evidence sit in a closed "Details" section under the field's buttons. The reason, the value and the text on the licence are what a reviewer decides on.

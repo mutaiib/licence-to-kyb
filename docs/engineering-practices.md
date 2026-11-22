@@ -150,6 +150,7 @@ Checks follow the [OpenSSF Scorecard](https://securityscorecards.dev):
 - **Dependencies:**
   - Dependabot covers pip, npm, GitHub Actions and Docker.
   - `pip-audit` and `npm audit --audit-level=high` run in CI.
+- **Static analysis:** CodeQL (`security-and-quality` queries) on Python and TypeScript, on every pull request and weekly (`.github/workflows/codeql.yml`).
 - **Containers:**
   - Multi-stage builds, base images pinned by digest, a non-root user and a read-only filesystem where possible.
   - A health check on each service.

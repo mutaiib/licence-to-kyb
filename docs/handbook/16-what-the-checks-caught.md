@@ -37,6 +37,14 @@ Every bug below passed the unit tests at the time. A different kind of check fou
 | Eval review | Some groups were never in the test report; an injected copy could sit in the other split from its twin | Splits were per-case coin flips | Split evenly within each group; keep copies with their source |
 | Eval review | An unlabelled document routed `ready` counted as precise | `all([])` is true | Check what a metric does with no data |
 | Browser check | Demo traces showed `claude-opus-5-5` and token counts when no model ran | Tests checked cost, not the model name | A demo must say it is a demo in every output |
+| Concurrency review | Two browser tabs could both apply an action; the last one won | Every test sent one action at a time | Hold one lock per record across check-and-apply |
+| Concurrency review | The deadline sweep moved a run that a thread was still processing; the late finish then undid the reviewer's decision | The sweep test edited the database row, with no thread running | Never take work away from a thread that is still doing it |
+| Domain review | The model could mark its own value "entered by reviewer", which skipped the evidence check and routed a made-up date to `ready` | Tests built extractions by hand, never from model output | Never let the model set a field that code uses for trust decisions |
+| Domain review | "Today" was the UTC date: for 4 hours a day an expired UAE licence read as valid | The tests use a fixed clock at 09:00 UTC | Use the business's local date; test the edges of the day |
+| Domain review | The QR and evidence checks used substring matches: "39353" matched a printed "393530" | Test values never were a prefix of another | Compare identifiers as whole tokens |
+| Domain review | On the Claude connector, the schema retry and the `max_tokens` retry never ran | The SDK validated the reply and raised before our code saw it | Test retries against the real client's behaviour, not a stand-in |
+| Traceability review | An unclear document reached review with no form, so the reviewer could not enter values (FR-043) | No test went from "unclear" to a manual entry | Trace each requirement to a test that would fail |
+| Docs review | The README said the password prints from the frontend command; the local-model command could not work | Docs were checked for accuracy, not by following them | Follow every command in the docs, as a newcomer would |
 
 ## Rules
 

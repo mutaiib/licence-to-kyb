@@ -26,11 +26,12 @@ API routes and settings are listed in [reference.md](reference.md).
 | **Rule** (check) | Plain code that tests one thing, such as "the licence is not expired". It returns a result with a severity: `block` or `warn`. | `rules/` |
 | **Reason code** | A short code that says why a field or a run needs attention, such as `near_expiry`. The UI turns it into a sentence. | `schemas/results.py`; `frontend/src/copy.ts` |
 | **Corroboration** | A second, independent source that agrees with a value: the QR code on the licence or the registry. An "expired" date rejects a licence only when it is corroborated. | `rules/qr.py`, `rules/registry.py`, `nodes/gate.py` |
-| **Two readings** (passes) | Two independent model readings of the same licence. Where they agree on a critical field, that is evidence. | `nodes/extract.py` |
+| **Two readings** (passes) | A full model reading of the licence, plus a second, independent reading of the critical fields only. Where the two agree on a field, that is evidence that the value is right. | `nodes/extract.py` |
 | **Confidence** | A score per field from six signals: agreement, grounding, rules, OCR quality, corroboration and the model's own rating (small weight). | `nodes/confidence.py`, ADR-003 |
-| **Threshold** | The confidence a field needs to pass without review. Fitted per model profile on labelled cases. | `backend/config/thresholds.yaml`, `scripts/calibrate.py` |
+| **Threshold** | The confidence a field needs to pass without review. Today a documented default (`fitted: false`); `scripts/calibrate.py` fits it per model profile once real readings exist. | `backend/config/thresholds.yaml`, `scripts/calibrate.py` |
 | **Gate** | Code that picks the route of a run from the checks and the confidence. | `nodes/gate.py` |
-| **Route** | `ready` (nothing to examine), `needs_review` (a person examines flagged fields) or `reject` (out of scope, or a corroborated expiry). | `nodes/gate.py` |
+| **Route** | `ready` (nothing to examine), `needs_review` (a person examines flagged fields) or `reject` (out of scope, an unreadable file, or a corroborated expiry). | `nodes/gate.py` |
+| **Needs review** | The route `needs_review`. The UI says "Needs examination"; its flagged fields are listed under "Fields to examine". One state, three phrasings: the code's, the UI's heading, and the UI's list. | `nodes/gate.py`, `frontend/src/copy.ts` |
 
 ## The agent
 
@@ -65,7 +66,7 @@ API routes and settings are listed in [reference.md](reference.md).
 |---|---|---|
 | **Model profile** | Configuration that names the provider and the model of each step. `MODEL_PROFILE` picks it. | `backend/config/models.yaml`; ADR-004 |
 | **Transport** | The code that turns one model request into one provider's API: Anthropic, or OpenAI-compatible. | `llm/client.py`, `llm/openai_compatible.py` |
-| **Scripted model / demo mode** | A stand-in model that answers from the case labels. Tests the pipeline, not reading quality. Free. | `testdata/answers.py` |
+| **Scripted model / demo mode** | A stand-in model that answers from the case labels: the `demo` profile (`make dev`), whose model is named `demo-labels` in every trace, at no cost. It tests the pipeline, not reading quality. (`make demo` is something else: the Docker stack with a real model.) | `testdata/answers.py`, `backend/config/models.yaml` |
 | **Eval case** | A licence with its labels: expected values, route and reason codes. | `evals/cases/` |
 | **Split** | Cases used to fit thresholds (`calibration`) are kept apart from cases used to report results (`test`). | `evals/cases/` |
 | **Wilson interval** | A confidence interval for a rate measured on few cases: 15 of 15 is [0.80, 1.00], not "100%". | `evals/graders.py` |

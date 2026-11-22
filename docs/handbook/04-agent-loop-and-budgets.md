@@ -31,7 +31,7 @@ An agent is a loop:
 ## In this repository
 
 - **The loop:** hand-written on the Messages API inside one LangGraph node ([ADR-002](../decisions/ADR-002-anthropic-sdk-inside-langgraph-nodes.md)).
-- **The budget table:** the single definition, with soft and hard limits ([resolver tools, Budgets](../../specs/001-licence-to-kyb/contracts/resolver-tools.md#budgets-the-only-definition)).
+- **The budget table:** the single definition, with soft and hard limits (provisional until the throughput probe, T034, runs) ([resolver tools, Budgets](../../specs/001-licence-to-kyb/contracts/resolver-tools.md#budgets-the-only-definition)).
 - **Scope:** checked before every call. A proposal for a passed field is refused.
 - **Validation:** every proposal goes back through the rules, at most 2 rounds ([spec, User Story 4](../../specs/001-licence-to-kyb/spec.md)).
 - **Measured budgets:** the throughput probe (task T034) sets the provisional numbers ([plan, latency budget](../../specs/001-licence-to-kyb/plan.md#latency-budget)).
@@ -52,7 +52,7 @@ The next request tells the model to propose what it is sure of and finish. If it
 
 <details><summary>2. Why are the resolver's outputs "proposals" and not edits?</summary>
 
-The agent reads untrusted text and can be wrong. Code validates each proposal against every rule on its field, and accepts it only if all pass. So the agent can improve results but cannot make them worse.
+The agent reads untrusted text and can be wrong. Code validates each proposal against every rule on its field, and accepts it only if all pass. So the agent cannot apply a value that a check rejects. A wrong value that passes every check would still be accepted; the confidence score and the reviewer are the next guards.
 </details>
 
 <details><summary>3. A tool inside the loop makes its own model call. What must you do?</summary>

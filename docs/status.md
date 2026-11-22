@@ -15,7 +15,7 @@ What is complete, what is pending, and why. Last updated with release
 | US4 One bounded agent re-reads failed values | ✅ | [`nodes/resolve.py`](../backend/src/licence_kyb/nodes/resolve.py); [architecture §7](architecture.md#the-agent-loop-with-its-limits) |
 | US5 Trace of every step, model call and tool call | ✅ | Trace page; [`tracing.py`](../backend/src/licence_kyb/tracing.py) |
 | US6 Evals on labelled cases | ✅ | `make eval`; [`evals/`](../evals/) |
-| Any model by configuration (Claude or a local model) | ✅ | [ADR-004](decisions/ADR-004-provider-neutral-model-calls.md), [handbook 14](handbook/14-model-providers.md) |
+| Claude or an OpenAI-compatible server, by configuration (tested: Claude SDK offline, llama.cpp live) | ✅ | [ADR-004](decisions/ADR-004-provider-neutral-model-calls.md), [handbook 14](handbook/14-model-providers.md) |
 | Release with SBOMs and build provenance | ✅ | [`.github/workflows/release.yml`](../.github/workflows/release.yml) |
 
 ## Success criteria (spec)
@@ -23,9 +23,9 @@ What is complete, what is pending, and why. Last updated with release
 | Criterion | Target | Status | Evidence or reason |
 |---|---|---|---|
 | SC-001 Field accuracy | ≥ 95% clean, ≥ 85% scans | 🟡 | Two licences on a local 7B model: 9 of 12 and 6 of 10 ([experiments](experiments.md)). The full suite needs the Claude API or a GPU (T101). |
-| SC-002 `ready` precision, critical fields | ≥ 99% | 🟡 | Offline: 14 of 14 correct, Wilson 95% [0.78, 1.00]. With a real model: no run reached `ready` yet. |
+| SC-002 `ready` precision, critical fields | ≥ 99% | 🟡 | Offline: 14 of 14 correct, Wilson 95% [0.78, 1.00]: too few runs to show 99%. Showing it needs about 400 `ready` runs with a real model (the precision set below). |
 | SC-003 Review rate, realistic mix | ≤ 40% | 🟡 | Offline: 27.7%. With a real model: pending T101. |
-| SC-004 No seeded bad document submitted or `ready` | 0 | ✅ | 0 in the offline eval and in both local-model runs. |
+| SC-004 No seeded bad document submitted or `ready` | 0 | 🟡 | 0 in the offline eval (scripted readings). The two local-model runs had no seeded bad document; a real-model check waits for T101. |
 | SC-005 Reviewer time | < 2 min clean, < 5 min flagged | ⏳ | Needs a person doing 10 timed walkthroughs (T099). The audit timestamps are recorded for it. |
 | SC-006 Processing time, p95 | ≤ 60 s (≤ 90 s with re-reading) | ⏳ | Needs the Claude API (T034, T101). On a local CPU model a licence takes 25 to 50 minutes. |
 | SC-007 Cost per document | < $0.40 | ⏳ | Needs the Claude API (T034, T101). A local model costs 0. |
@@ -41,7 +41,8 @@ The tasks that need a person, money or hardware. Documentation and review tasks 
 |---|---|---|
 | T034 Throughput probe | An `ANTHROPIC_API_KEY`, and approval to spend | Paid calls. The script is ready: `scripts/measure_throughput.py`. |
 | T099 Reviewer timing | A person, 10 timed walkthroughs | Cannot be automated honestly. |
-| T101 Full eval with a real model | An API key (`make eval-live`) or a GPU for the local profile | 45 cases at 25 to 50 minutes each on this machine's CPU. |
+| T101 Full eval with a real model | An API key (`make eval-live`) or a GPU for the local profile | 93 cases (50 test, 43 calibration) at 25 to 50 minutes each: 39 to 78 hours on this machine's CPU. |
+| Precision set | About 400 `ready` runs with a real model ([test cases](../specs/001-licence-to-kyb/test-cases.md)) | Needed to show 99% `ready` precision (SC-002); it can only be generated with real readings. |
 
 **Experiments waiting for T101** ([experiments](experiments.md)): resolver on vs. off, a smaller router model, one vs. two extraction passes, OCR text in the prompt, a cheaper secondary model, and confidence thresholds fitted per model profile (`config/thresholds.yaml` holds documented defaults marked `fitted: false`).
 
@@ -51,6 +52,9 @@ The tasks that need a person, money or hardware. Documentation and review tasks 
 - **The registry is a mock.** It stands in for the authorities' verification services.
 - **One reviewer account type.** No roles or four-eyes approval.
 - **SQLite and one process.** Enough for the reference implementation; a shared deployment needs a server database and a job queue.
-- **A run that crashed before its form existed** can be retried or rejected; values can be entered by hand only once a form exists (after a reading, even a refused one).
+- **A run whose processing crashed before routing** has no form: it can be retried or rejected. Every other run that needs a person has a form, empty if nothing was read, so values can be entered by hand (FR-043).
 - **Maintenance runs inside the API process** (every minute). Several API processes would each run it; that is safe (every write is keyed) but wasteful.
-- **A local CPU model is too slow for daily use.** It shows that the system works with any model, and how a weaker model fails safely.
+- **A local CPU model is too slow for daily use.** It shows that the system runs with a second kind of model server, and how a weaker model fails safely.
+- **The injected-text test uses the scripted model,** which ignores page text. It shows that no model step can write; it does not show how a real model reacts to the text. The live eval's injected group does.
+- **Photos taken at an angle are not straightened.** Rotation by 90° steps is corrected; a perspective (keystone) correction is not built.
+- **Encryption keys are not re-encrypted on rotation.** Put a new key first in `FERNET_KEYS` and keep the old ones for the retention period ([reference](reference.md)).

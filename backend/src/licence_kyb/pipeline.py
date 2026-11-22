@@ -23,6 +23,7 @@ import io
 import json
 import logging
 import sqlite3
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
@@ -157,18 +158,33 @@ class Pipeline:
             conn, serde=EncryptedSerializer(FernetCheckpointCipher(deps.cipher))
         )
         self.graph = self._build()
+        # One lock per run: a run is processed, or one reviewer action is checked and
+        # applied, by one thread at a time (two tabs, a retry, the deadline sweep).
+        self._run_locks: dict[str, threading.Lock] = {}
+        self._run_locks_guard = threading.Lock()
+
+    def _lock_for(self, run_id: str) -> threading.Lock:
+        with self._run_locks_guard:
+            return self._run_locks.setdefault(run_id, threading.Lock())
 
     # ------------------------------------------------------------------ public API
     def upload(self, data: bytes, *, applicant_name: str) -> IntakeResult:
         return self.intake.accept(data, applicant_name=applicant_name)
 
     def process(self, run_id: str) -> dict[str, Any]:
+        with self._lock_for(run_id):
+            return self._process(run_id)
+
+    def _process(self, run_id: str) -> dict[str, Any]:
         run = self.db.get_run(run_id)
         if run is None:
             raise KeyError(run_id)
+        config = thread_config(run_id)
+        if self.graph.get_state(config).next == ("wait_for_reviewer",):
+            # Already waiting for a person (the deadline sweep sent it): nothing to process.
+            return self.state(run_id)
         applicant = self.deps.cipher.decrypt_text(run["applicant_name"])
         self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
-        config = thread_config(run_id)
         if self.graph.get_state(config).next:
             # A restart stopped this run part way: continue after its last completed step.
             resumed: dict[str, Any] = self.graph.invoke(None, config)
@@ -183,17 +199,29 @@ class Pipeline:
 
         The run's graph also moves to the review pause, so the reviewer can retry it.
         """
-        run = self.db.get_run(run_id)
-        if run is None:
-            return
-        self.ops.send_to_review(run, event="processing_error", note="processing raised an error")
-        self._pause_for_review(run_id)
+        with self._lock_for(run_id):
+            run = self.db.get_run(run_id)
+            if run is None:
+                return
+            self.ops.send_to_review(
+                run, event="processing_error", note="processing raised an error"
+            )
+            self._pause_for_review(run_id)
 
     def maintenance(self, *, retention_days: int) -> None:
         """The scheduled work (api/app.py runs it every minute): late runs go to review, and
         runs past retention are deleted with their files and their graph checkpoints."""
-        for run_id in self.ops.sweep_deadlines():
-            self._pause_for_review(run_id)
+        for run in self.ops.late_runs():
+            lock = self._lock_for(run["run_id"])
+            if not lock.acquire(blocking=False):
+                continue  # a thread is processing it: it reaches review or its route on its own
+            try:
+                self.ops.send_to_review(run, event="deadline_sweep", note="deadline passed")
+                self._pause_for_review(run["run_id"])
+            except Exception:  # one broken run must not stop the others
+                log.exception("deadline sweep failed", extra={"run_id": run["run_id"]})
+            finally:
+                lock.release()
         for run_id in self.ops.apply_retention(days=retention_days):
             self.checkpointer.delete_thread(run_id)
 
@@ -248,7 +276,12 @@ class Pipeline:
         return state
 
     def act(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
-        """Check one reviewer action, then resume the paused run with it."""
+        """Check one reviewer action, then resume the paused run with it. One action at a
+        time per run: a second tab's action is checked against the state the first left."""
+        with self._lock_for(run_id):
+            return self._act(run_id, action)
+
+    def _act(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
         state = self.check(run_id, action)
         if action["action_id"] in state.get("applied_ids", []):
             return state  # a repeated click: nothing new to do
