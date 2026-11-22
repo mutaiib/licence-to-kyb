@@ -10,10 +10,10 @@ from typing import Any
 
 import httpx
 import pytest
-from licence_kyb.llm.openai_compatible import OpenAICompatibleTransport
 from pydantic import BaseModel
 
 from licence_kyb.llm.client import LLMError, ModelRequest, image_block
+from licence_kyb.llm.openai_compatible import OpenAICompatibleTransport
 
 
 class Answer(BaseModel):

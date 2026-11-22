@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup
+.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup local-model
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -52,3 +52,10 @@ dev:               ## local demo backend (label answers, no model key); run `npm
 
 backup:
 	mkdir -p var/backups && cp var/*.sqlite3 var/backups/ 2>/dev/null || true
+
+# An open-weight model on this machine (ADR-004). Run scripts/fetch_llama_server.sh once,
+# then `make local-model` in one terminal and `MODEL_PROFILE=local make dev` in another.
+LOCAL_MODEL_PATH ?= $(HOME)/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
+local-model:
+	var/llama.cpp/llama-server -m "$(LOCAL_MODEL_PATH)" --alias local-model --jinja \
+		--host 127.0.0.1 --port 8080 --ctx-size 8192 --threads $$(nproc)
