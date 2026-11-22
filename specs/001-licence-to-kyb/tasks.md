@@ -330,8 +330,8 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Implementation for User Story 5
 
-- [ ] T087 [US5] Implement the trace, run-list and summary endpoints, with the masking serializer, in `backend/src/licence_kyb/api/routes_runs.py` and `backend/src/licence_kyb/ops.py`
-- [ ] T088 [US5] Build the Runs page (with the daily summary) and the Trace page in `frontend/src/pages/Runs.tsx`, `frontend/src/pages/Trace.tsx` and `frontend/src/components/SpanTree.tsx`, with their strings in `copy.ts`. Open the US5 pull request into `develop`.
+- [ ] T087 [US5] Implement the trace and summary endpoints, with the masking serializer, in `backend/src/licence_kyb/api/routes_trace.py`, and the summary query in `backend/src/licence_kyb/store/db.py`. Record one `model_call` span per resolver turn and vision re-read, and one `tool_call` span per tool call (its error code, and the result the model saw, encrypted). `persist` writes each run's cost and processing duration for the run list.
+- [ ] T088 [US5] Build the Runs page (with the daily summary) and the Trace page in `frontend/src/pages/RunsPage.tsx`, `frontend/src/pages/TracePage.tsx` and `frontend/src/components/SpanTree.tsx`, with the routes `/runs` and `/runs/:id/trace`, with their strings in `copy.ts`. Open the US5 pull request into `develop`.
 
 **Checkpoint**: any run's path, duration and cost can be inspected safely. Drift in refusals, fallbacks and review rate is visible.
 
