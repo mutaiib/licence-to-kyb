@@ -262,8 +262,8 @@ class LabelDemoTransport:
         return None
 
     def send(self, req: ModelRequest) -> ModelResponse:
-        # No model runs in demo mode, so its answers cost nothing.
-        return replace(self._answer(req), prices=(0.0, 0.0, 0.0))
+        # No model runs in demo mode: no tokens, no cost.
+        return replace(self._answer(req), usage=Usage(), prices=(0.0, 0.0, 0.0))
 
     def _answer(self, req: ModelRequest) -> ModelResponse:
         case = self._case_for(req)

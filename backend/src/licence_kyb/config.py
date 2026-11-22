@@ -104,7 +104,7 @@ class ModelProfile(BaseModel):
     (ADR-004). ``MODEL_PROFILE`` picks one; ``models.yaml`` names the default."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
-    provider: Literal["anthropic", "openai_compatible"]
+    provider: Literal["anthropic", "openai_compatible", "demo"]
     base_url: str | None = None
     vision: bool = True
     price_per_mtok: Prices | None = None

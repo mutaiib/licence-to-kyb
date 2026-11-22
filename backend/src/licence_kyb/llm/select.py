@@ -9,6 +9,8 @@ from licence_kyb.llm.openai_compatible import OpenAICompatibleTransport
 
 
 def profile_transport(profile: ModelProfile, settings: Settings) -> Transport:
+    if profile.provider == "demo":
+        raise SystemExit("the demo profile needs DEMO_ANSWERS_DIR (scripts/dev_demo.sh sets it)")
     if profile.provider == "openai_compatible":
         if profile.base_url is None:
             raise SystemExit("the model profile needs a base_url (config/models.yaml)")
