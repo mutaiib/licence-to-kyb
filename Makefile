@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo backup
+.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -26,6 +26,7 @@ test:
 	cd frontend && npm test
 
 types:
+	$(BACKEND) python scripts/export_openapi.py var/openapi.json
 	cd frontend && npx openapi-typescript ../var/openapi.json -o src/api/generated.ts
 
 eval:              ## paid: calls the model API
@@ -45,6 +46,9 @@ measure:           ## paid: throughput probe (task T034)
 
 demo:
 	docker compose up --build
+
+dev:               ## local demo backend (label answers, no model key); run `npm run dev` in frontend/
+	scripts/dev_demo.sh
 
 backup:
 	mkdir -p var/backups && cp var/*.sqlite3 var/backups/ 2>/dev/null || true

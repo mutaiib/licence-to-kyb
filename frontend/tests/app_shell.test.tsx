@@ -10,7 +10,7 @@ describe('app shell', () => {
 
     const banner = screen.getByRole('banner');
 
-    expect(within(banner).getByText(copy.app.title)).toBeVisible();
+    expect(within(banner).getByText(copy['app.title'])).toBeVisible();
   });
 
   it('gives the page one main content area', () => {

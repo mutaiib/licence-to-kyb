@@ -8,12 +8,14 @@ import { copy } from './src/copy.ts';
 function htmlTitleFromCopy(): Plugin {
   return {
     name: 'html-title-from-copy',
-    transformIndexHtml: (html) => html.replace('%APP_TITLE%', copy.app.title),
+    transformIndexHtml: (html) => html.replace('%APP_TITLE%', copy['app.title']),
   };
 }
 
 export default defineConfig({
   plugins: [react(), htmlTitleFromCopy()],
+  // Local development: the API runs on :8000 (scripts/dev_demo.sh); same-origin cookies stay strict.
+  server: { proxy: { '/api': 'http://127.0.0.1:8000' } },
   test: {
     environment: 'jsdom',
     include: ['tests/**/*.test.{ts,tsx}'],

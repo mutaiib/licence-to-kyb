@@ -14,6 +14,8 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 **Organization**: tasks are grouped by user story, so each story can be implemented, verified and merged on its own.
 
+**Visual check (constitution, Development Workflow)**: before its pull request, each story runs its quickstart rows in a browser against `make dev` (demo mode), fixes every defect with a regression test, and attaches screenshots to the pull request.
+
 **Branching (GitFlow)**:
 - The specification is on `feature/001-licence-to-kyb`, which merges first.
 - Setup and Foundation are on `feature/001-licence-to-kyb-foundation`.
@@ -139,15 +141,15 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Tests for User Story 1 (write first; they must fail)
 
-- [ ] T035 [P] [US1] Write intake and preprocess tests from the "Intake and reading" table in `backend/tests/unit/test_intake_preprocess.py`
-- [ ] T036 [P] [US1] Write rule tests from the "Checks" table in `backend/tests/unit/test_rules.py`, and Hypothesis properties (≥ 500 examples each) in `backend/tests/unit/test_rules_properties.py`
-- [ ] T037 [P] [US1] Write form-mapping tests from the "Form filling" table in `backend/tests/unit/test_map_form.py`
-- [ ] T038 [P] [US1] Write graph tests from the "Document identification and extraction" table, using recorded responses from synthetic documents, in `backend/tests/graph/test_route_extract.py`
-- [ ] T039 [P] [US1] Write API tests per `contracts/http-api.md` in `backend/tests/api/test_session_and_upload.py`:
+- [X] T035 [P] [US1] Write intake and preprocess tests from the "Intake and reading" table in `backend/tests/unit/test_intake_preprocess.py`
+- [X] T036 [P] [US1] Write rule tests from the "Checks" table in `backend/tests/unit/test_rules.py`, and Hypothesis properties (≥ 500 examples each) in `backend/tests/unit/test_rules_properties.py`
+- [X] T037 [P] [US1] Write form-mapping tests from the "Form filling" table in `backend/tests/unit/test_map_form.py`
+- [X] T038 [P] [US1] Write graph tests from the "Document identification and extraction" table, using recorded responses from synthetic documents, in `backend/tests/graph/test_route_extract.py`
+- [X] T039 [P] [US1] Write API tests per `contracts/http-api.md` in `backend/tests/api/test_session_and_upload.py`:
   - sign-in, sign-out and the rate limit
   - CSRF on state-changing requests
   - `POST /api/runs` and `GET /api/runs/{id}`
-- [ ] T040 [P] [US1] Write Vitest tests in `frontend/tests/upload_and_view.test.tsx`:
+- [X] T040 [P] [US1] Write Vitest tests in `frontend/tests/upload_and_view.test.tsx`:
   - sign-in errors are shown
   - upload limits are shown before submit
   - flagged fields appear expanded with their reason
@@ -156,29 +158,29 @@ description: "Task list for Trade Licence to KYB Onboarding Form"
 
 ### Implementation for User Story 1
 
-- [ ] T041 [P] [US1] Implement the intake node in `backend/src/licence_kyb/nodes/intake.py`: magic-byte type check, size, page and megapixel limits, SHA-256 dedupe, encrypted storage
-- [ ] T042 [P] [US1] Implement the preprocess node in `backend/src/licence_kyb/nodes/preprocess.py`:
+- [X] T041 [P] [US1] Implement the intake node in `backend/src/licence_kyb/nodes/intake.py`: magic-byte type check, size, page and megapixel limits, SHA-256 dedupe, encrypted storage
+- [X] T042 [P] [US1] Implement the preprocess node in `backend/src/licence_kyb/nodes/preprocess.py`:
   - 200 DPI rendering with a time limit
   - the text-layer read
   - Tesseract `eng+ara` words with boxes
   - deskew and rotate
   - QR decoding as untrusted text
-- [ ] T043 [P] [US1] Write the route and extract prompts in `backend/src/licence_kyb/llm/prompts/route.md`, `extract_primary.md` and `extract_secondary.md`, following `contracts/model-calls.md`
-- [ ] T044 [US1] Implement the route node in `backend/src/licence_kyb/nodes/route.py`. It does the authority cross-check, and corroborates out of scope (no licence-number pattern and no licence title in the OCR text) before any reject. Unclear and uncorroborated labels go to review.
-- [ ] T045 [US1] Implement the extract node in `backend/src/licence_kyb/nodes/extract.py`: primary and secondary passes in parallel, one retry naming the failing fields, an agreement map, and `fallback_model` and `processing_failed` reasons
-- [ ] T046 [P] [US1] Implement the rule base, with the `passed`, `failed`, `could_not_run` and `not_applicable` outcomes, plus the expiry, number-format and date-order rules, in `backend/src/licence_kyb/rules/{base,expiry,number_format,dates}.py`
-- [ ] T047 [P] [US1] Implement the ownership, legal-form and Arabic-name rules in `backend/src/licence_kyb/rules/{ownership,legal_form,arabic_name}.py`
-- [ ] T048 [P] [US1] Implement the activity, evidence, QR, registry (mock, `not_applicable` without a register) and applicant-name rules in `backend/src/licence_kyb/rules/{activity,grounding,qr,registry,applicant}.py`
-- [ ] T049 [US1] Implement the validate node in `backend/src/licence_kyb/nodes/validate.py`. It runs every rule and never raises.
-- [ ] T050 [US1] Implement the map-form node (the draft form) in `backend/src/licence_kyb/nodes/map_form.py`. It handles required documents, Ejari and Tawtheeq, controller merging on name and nationality, and `ubo_needs_examination`.
-- [ ] T051 [US1] Wire intake → preprocess → route → extract → validate → map_form in `backend/src/licence_kyb/graph.py`. In this story, any flagged field routes to `needs_review`, and only file and `out_of_scope` reasons route to `reject`.
-- [ ] T052 [US1] Implement the session endpoints (argon2id, rate limit, CSRF, sign-out) in `backend/src/licence_kyb/api/routes_session.py` and `backend/src/licence_kyb/api/csrf.py`. Implement the runs endpoints (`POST /api/runs`, `GET /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/pages/{n}`) in `backend/src/licence_kyb/api/routes_runs.py`.
-- [ ] T053 [P] [US1] Add the strings for sign-in, upload, progress, field states, route labels and reason codes to `frontend/src/copy.ts`, following `docs/ui-copy.md`. Implement the copy check in `scripts/lint_copy.py`.
-- [ ] T054 [US1] Generate `frontend/src/api/generated.ts` (`make types`). Build these pages, starting from `astryx template`, in `frontend/src/pages/` and `frontend/src/components/`:
+- [X] T043 [P] [US1] Write the route and extract prompts in `backend/src/licence_kyb/llm/prompts/route.md`, `extract_primary.md` and `extract_secondary.md`, following `contracts/model-calls.md`
+- [X] T044 [US1] Implement the route node in `backend/src/licence_kyb/nodes/route.py`. It does the authority cross-check, and corroborates out of scope (no licence-number pattern and no licence title in the OCR text) before any reject. Unclear and uncorroborated labels go to review.
+- [X] T045 [US1] Implement the extract node in `backend/src/licence_kyb/nodes/extract.py`: primary and secondary passes in parallel, one retry naming the failing fields, an agreement map, and `fallback_model` and `processing_failed` reasons
+- [X] T046 [P] [US1] Implement the rule base, with the `passed`, `failed`, `could_not_run` and `not_applicable` outcomes, plus the expiry, number-format and date-order rules, in `backend/src/licence_kyb/rules/{base,expiry,number_format,dates}.py`
+- [X] T047 [P] [US1] Implement the ownership, legal-form and Arabic-name rules in `backend/src/licence_kyb/rules/{ownership,legal_form,arabic_name}.py`
+- [X] T048 [P] [US1] Implement the activity, evidence, QR, registry (mock, `not_applicable` without a register) and applicant-name rules in `backend/src/licence_kyb/rules/{activity,grounding,qr,registry,applicant}.py`
+- [X] T049 [US1] Implement the validate node in `backend/src/licence_kyb/nodes/validate.py`. It runs every rule and never raises.
+- [X] T050 [US1] Implement the map-form node (the draft form) in `backend/src/licence_kyb/nodes/map_form.py`. It handles required documents, Ejari and Tawtheeq, controller merging on name and nationality, and `ubo_needs_examination`.
+- [X] T051 [US1] Wire intake → preprocess → route → extract → validate → map_form in `backend/src/licence_kyb/graph.py`. In this story, any flagged field routes to `needs_review`, and only file and `out_of_scope` reasons route to `reject`.
+- [X] T052 [US1] Implement the session endpoints (argon2id, rate limit, CSRF, sign-out) in `backend/src/licence_kyb/api/routes_session.py` and `backend/src/licence_kyb/api/csrf.py`. Implement the runs endpoints (`POST /api/runs`, `GET /api/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/pages/{n}`) in `backend/src/licence_kyb/api/routes_runs.py`.
+- [X] T053 [P] [US1] Add the strings for sign-in, upload, progress, field states, route labels and reason codes to `frontend/src/copy.ts`, following `docs/ui-copy.md`. Implement the copy check in `scripts/lint_copy.py`.
+- [X] T054 [US1] Generate `frontend/src/api/generated.ts` (`make types`). Build these pages, starting from `astryx template`, in `frontend/src/pages/` and `frontend/src/components/`:
   - the Sign-in page
   - the Upload page
   - a read-only Review page: a document viewer with evidence highlight, and the form with status labels
-- [ ] T055 [US1] Record the model responses for every US1 graph test in `backend/tests/fixtures/llm/`. Confirm that the US1 backend and frontend tests pass, then open the US1 pull request into `develop`.
+- [X] T055 [US1] Record the model responses for every US1 graph test in `backend/tests/fixtures/llm/`. Confirm that the US1 backend and frontend tests pass, then open the US1 pull request into `develop`.
 
 **Checkpoint**: US1 works on its own. Upload a licence and see a checked draft form with evidence.
 

@@ -71,6 +71,27 @@ jobs:
       - name: Dependency audit
         run: npm audit --audit-level=high
 
+  contract:
+    name: API contract (generated types up to date)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Export the OpenAPI schema and regenerate the frontend types
+        run: |
+          (cd backend && uv sync --frozen)
+          uv --project backend run python scripts/export_openapi.py var/openapi.json
+          (cd frontend && npm ci && npm run types)
+      - name: Fail if the committed types differ from the backend contract
+        run: git diff --exit-code -- frontend/src/api/generated.ts
+
   docker:
     name: docker images (build and smoke test)
     runs-on: ubuntu-24.04

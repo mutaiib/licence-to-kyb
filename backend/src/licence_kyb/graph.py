@@ -18,6 +18,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -40,6 +41,6 @@ def compile_graph(add_nodes: GraphBuilder, checkpointer: SqliteSaver) -> Compile
     return builder.compile(checkpointer=checkpointer)
 
 
-def thread_config(run_id: str) -> dict[str, Any]:
+def thread_config(run_id: str) -> RunnableConfig:
     """One LangGraph thread per run."""
     return {"configurable": {"thread_id": run_id}}
