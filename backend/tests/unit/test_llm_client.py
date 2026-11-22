@@ -152,3 +152,16 @@ def test_cost_uses_the_serving_models_price_with_thinking_billed_as_output() -> 
     cost = response(usage=usage).cost_usd()
 
     assert cost == pytest.approx(10_000 * 4 / 1e6 + 4_000 * 20 / 1e6)
+
+
+def test_a_retry_after_max_tokens_reports_the_usage_of_both_calls(tmp_path: Path) -> None:
+    replay = ReplayTransport(tmp_path)
+    first = request()
+    replay.save(first, response(stop_reason="max_tokens", parsed=None))
+    replay.save(request(max_tokens=8000), response())
+
+    result = LLMClient(replay, DailyBudget(limit_tokens=100_000)).call(first)
+
+    assert result.usage.input_tokens == 2000
+    assert result.usage.output_tokens == 400
+    assert result.usage.billed_tokens == 2400

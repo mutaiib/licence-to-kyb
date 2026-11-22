@@ -389,7 +389,7 @@ class Pipeline:
                 failed_fields=re_readable_fields(results),
                 authority=state["route"]["authority"],
                 registry=self.deps.registry.lookup,
-                reread=self._reread(run_id, step) if self.deps.vision else None,
+                reread=self._reread(run_id, step, budget) if self.deps.vision else None,
             )
             outcome = run_resolver(
                 llm=self.deps.llm,
@@ -433,8 +433,9 @@ class Pipeline:
             span.raw_result = args
             span.model_view = result.content
 
-    def _reread(self, run_id: str, parent: Span) -> Callable[[int, str], str]:
-        """Re-read one page region with the vision model (licence_reread_region)."""
+    def _reread(self, run_id: str, parent: Span, budget: Budget) -> Callable[[int, str], str]:
+        """Re-read one page region with the vision model (licence_reread_region). Its tokens
+        count against the resolver's budget, like the resolver's own calls."""
 
         def reread(page: int, region: str) -> str:
             image = Image.open(io.BytesIO(self.page_png(run_id, page)))
@@ -454,6 +455,7 @@ class Pipeline:
                 messages=[{"role": "user", "content": [image_block(buffer.getvalue())]}],
             )
             response = self.deps.llm.call(request)
+            budget.charge_tokens(response.usage.billed_tokens)
             self._trace_call(run_id, parent, request, response)
             return " ".join(b.get("text", "") for b in response.content if b.get("type") == "text")
 

@@ -278,6 +278,46 @@ def test_a_model_that_uses_too_many_tokens_stops_at_the_token_limit(
     assert "resolver_budget" in {r["code"] for r in state["reasons"]}
 
 
+def test_vision_re_reads_count_against_the_resolver_token_limit(
+    tmp_path: Path, catalogue: Any
+) -> None:
+    """Each re-read is a model call that costs tokens. They must count against the limit,
+    or a model could re-read region after region past the 40k token budget."""
+    holder: dict[str, Any] = {}
+
+    class VisionTransport(ToolLoopTransport):
+        vision_calls = 0
+
+        def send(self, req: ModelRequest) -> ModelResponse:
+            if req.step != "reread_vision":
+                return super().send(req)
+            self.vision_calls += 1
+            return ModelResponse(
+                content=[{"type": "text", "text": "Expiry Date"}],
+                parsed=None,
+                stop_reason="end_turn",
+                serving_model=req.model,
+                usage=Usage(input_tokens=20_000, output_tokens=5_000),
+            )
+
+    regions = ["top_left", "top_right", "middle", "bottom_left", "bottom_right", "full_page"]
+
+    def transport(labels: dict[str, Any], case: dict[str, Any]) -> ToolLoopTransport:
+        turns = [
+            [tool("licence_reread_region", page=1, field="expiry_date", region=r)] for r in regions
+        ]
+        holder["t"] = VisionTransport(labels, turns, tokens_per_turn=1_000)
+        return holder["t"]
+
+    truth = first_case(catalogue[1], "near_expiry")["expected_values"]["expiry_date"]
+    state, _ = run(
+        tmp_path, catalogue, "near_expiry", transport, misread={"expiry_date": wrong_year(truth)}
+    )
+
+    assert holder["t"].vision_calls == 2  # 2 x 25k re-read tokens reach the 40k hard limit
+    assert "resolver_budget" in {r["code"] for r in state["reasons"]}
+
+
 def test_no_re_readable_failure_means_no_resolver_call(tmp_path: Path, catalogue: Any) -> None:
     holder: dict[str, ToolLoopTransport] = {}
 

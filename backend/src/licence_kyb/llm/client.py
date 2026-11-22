@@ -68,6 +68,14 @@ class Usage:
     def billed_tokens(self) -> int:
         return self.input_tokens + self.output_tokens
 
+    def __add__(self, other: Usage) -> Usage:
+        return Usage(
+            input_tokens=self.input_tokens + other.input_tokens,
+            output_tokens=self.output_tokens + other.output_tokens,
+            thinking_tokens=self.thinking_tokens + other.thinking_tokens,
+            cache_read_tokens=self.cache_read_tokens + other.cache_read_tokens,
+        )
+
 
 @dataclass(frozen=True)
 class ModelRequest:
@@ -181,7 +189,14 @@ class LLMClient:
     def call(self, req: ModelRequest) -> ModelResponse:
         result = self._send(req)
         if result.stop_reason == "max_tokens":
+            first = result
             result = self._send(replace(req, max_tokens=req.max_tokens * 2))
+            # Both calls were paid for: report them together, so traces and costs are right.
+            result = replace(
+                result,
+                usage=first.usage + result.usage,
+                latency_ms=first.latency_ms + result.latency_ms,
+            )
             if result.stop_reason == "max_tokens":
                 raise OutputTruncatedError("the reply was cut off twice at the token limit")
         if result.stop_reason == "refusal":

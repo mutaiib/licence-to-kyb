@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 
+from licence_kyb.nodes.gate import expiry_corroborated
 from licence_kyb.rules import RegistryResult, RuleContext, run_rules
 from licence_kyb.schemas.results import RuleResult
 from tests.builders import extraction, field, person
@@ -18,13 +19,15 @@ from tests.builders import extraction, field, person
 TODAY = date(2026, 6, 1)
 
 
-def registry(status: str = "active", expiry: str = "2027-03-01") -> Any:
+def registry(status: str = "active", expiry: str | None = "2027-03-01") -> Any:
     def lookup(number: str, authority: str) -> RegistryResult:
         if status == "unavailable":
             raise TimeoutError("register did not answer")
         if status == "not_found":
             return RegistryResult(found=False)
-        return RegistryResult(found=True, status=status, expiry_date=date.fromisoformat(expiry))
+        return RegistryResult(
+            found=True, status=status, expiry_date=date.fromisoformat(expiry) if expiry else None
+        )
 
     return lookup
 
@@ -255,6 +258,16 @@ def test_registry(
     results = run_rules(ctx)
     assert outcome(results, "registry") == expected
     assert result(results, "registry").overridable is overridable
+
+
+def test_a_registry_record_without_an_expiry_date_confirms_only_the_number() -> None:
+    """A real register can omit the expiry date. Then the registry cannot corroborate an
+    expired date, so a misread past date stays uncertain instead of rejecting the licence."""
+    results = run_rules(context(registry=registry(expiry=None)))
+
+    assert result(results, "registry").outcome == "passed"
+    assert result(results, "registry").fields == ("licence_number",)
+    assert not expiry_corroborated(results, {"expiry_date": False})
 
 
 def test_registry_expiry_that_differs_from_the_licence_is_blocked() -> None:

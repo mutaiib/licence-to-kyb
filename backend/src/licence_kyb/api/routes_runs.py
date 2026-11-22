@@ -113,8 +113,12 @@ def get_run(run_id: str, request: Request) -> RunView | JSONResponse:
     responses={200: {"content": {"image/png": {}}}, 404: {"model": ErrorOut}},
 )
 def get_page(run_id: str, page: int, request: Request) -> Response:
+    pipeline = _pipeline(request)
+    # The run ID becomes part of a file path: it must name a known run first.
+    if pipeline.db.get_run(run_id) is None:
+        return error_response(404, "not_found")
     try:
-        png = _pipeline(request).page_png(run_id, page)
+        png = pipeline.page_png(run_id, page)
     except FileNotFoundError:
         return error_response(404, "not_found")
     return Response(
