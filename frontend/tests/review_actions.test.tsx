@@ -203,23 +203,17 @@ describe('review actions', () => {
     });
   });
 
-  it('keeps approve form disabled while a flagged field has no decision', async () => {
+  it('offers approve form only after every flagged field has a decision', async () => {
     const view = runView({ licence_number: passed, expiry_date: nearExpiry });
     answer = () => withField(view, 'expiry_date', { state: 'approved' });
     openRun(view);
 
-    const approveForm = await button(copy['review.approveForm']);
-    expect(approveForm).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByText(copy['review.remaining.one'])).toBeInTheDocument();
+    expect(await screen.findByText(copy['next.examine.one'])).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: copy['review.approveForm'] })).toBeNull();
 
     fireEvent.click(await fieldAction('review.approve.field', 'expiry_date'));
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: copy['review.approveForm'] })).not.toHaveAttribute(
-        'aria-disabled',
-        'true',
-      );
-    });
+    expect(await button(copy['review.approveForm'])).toBeEnabled();
     expect(screen.getByText(copy['review.allDecided'])).toBeInTheDocument();
   });
 
@@ -259,15 +253,12 @@ describe('review actions', () => {
   it('asks for a form approval before submit on a ready run that nobody approved', async () => {
     openRun(runView({ licence_number: passed }, { status: 'awaiting_submit', route: 'ready' }));
 
-    expect(await button(copy['review.approveForm'])).not.toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByRole('button', { name: copy['review.submit'] })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(await button(copy['review.approveForm'])).toBeEnabled();
+    expect(screen.queryByRole('button', { name: copy['review.submit'] })).toBeNull();
     expect(screen.queryByText(copy['review.ready'])).toBeNull();
   });
 
-  it('disables submit after a change until the form is approved again', async () => {
+  it('replaces submit with approve form after a change', async () => {
     const approved = runView(
       { licence_number: passed },
       { status: 'awaiting_submit', form_approved: true },
@@ -278,7 +269,7 @@ describe('review actions', () => {
     });
     openRun(approved);
 
-    expect(await button(copy['review.submit'])).not.toHaveAttribute('aria-disabled', 'true');
+    expect(await button(copy['review.submit'])).toBeEnabled();
 
     fireEvent.click(await fieldAction('review.correct.field', 'licence_number'));
     fireEvent.change(screen.getByLabelText(copy['review.correct.label']), {
@@ -286,12 +277,8 @@ describe('review actions', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: copy['review.save'] }));
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: copy['review.submit'] })).toHaveAttribute(
-        'aria-disabled',
-        'true',
-      );
-    });
+    expect(await button(copy['review.approveForm'])).toBeEnabled();
+    expect(screen.queryByRole('button', { name: copy['review.submit'] })).toBeNull();
   });
 
   it('moves focus to the next flagged field after a decision', async () => {

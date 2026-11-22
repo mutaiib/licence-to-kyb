@@ -219,9 +219,16 @@ Labels are nouns. Each step also shows a status: Waiting, In progress, Done or S
 | `review.retry` | Retry processing |
 | `review.enterValue` | Enter value |
 | `review.approveForm` | Approve form |
-| `review.approveForm.disabled` | Approve or correct each flagged field first. |
-| `review.remaining` | `{count}` flagged fields remain. |
-| `review.remaining.one` | 1 flagged field remains. |
+| `next.label` | Next step |
+| `next.examine` | Examine {count} flagged fields |
+| `next.examine.one` | Examine 1 flagged field |
+| `next.examine.detail` | Approve or correct each flagged field below. Then approve the form. |
+| `next.approve.title` | Approve the form |
+| `next.submit.title` | Submit the form |
+| `next.retry.title` | Processing stopped |
+| `next.rejected.title` | Case rejected |
+| `next.done.title` | Submitted |
+| `review.details` | Details |
 | `review.allDecided` | Each flagged field has a decision. Approve the form. |
 | `review.ready` | You approved all fields. Submit the form. |
 | `review.submit` | Submit |

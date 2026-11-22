@@ -7,7 +7,9 @@ A review screen exists so that a person decides quickly and well. Put the decisi
 ## Rules
 
 - **Lead with the case and its state.** The business name, when it was uploaded, the route (ready, needs examination, rejected) and a link to how the system got there.
-- **Put the actions before the content they act on.** Approve form, Submit and Reject sit above the fields, with a count of what remains ("1 flagged field remains").
+- **Show one next step, with at most one main button.** A card at the top says what to do now: "Examine 1 flagged field", then "Approve the form" with its button, then "Submit the form" with its button. Never show buttons that are disabled for a reason the reviewer must guess; show the step that removes the reason.
+- **Put the exception last.** "Reject case" is a quiet button at the end of the panel, with a reason and a confirmation. Next to Approve, in red, it looks like a normal next step.
+- **Keep engineering detail one click away.** Reading confidence and weak evidence sit in a closed "Details" section under the field's buttons. The reason, the value and the text on the licence are what a reviewer decides on.
 - **Show the fields to examine first.** Flagged fields open; passed fields in a closed group. The reviewer's job is the exceptions.
 - **Say each reason once, where it applies.** A field's reason shows on the field; the run-level list holds only reasons about the whole case.
 - **Put the evidence next to the decision.** Highlight the source text on the page image when a field is selected. On a phone, show the page right after the fields to examine.
@@ -31,7 +33,7 @@ A review screen exists so that a person decides quickly and well. Put the decisi
 
 <details><summary>1. The form has 12 fields; 1 is flagged. In what order should the screen show them?</summary>
 
-The status and the actions first, then "Fields to examine (1)" with the flagged field open, then "Fields that passed (11)" closed.
+The next step first ("Examine 1 flagged field"), then "Fields to examine (1)" with the flagged field open, then "Fields that passed (11)" closed, then the documents to request, and "Reject case" last.
 </details>
 
 <details><summary>2. A ready run shows "Submit" enabled. Is that correct?</summary>
@@ -42,4 +44,9 @@ Only if a reviewer approved this exact form version. A ready run still needs an 
 <details><summary>3. Why test accessibility in the test suite and in a browser?</summary>
 
 The test suite runs on every change but has no layout, so it cannot check colour contrast. The browser check measures contrast and focus, but runs less often. Each covers what the other cannot.
+</details>
+
+<details><summary>4. An owner says the page is "confusing", but every test passes. What do you look for?</summary>
+
+Count the signals for one state: here a status banner, a counter and three buttons (two disabled) all described the same moment. Replace them with one sentence that says what to do now and one button that does it. Then check the order of the panel against the order of the work.
 </details>
