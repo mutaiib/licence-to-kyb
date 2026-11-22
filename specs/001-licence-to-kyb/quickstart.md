@@ -23,7 +23,8 @@ make data                         # generate synthetic licences and ground truth
 ```bash
 make lint                         # ruff, mypy --strict, eslint, tsc, copy check, gitleaks
 make test                         # unit, graph and API tests, offline, with a fixed clock
-make eval                         # live: every labelled case, report in evals/reports/
+make eval                         # offline: scripted model, no cost; report in evals/reports/
+make eval-live                    # the models of MODEL_PROFILE (paid on the API, free locally)
 ```
 
 ## Run the app

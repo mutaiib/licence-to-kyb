@@ -25,6 +25,9 @@ This handbook collects the ideas behind this repository, one topic per page. Eac
 | 11 | [Spec-driven development](11-spec-driven-development.md) | go from an idea to testable requirements before code |
 | 12 | [Engineering practices](12-engineering-practices.md) | run the repository like a professional project |
 | 13 | [Lessons from the design reviews](13-lessons-from-design-reviews.md) | revise the real mistakes found in this design, and their fixes |
+| 14 | [Model providers and local models](14-model-providers.md) | run the same code on another model, or one on your own machine |
+| 15 | [UX for human review](15-ux-for-human-review.md) | build a review screen people decide on quickly and well |
+| 16 | [What the checks caught](16-what-the-checks-caught.md) | revise the real bugs found while building, and which check found each |
 
 ## Revision paths
 

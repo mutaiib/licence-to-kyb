@@ -32,8 +32,10 @@ make lint           # ruff, mypy --strict, eslint, tsc, prettier, copy check
 make test           # offline backend, eval-harness and frontend tests
 ```
 
-`make eval` calls the paid model API. Run it only when a change affects model behaviour, and
-attach the report to the pull request.
+`make eval` runs every labelled case offline with a scripted model: it checks routing and
+rules at no cost, so run it on every change. `make eval-live` calls the models of
+`MODEL_PROFILE`: the paid API by default, or a local model (`MODEL_PROFILE=local`, free).
+Run it when a change affects model behaviour, and attach the report to the pull request.
 
 ## Data rules
 

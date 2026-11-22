@@ -11,6 +11,7 @@ A model's self-rated confidence is unreliable until it is calibrated. So score c
 - **Ground every value:**
   - The value must appear in its quote.
   - The quote must appear in the OCR text (fuzzy match ≥ 0.85).
+  - **A date or an identifier must also appear exactly in the OCR text.** A quote that repeats a misread digit ("11/06/2028" for a printed "11/06/2026") still matches the page fuzzily, so the value itself must be found ([16](16-what-the-checks-caught.md)).
   - A failed check flags the field. It does not reject the case.
 - **Grounding proves the document says something.** It does not prove the document is true or current. For that, use corroboration: the QR code, or a registry.
 - **Build confidence from checkable signals:**

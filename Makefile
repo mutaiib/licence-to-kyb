@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-compare eval-precision approve-capture measure demo dev backup local-model mutation
+.PHONY: setup data lint test types eval eval-live eval-compare approve-capture measure demo dev backup local-model mutation
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -29,14 +29,14 @@ types:
 	$(BACKEND) python scripts/export_openapi.py var/openapi.json
 	cd frontend && npx openapi-typescript ../var/openapi.json -o src/api/generated.ts
 
-eval:              ## paid: calls the model API
-	$(BACKEND) python -m evals.run
+eval:              ## offline: scripted model from labels; checks routing and rules; no cost
+	$(BACKEND) python -m evals.run --model scripted
+
+eval-live:         ## the models of MODEL_PROFILE: paid on the API, free on a local model
+	$(BACKEND) python -m evals.run --model profile --pass3
 
 eval-compare:
 	$(BACKEND) python -m evals.compare
-
-eval-precision:    ## paid, release branches only
-	$(BACKEND) python -m evals.run --precision
 
 approve-capture:
 	PYTHONPATH=$(CURDIR) $(BACKEND) python scripts/make_twin.py $(ID)
