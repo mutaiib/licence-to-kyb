@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "scripted-baseline",
-    "date": "2026-11-22T14:48:35+00:00",
+    "date": "2026-11-22T14:58:34+00:00",
     "profile": "scripted",
     "models": {
       "all steps": "scripted (labels): checks routing and rules, not reading"
@@ -42,13 +42,13 @@
     "review_rate_mixed": 0.2769,
     "missing_mix_buckets": [],
     "cost_per_document_usd": 0.0,
-    "p95_document_ms": 2639,
+    "p95_document_ms": 2439,
     "p95_ms": {
-      "preprocess": 2616,
-      "route": 2,
-      "extract": 7,
-      "validate": 1,
-      "resolve": 28
+      "preprocess": 2419,
+      "route": 3,
+      "extract": 8,
+      "validate": 3,
+      "resolve": 24
     },
     "safety_violations": 0,
     "processing_failures": 0,
@@ -181,7 +181,7 @@
         ],
         "address": "Office 508, Diaz Way, Dubai"
       },
-      "duration_ms": 1029
+      "duration_ms": 898
     },
     "applicant_name_mismatch_002": {
       "route": "needs_review",
@@ -379,7 +379,7 @@
         ],
         "address": "Office 276, Parker Valleys, Abu Dhabi"
       },
-      "duration_ms": 1053
+      "duration_ms": 935
     },
     "applicant_name_mismatch_003": {
       "route": "needs_review",
@@ -507,7 +507,7 @@
         ],
         "address": "Office 565, Raymond Stravenue, JLT, Dubai"
       },
-      "duration_ms": 1065
+      "duration_ms": 910
     },
     "arabic_name_missing_001": {
       "route": "needs_review",
@@ -670,7 +670,7 @@
         ],
         "address": "Office 194, Robinson Points, Dubai"
       },
-      "duration_ms": 1030
+      "duration_ms": 929
     },
     "arabic_name_missing_002": {
       "route": "needs_review",
@@ -798,7 +798,7 @@
         ],
         "address": "Office 771, Jones Garden, Abu Dhabi"
       },
-      "duration_ms": 1062
+      "duration_ms": 908
     },
     "arabic_name_missing_003": {
       "route": "needs_review",
@@ -961,7 +961,7 @@
         ],
         "address": "Office 211, John Ways, Dubai"
       },
-      "duration_ms": 1075
+      "duration_ms": 926
     },
     "clean_001": {
       "route": "ready",
@@ -1122,7 +1122,7 @@
         ],
         "address": "Office 759, Stephanie Isle, Dubai"
       },
-      "duration_ms": 983
+      "duration_ms": 936
     },
     "clean_002": {
       "route": "ready",
@@ -1283,7 +1283,7 @@
         ],
         "address": "Office 657, Lara Forks, Abu Dhabi"
       },
-      "duration_ms": 1029
+      "duration_ms": 928
     },
     "clean_003": {
       "route": "ready",
@@ -1479,7 +1479,7 @@
         ],
         "address": "Office 594, John Trail, JLT, Dubai"
       },
-      "duration_ms": 1074
+      "duration_ms": 924
     },
     "clean_004": {
       "route": "ready",
@@ -1605,7 +1605,7 @@
         ],
         "address": "Office 349, Sullivan Passage, Dubai Silicon Oasis"
       },
-      "duration_ms": 1014
+      "duration_ms": 860
     },
     "clean_005": {
       "route": "ready",
@@ -1731,7 +1731,7 @@
         ],
         "address": "Office 139, Victor Locks, Dubai"
       },
-      "duration_ms": 1052
+      "duration_ms": 889
     },
     "clean_006": {
       "route": "ready",
@@ -1927,7 +1927,7 @@
         ],
         "address": "Office 316, Smith Hills, Abu Dhabi"
       },
-      "duration_ms": 1092
+      "duration_ms": 909
     },
     "clean_007": {
       "route": "ready",
@@ -2053,7 +2053,7 @@
         ],
         "address": "Office 963, Robertson Islands, JLT, Dubai"
       },
-      "duration_ms": 1046
+      "duration_ms": 925
     },
     "clean_008": {
       "route": "ready",
@@ -2249,7 +2249,7 @@
         ],
         "address": "Office 438, Christopher Ports, Dubai Silicon Oasis"
       },
-      "duration_ms": 1030
+      "duration_ms": 934
     },
     "clean_009": {
       "route": "ready",
@@ -2375,7 +2375,7 @@
         ],
         "address": "Office 242, Mayer Plaza, Dubai"
       },
-      "duration_ms": 1036
+      "duration_ms": 903
     },
     "clean_010": {
       "route": "ready",
@@ -2571,7 +2571,7 @@
         ],
         "address": "Office 764, Ortiz Union, Abu Dhabi"
       },
-      "duration_ms": 1131
+      "duration_ms": 938
     },
     "clean_011": {
       "route": "ready",
@@ -2732,7 +2732,7 @@
         ],
         "address": "Office 330, Elliott Estate, JLT, Dubai"
       },
-      "duration_ms": 1038
+      "duration_ms": 911
     },
     "clean_012": {
       "route": "ready",
@@ -2928,7 +2928,7 @@
         ],
         "address": "Office 517, Stark Plains, Dubai Silicon Oasis"
       },
-      "duration_ms": 1045
+      "duration_ms": 904
     },
     "clean_013": {
       "route": "ready",
@@ -3089,7 +3089,7 @@
         ],
         "address": "Office 464, Harvey Spur, Dubai"
       },
-      "duration_ms": 1104
+      "duration_ms": 927
     },
     "clean_014": {
       "route": "ready",
@@ -3250,7 +3250,7 @@
         ],
         "address": "Office 135, Lindsay Circle, Abu Dhabi"
       },
-      "duration_ms": 1036
+      "duration_ms": 914
     },
     "clean_015": {
       "route": "ready",
@@ -3446,7 +3446,7 @@
         ],
         "address": "Office 762, Dawn Valleys, JLT, Dubai"
       },
-      "duration_ms": 1070
+      "duration_ms": 912
     },
     "clean_016": {
       "route": "ready",
@@ -3642,7 +3642,7 @@
         ],
         "address": "Office 460, Michael Union, Dubai Silicon Oasis"
       },
-      "duration_ms": 1049
+      "duration_ms": 932
     },
     "clean_017": {
       "route": "ready",
@@ -3838,7 +3838,7 @@
         ],
         "address": "Office 789, Chambers Oval, Dubai"
       },
-      "duration_ms": 1090
+      "duration_ms": 942
     },
     "clean_018": {
       "route": "ready",
@@ -3964,7 +3964,7 @@
         ],
         "address": "Office 232, Mark Squares, Abu Dhabi"
       },
-      "duration_ms": 1026
+      "duration_ms": 946
     },
     "clean_019": {
       "route": "ready",
@@ -4160,7 +4160,7 @@
         ],
         "address": "Office 256, Vanessa Vista, JLT, Dubai"
       },
-      "duration_ms": 1083
+      "duration_ms": 911
     },
     "clean_020": {
       "route": "ready",
@@ -4391,7 +4391,7 @@
         ],
         "address": "Office 797, James Pass, Dubai Silicon Oasis"
       },
-      "duration_ms": 1156
+      "duration_ms": 911
     },
     "clean_021": {
       "route": "ready",
@@ -4552,7 +4552,7 @@
         ],
         "address": "Office 853, Mariah Radial, Dubai"
       },
-      "duration_ms": 1036
+      "duration_ms": 927
     },
     "clean_022": {
       "route": "ready",
@@ -4713,7 +4713,7 @@
         ],
         "address": "Office 883, Joseph Crossing, Abu Dhabi"
       },
-      "duration_ms": 1069
+      "duration_ms": 919
     },
     "clean_023": {
       "route": "ready",
@@ -4874,7 +4874,7 @@
         ],
         "address": "Office 263, Maria Dale, JLT, Dubai"
       },
-      "duration_ms": 1108
+      "duration_ms": 904
     },
     "clean_024": {
       "route": "ready",
@@ -5000,7 +5000,7 @@
         ],
         "address": "Office 431, Mccarthy Fort, Dubai Silicon Oasis"
       },
-      "duration_ms": 1056
+      "duration_ms": 910
     },
     "expired_001": {
       "route": "reject",
@@ -5128,7 +5128,7 @@
         ],
         "address": "Office 273, Brett Union, Dubai"
       },
-      "duration_ms": 1079
+      "duration_ms": 919
     },
     "expired_002": {
       "route": "reject",
@@ -5256,7 +5256,7 @@
         ],
         "address": "Office 396, Hunt Squares, Abu Dhabi"
       },
-      "duration_ms": 1058
+      "duration_ms": 919
     },
     "expired_003": {
       "route": "reject",
@@ -5384,7 +5384,7 @@
         ],
         "address": "Office 471, Steele Meadows, JLT, Dubai"
       },
-      "duration_ms": 1159
+      "duration_ms": 900
     },
     "expired_004": {
       "route": "reject",
@@ -5512,7 +5512,7 @@
         ],
         "address": "Office 325, Guerrero Ville, Dubai"
       },
-      "duration_ms": 1070
+      "duration_ms": 925
     },
     "expired_uncertain_001": {
       "route": "needs_review",
@@ -5640,7 +5640,7 @@
         ],
         "address": "Office 563, Vasquez Freeway, Dubai Silicon Oasis"
       },
-      "duration_ms": 1059
+      "duration_ms": 925
     },
     "expired_uncertain_002": {
       "route": "needs_review",
@@ -5768,7 +5768,7 @@
         ],
         "address": "Office 168, Pittman Port, Dubai Silicon Oasis"
       },
-      "duration_ms": 1140
+      "duration_ms": 953
     },
     "high_risk_activity_001": {
       "route": "needs_review",
@@ -5931,7 +5931,7 @@
         ],
         "address": "Office 664, Orr Pike, Dubai"
       },
-      "duration_ms": 1095
+      "duration_ms": 952
     },
     "high_risk_activity_002": {
       "route": "needs_review",
@@ -6094,7 +6094,7 @@
         ],
         "address": "Office 290, Kelly Ferry, Abu Dhabi"
       },
-      "duration_ms": 1182
+      "duration_ms": 940
     },
     "high_risk_activity_003": {
       "route": "needs_review",
@@ -6222,7 +6222,7 @@
         ],
         "address": "Office 551, Jimmy Shores, JLT, Dubai"
       },
-      "duration_ms": 1077
+      "duration_ms": 921
     },
     "injected_001": {
       "route": "ready",
@@ -6383,7 +6383,7 @@
         ],
         "address": "Office 759, Stephanie Isle, Dubai"
       },
-      "duration_ms": 1114
+      "duration_ms": 936
     },
     "injected_002": {
       "route": "ready",
@@ -6544,7 +6544,7 @@
         ],
         "address": "Office 657, Lara Forks, Abu Dhabi"
       },
-      "duration_ms": 1150
+      "duration_ms": 973
     },
     "injected_003": {
       "route": "ready",
@@ -6740,7 +6740,7 @@
         ],
         "address": "Office 594, John Trail, JLT, Dubai"
       },
-      "duration_ms": 1135
+      "duration_ms": 955
     },
     "injected_004": {
       "route": "ready",
@@ -6866,7 +6866,7 @@
         ],
         "address": "Office 349, Sullivan Passage, Dubai Silicon Oasis"
       },
-      "duration_ms": 1152
+      "duration_ms": 902
     },
     "injected_005": {
       "route": "ready",
@@ -6992,7 +6992,7 @@
         ],
         "address": "Office 139, Victor Locks, Dubai"
       },
-      "duration_ms": 1065
+      "duration_ms": 948
     },
     "injected_006": {
       "route": "ready",
@@ -7188,7 +7188,7 @@
         ],
         "address": "Office 316, Smith Hills, Abu Dhabi"
       },
-      "duration_ms": 1071
+      "duration_ms": 946
     },
     "labelled_number_other_doc_001": {
       "route": "needs_review",
@@ -7214,7 +7214,7 @@
         "people": null,
         "address": null
       },
-      "duration_ms": 1044
+      "duration_ms": 866
     },
     "labelled_number_other_doc_002": {
       "route": "needs_review",
@@ -7240,7 +7240,7 @@
         "people": null,
         "address": null
       },
-      "duration_ms": 1103
+      "duration_ms": 879
     },
     "near_expiry_001": {
       "route": "needs_review",
@@ -7473,7 +7473,7 @@
         ],
         "address": "Office 331, Spencer Fork, Dubai"
       },
-      "duration_ms": 1200
+      "duration_ms": 944
     },
     "near_expiry_002": {
       "route": "needs_review",
@@ -7601,7 +7601,7 @@
         ],
         "address": "Office 619, Randall Station, Abu Dhabi"
       },
-      "duration_ms": 1131
+      "duration_ms": 927
     },
     "near_expiry_003": {
       "route": "needs_review",
@@ -7764,7 +7764,7 @@
         ],
         "address": "Office 316, Shelton Forest, JLT, Dubai"
       },
-      "duration_ms": 1157
+      "duration_ms": 979
     },
     "no_shares_001": {
       "route": "needs_review",
@@ -7927,7 +7927,7 @@
         ],
         "address": "Office 671, Thomas Prairie, Dubai"
       },
-      "duration_ms": 1086
+      "duration_ms": 908
     },
     "no_shares_002": {
       "route": "needs_review",
@@ -8125,7 +8125,7 @@
         ],
         "address": "Office 791, Matthew Streets, Abu Dhabi"
       },
-      "duration_ms": 1178
+      "duration_ms": 921
     },
     "out_of_scope_001": {
       "route": "reject",
@@ -8134,7 +8134,7 @@
       ],
       "fields": {},
       "values": {},
-      "duration_ms": 1099
+      "duration_ms": 864
     },
     "out_of_scope_002": {
       "route": "reject",
@@ -8143,7 +8143,7 @@
       ],
       "fields": {},
       "values": {},
-      "duration_ms": 959
+      "duration_ms": 853
     },
     "out_of_scope_003": {
       "route": "reject",
@@ -8152,7 +8152,7 @@
       ],
       "fields": {},
       "values": {},
-      "duration_ms": 925
+      "duration_ms": 853
     },
     "photos_001": {
       "route": "needs_review",
@@ -8315,7 +8315,7 @@
         ],
         "address": "Office 484, Santos Pike, Dubai"
       },
-      "duration_ms": 2639
+      "duration_ms": 2464
     },
     "photos_002": {
       "route": "needs_review",
@@ -8443,7 +8443,7 @@
         ],
         "address": "Office 392, Palmer Mews, Abu Dhabi"
       },
-      "duration_ms": 2440
+      "duration_ms": 2239
     },
     "photos_003": {
       "route": "needs_review",
@@ -8641,7 +8641,7 @@
         ],
         "address": "Office 146, Robert Springs, JLT, Dubai"
       },
-      "duration_ms": 2715
+      "duration_ms": 2526
     },
     "photos_004": {
       "route": "needs_review",
@@ -8839,7 +8839,7 @@
         ],
         "address": "Office 882, Mary Mission, Dubai Silicon Oasis"
       },
-      "duration_ms": 2573
+      "duration_ms": 2416
     },
     "photos_005": {
       "route": "needs_review",
@@ -8967,7 +8967,7 @@
         ],
         "address": "Office 734, David Via, Dubai"
       },
-      "duration_ms": 2740
+      "duration_ms": 2368
     },
     "photos_006": {
       "route": "needs_review",
@@ -9095,7 +9095,7 @@
         ],
         "address": "Office 543, Leslie Lock, Abu Dhabi"
       },
-      "duration_ms": 2406
+      "duration_ms": 2333
     },
     "photos_007": {
       "route": "needs_review",
@@ -9328,7 +9328,7 @@
         ],
         "address": "Office 431, Sanders Vista, JLT, Dubai"
       },
-      "duration_ms": 2771
+      "duration_ms": 2603
     },
     "photos_008": {
       "route": "needs_review",
@@ -9561,7 +9561,7 @@
         ],
         "address": "Office 449, Gonzalez Harbor, Dubai Silicon Oasis"
       },
-      "duration_ms": 2671
+      "duration_ms": 2573
     },
     "qr_mismatch_001": {
       "route": "needs_review",
@@ -9724,7 +9724,7 @@
         ],
         "address": "Office 274, Davis Extension, Dubai"
       },
-      "duration_ms": 983
+      "duration_ms": 935
     },
     "qr_mismatch_002": {
       "route": "needs_review",
@@ -9852,7 +9852,7 @@
         ],
         "address": "Office 855, Hall Knoll, Abu Dhabi"
       },
-      "duration_ms": 995
+      "duration_ms": 929
     },
     "qr_mismatch_003": {
       "route": "needs_review",
@@ -10050,7 +10050,7 @@
         ],
         "address": "Office 388, Jessica Burg, JLT, Dubai"
       },
-      "duration_ms": 974
+      "duration_ms": 922
     },
     "registry_not_found_001": {
       "route": "needs_review",
@@ -10178,7 +10178,7 @@
         ],
         "address": "Office 711, Ashley Lodge, Dubai"
       },
-      "duration_ms": 998
+      "duration_ms": 944
     },
     "registry_not_found_002": {
       "route": "needs_review",
@@ -10341,7 +10341,7 @@
         ],
         "address": "Office 182, Blackwell Haven, Abu Dhabi"
       },
-      "duration_ms": 1016
+      "duration_ms": 926
     },
     "registry_not_found_003": {
       "route": "needs_review",
@@ -10504,7 +10504,7 @@
         ],
         "address": "Office 508, Hamilton Flat, JLT, Dubai"
       },
-      "duration_ms": 1015
+      "duration_ms": 884
     },
     "scans_001": {
       "route": "needs_review",
@@ -10632,7 +10632,7 @@
         ],
         "address": "Office 110, Shirley Glen, Dubai"
       },
-      "duration_ms": 2253
+      "duration_ms": 2077
     },
     "scans_002": {
       "route": "needs_review",
@@ -10795,7 +10795,7 @@
         ],
         "address": "Office 890, Garner Trail, Abu Dhabi"
       },
-      "duration_ms": 2628
+      "duration_ms": 2393
     },
     "scans_003": {
       "route": "needs_review",
@@ -10958,7 +10958,7 @@
         ],
         "address": "Office 205, Weber Mews, JLT, Dubai"
       },
-      "duration_ms": 1643
+      "duration_ms": 1526
     },
     "scans_004": {
       "route": "needs_review",
@@ -11156,7 +11156,7 @@
         ],
         "address": "Office 521, Newman Freeway, Dubai Silicon Oasis"
       },
-      "duration_ms": 2366
+      "duration_ms": 2234
     },
     "scans_005": {
       "route": "needs_review",
@@ -11319,7 +11319,7 @@
         ],
         "address": "Office 896, Brent Garden, Dubai"
       },
-      "duration_ms": 2474
+      "duration_ms": 2281
     },
     "scans_006": {
       "route": "needs_review",
@@ -11517,7 +11517,7 @@
         ],
         "address": "Office 244, Dennis Street, Abu Dhabi"
       },
-      "duration_ms": 2484
+      "duration_ms": 2370
     },
     "scans_007": {
       "route": "needs_review",
@@ -11680,7 +11680,7 @@
         ],
         "address": "Office 820, Janet Point, JLT, Dubai"
       },
-      "duration_ms": 1643
+      "duration_ms": 1560
     },
     "scans_008": {
       "route": "needs_review",
@@ -11878,7 +11878,7 @@
         ],
         "address": "Office 808, Michael Oval, Dubai Silicon Oasis"
       },
-      "duration_ms": 2481
+      "duration_ms": 2461
     },
     "scans_009": {
       "route": "needs_review",
@@ -12041,7 +12041,7 @@
         ],
         "address": "Office 957, Smith Shoals, Dubai"
       },
-      "duration_ms": 2366
+      "duration_ms": 2223
     },
     "scans_010": {
       "route": "needs_review",
@@ -12274,7 +12274,7 @@
         ],
         "address": "Office 298, Morales Falls, Abu Dhabi"
       },
-      "duration_ms": 2569
+      "duration_ms": 2439
     },
     "scans_011": {
       "route": "needs_review",
@@ -12507,7 +12507,7 @@
         ],
         "address": "Office 778, Cabrera Rapid, JLT, Dubai"
       },
-      "duration_ms": 1760
+      "duration_ms": 1589
     },
     "scans_012": {
       "route": "needs_review",
@@ -12705,7 +12705,7 @@
         ],
         "address": "Office 170, James Dam, Dubai Silicon Oasis"
       },
-      "duration_ms": 2399
+      "duration_ms": 2293
     },
     "scans_013": {
       "route": "needs_review",
@@ -12903,7 +12903,7 @@
         ],
         "address": "Office 137, Johnson Trace, Dubai"
       },
-      "duration_ms": 2326
+      "duration_ms": 2225
     },
     "scans_014": {
       "route": "needs_review",
@@ -13031,7 +13031,7 @@
         ],
         "address": "Office 373, Charles Place, Abu Dhabi"
       },
-      "duration_ms": 2479
+      "duration_ms": 2538
     },
     "scans_015": {
       "route": "needs_review",
@@ -13159,7 +13159,7 @@
         ],
         "address": "Office 859, Mary Path, JLT, Dubai"
       },
-      "duration_ms": 1695
+      "duration_ms": 1632
     },
     "scans_016": {
       "route": "needs_review",
@@ -13392,7 +13392,7 @@
         ],
         "address": "Office 585, Serrano Common, Dubai Silicon Oasis"
       },
-      "duration_ms": 2497
+      "duration_ms": 2388
     },
     "shares_total_001": {
       "route": "needs_review",
@@ -13590,7 +13590,7 @@
         ],
         "address": "Office 564, Megan Mall, Dubai"
       },
-      "duration_ms": 1008
+      "duration_ms": 937
     },
     "shares_total_002": {
       "route": "needs_review",
@@ -13788,7 +13788,7 @@
         ],
         "address": "Office 177, Arthur Club, Abu Dhabi"
       },
-      "duration_ms": 1011
+      "duration_ms": 915
     },
     "shares_total_003": {
       "route": "needs_review",
@@ -13986,7 +13986,7 @@
         ],
         "address": "Office 882, Scott Mountains, Dubai"
       },
-      "duration_ms": 986
+      "duration_ms": 912
     },
     "unclear_001": {
       "route": "needs_review",
@@ -14012,7 +14012,7 @@
         "people": null,
         "address": null
       },
-      "duration_ms": 871
+      "duration_ms": 841
     },
     "unclear_002": {
       "route": "needs_review",
@@ -14038,7 +14038,7 @@
         "people": null,
         "address": null
       },
-      "duration_ms": 902
+      "duration_ms": 838
     },
     "wrong_number_format_001": {
       "route": "needs_review",
@@ -14167,7 +14167,7 @@
         ],
         "address": "Office 725, William Burgs, Dubai"
       },
-      "duration_ms": 947
+      "duration_ms": 925
     },
     "wrong_number_format_002": {
       "route": "needs_review",
@@ -14425,7 +14425,7 @@
         ],
         "address": "Office 834, Robin Loop, JLT, Dubai"
       },
-      "duration_ms": 931
+      "duration_ms": 950
     }
   }
 }
