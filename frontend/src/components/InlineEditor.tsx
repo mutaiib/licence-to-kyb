@@ -8,6 +8,9 @@ import { useState } from 'react';
 
 import { copy } from '../copy';
 
+/** The longest value or reason the server accepts (api/schemas.py). */
+const MAX_LENGTH = 500;
+
 export function InlineEditor({
   label,
   initial = '',
@@ -26,7 +29,15 @@ export function InlineEditor({
   };
   return (
     <VStack gap={2}>
-      <TextInput label={label} value={text} onChange={setText} onEnter={save} hasAutoFocus />
+      <TextInput
+        label={label}
+        value={text}
+        onChange={(next) => {
+          setText(next.slice(0, MAX_LENGTH));
+        }}
+        onEnter={save}
+        hasAutoFocus
+      />
       <HStack gap={2}>
         <Button label={copy['review.save']} variant="primary" isDisabled={isEmpty} onClick={save} />
         <Button label={copy['review.cancel']} variant="ghost" onClick={onCancel} />

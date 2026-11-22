@@ -12,7 +12,7 @@ import { Banner } from '@astryxdesign/core/Banner';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack } from '@astryxdesign/core/HStack';
 import { VStack } from '@astryxdesign/core/VStack';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { RunView } from '../api/client';
 import { copy, format } from '../copy';
@@ -104,13 +104,21 @@ export function NextStep({
   view,
   undecided,
   handlers,
+  focusRequest = null,
 }: {
   view: RunView;
   /** How many flagged fields have no decision yet. */
   undecided: number;
   handlers: FormHandlers;
+  /** Changes each time keyboard focus must move to the main button (the last flagged field
+   * has a decision, so the next step is Approve form). */
+  focusRequest?: number | null;
 }) {
   const [isReopening, setIsReopening] = useState(false);
+  const mainButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (focusRequest !== null) mainButton.current?.focus();
+  }, [focusRequest]);
   const step = nextStep(view, undecided, handlers);
   if (step === null) return null;
   const canReopen = view.status === 'rejected';
@@ -119,7 +127,12 @@ export function NextStep({
       <Banner status={step.status} title={step.title} description={step.description} />
       {step.action !== undefined && (
         <HStack>
-          <Button label={step.action.label} variant="primary" onClick={step.action.onClick} />
+          <Button
+            ref={mainButton}
+            label={step.action.label}
+            variant="primary"
+            onClick={step.action.onClick}
+          />
         </HStack>
       )}
       {canReopen && !isReopening && (

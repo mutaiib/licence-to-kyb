@@ -18,8 +18,9 @@ export function reasonText(
   code: ReasonCode,
   detail: Readonly<Record<string, string>> = {},
 ): string {
-  const key: CopyKey = `reason.${code}`;
-  return format(key, detail);
+  // A code this page does not know (a newer server) reads as the general reason.
+  const key = `reason.${code}`;
+  return hasCopy(key) ? format(key, detail) : copy['reason.other'];
 }
 
 export function errorText(code: string): string {
@@ -28,8 +29,14 @@ export function errorText(code: string): string {
 }
 
 export function stateText(state: FieldState): string {
-  const key: CopyKey = `state.${state}`;
-  return copy[key];
+  const key = `state.${state}`;
+  return hasCopy(key) ? copy[key] : copy['state.needs_examination'];
+}
+
+/** A trace span's outcome code (a tool error, a refusal, an exception) as a sentence. */
+export function spanOutcomeText(code: string): string {
+  const key = `span.${code}`;
+  return hasCopy(key) ? copy[key] : copy['span.failed'];
 }
 
 export function routeLabel(route: Route): string {

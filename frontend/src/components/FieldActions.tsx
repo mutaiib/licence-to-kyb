@@ -31,20 +31,28 @@ type Editing = { kind: 'value' } | { kind: 'override'; ruleId: string } | null;
 export function FieldActions({
   name,
   field,
-  shouldFocus,
+  focusRequest,
   onDecide,
 }: {
   name: string;
   field: FormFieldView;
-  /** Move keyboard focus here, after a decision on the previous flagged field. */
-  shouldFocus: boolean;
-  onDecide: (decision: NewDecision) => void;
+  /** Changes each time keyboard focus must move here (after a decision on another field). */
+  focusRequest: number | null;
+  /** Sends the decision; resolves true when the server accepted it. */
+  onDecide: (decision: NewDecision) => Promise<boolean>;
 }) {
   const [editing, setEditing] = useState<Editing>(null);
   const firstButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (shouldFocus) firstButton.current?.focus();
-  }, [shouldFocus]);
+    if (focusRequest !== null) firstButton.current?.focus();
+  }, [focusRequest]);
+
+  // The editor stays open, with what the reviewer typed, until the server accepts the value.
+  const send = (decision: NewDecision) => {
+    void onDecide(decision).then((isAccepted) => {
+      if (isAccepted) setEditing(null);
+    });
+  };
 
   const label = { field: fieldLabel(name) };
   const overridable = field.rule_results.filter(
@@ -60,8 +68,7 @@ export function FieldActions({
           setEditing(null);
         }}
         onSave={(value) => {
-          setEditing(null);
-          onDecide({ field: name, action: 'correct', value });
+          send({ field: name, action: 'correct', value });
         }}
       />
     );
@@ -77,8 +84,7 @@ export function FieldActions({
             setEditing(null);
           }}
           onSave={(reason) => {
-            setEditing(null);
-            onDecide({ rule_id: ruleId, action: 'override', reason });
+            send({ rule_id: ruleId, action: 'override', reason });
           }}
         />
       </VStack>
@@ -96,7 +102,7 @@ export function FieldActions({
           label={format('review.approve.field', label)}
           variant="primary"
           onClick={() => {
-            onDecide({ field: name, action: 'approve' });
+            send({ field: name, action: 'approve' });
           }}
         >
           {copy['review.approve']}
@@ -116,11 +122,13 @@ export function FieldActions({
       {overridable.map((rule) => (
         <Button
           key={rule.rule_id}
-          label={copy['review.override']}
+          label={format('review.override.field', label)}
           onClick={() => {
             setEditing({ kind: 'override', ruleId: rule.rule_id });
           }}
-        />
+        >
+          {copy['review.override']}
+        </Button>
       ))}
     </HStack>
   );

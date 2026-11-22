@@ -1,4 +1,5 @@
 // Every run, newest first, with today's rates above (US5, FR-032).
+import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { useMediaQuery } from '@astryxdesign/core/hooks';
 import { Link } from '@astryxdesign/core/Link';
@@ -11,15 +12,26 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { useEffect, useState } from 'react';
 
 import { getSummary, listRuns, type RunListItem, type Summary } from '../api/client';
-import { copy } from '../copy';
+import { copy, format } from '../copy';
 import { runPath, tracePath, useLinkHandler } from '../router';
-import { runStatusText, shortTime } from '../text';
+import { errorText, runStatusText, shortTime } from '../text';
 
-const percent = (rate: number) => `${String(Math.round(rate * 100))}%`;
+const percent = (rate: number) => format('unit.percent', { value: String(Math.round(rate * 100)) });
+const money = (usd: number) => format('unit.usd', { value: usd.toFixed(2) });
+const seconds = (ms: number) => format('unit.seconds', { value: (ms / 1000).toFixed(1) });
 
-function InAppLink({ path, children }: { path: string; children: string }) {
+function InAppLink({
+  path,
+  label,
+  children,
+}: {
+  path: string;
+  /** The accessible name, when the visible text alone does not say where the link goes. */
+  label?: string;
+  children: string;
+}) {
   return (
-    <Link href={path} onClick={useLinkHandler(path)} hasUnderline>
+    <Link href={path} onClick={useLinkHandler(path)} label={label} hasUnderline>
       {children}
     </Link>
   );
@@ -40,7 +52,7 @@ function DailySummary({ summary }: { summary: Summary }) {
           <Text hasTabularNumbers>{percent(summary.review_rate)}</Text>
         </MetadataListItem>
         <MetadataListItem label={copy['runs.summary.cost']}>
-          <Text hasTabularNumbers>{`$${summary.cost_usd.toFixed(2)}`}</Text>
+          <Text hasTabularNumbers>{money(summary.cost_usd)}</Text>
         </MetadataListItem>
         <MetadataListItem label={copy['runs.summary.budget']}>
           <Text hasTabularNumbers>{summary.budget_tokens_remaining.toLocaleString('en')}</Text>
@@ -49,8 +61,6 @@ function DailySummary({ summary }: { summary: Summary }) {
     </VStack>
   );
 }
-
-const money = (usd: number) => `$${usd.toFixed(2)}`;
 
 const COLUMNS = [
   {
@@ -80,15 +90,18 @@ const COLUMNS = [
     key: 'duration_ms',
     header: copy['runs.column.duration'],
     align: 'end' as const,
-    renderCell: (run: RunListItem) => (
-      <Text hasTabularNumbers>{(run.duration_ms / 1000).toFixed(1) + ' s'}</Text>
-    ),
+    renderCell: (run: RunListItem) => <Text hasTabularNumbers>{seconds(run.duration_ms)}</Text>,
   },
   {
     key: 'trace',
     header: copy['runs.trace.link'],
     renderCell: (run: RunListItem) => (
-      <InAppLink path={tracePath(run.run_id)}>{copy['runs.trace.link']}</InAppLink>
+      <InAppLink
+        path={tracePath(run.run_id)}
+        label={format('runs.trace.linkFor', { name: run.applicant_name })}
+      >
+        {copy['runs.trace.link']}
+      </InAppLink>
     ),
   },
 ];
@@ -129,10 +142,13 @@ function EmptyRuns() {
 export function RunsPage() {
   const isNarrow = useMediaQuery('(max-width: 768px)');
   const [runs, setRuns] = useState<RunListItem[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   useEffect(() => {
     void listRuns().then((result) => {
-      setRuns(result.ok ? result.data.runs : []);
+      // A failed load is not an empty list: say that the list could not load.
+      if (result.ok) setRuns(result.data.runs);
+      else setLoadError(result.code);
     });
     void getSummary().then((result) => {
       if (result.ok) setSummary(result.data);
@@ -143,7 +159,14 @@ export function RunsPage() {
     <VStack gap={6}>
       <Heading level={1}>{copy['runs.title']}</Heading>
       {summary !== null && <DailySummary summary={summary} />}
-      {runs === null && <Spinner size="lg" aria-label={copy['app.loading']} />}
+      {loadError !== null && (
+        <VStack role="alert">
+          <Banner status="error" title={errorText(loadError)} />
+        </VStack>
+      )}
+      {runs === null && loadError === null && (
+        <Spinner size="lg" aria-label={copy['app.loading']} />
+      )}
       {runs !== null && runs.length === 0 && <EmptyRuns />}
       {runs !== null && runs.length > 0 && isNarrow && <RunRows runs={runs} />}
       {runs !== null && runs.length > 0 && !isNarrow && (

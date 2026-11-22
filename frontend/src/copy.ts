@@ -11,6 +11,11 @@ export const copy = {
   'app.title': 'Trade licence to KYB',
   'app.loading': 'Loading',
   'app.tryAgain': 'Try again',
+  'app.crashed': 'This part of the page stopped. Load the page again.',
+  'unit.ms': '{value} ms',
+  'unit.seconds': '{value} s',
+  'unit.usd': '${value}',
+  'unit.percent': '{value}%',
   'nav.upload': 'Upload a licence',
   'nav.runs': 'Runs',
 
@@ -145,6 +150,7 @@ export const copy = {
   'review.correct': 'Correct',
   'review.correct.label': 'New value',
   'review.override': 'Override check',
+  'review.override.field': 'Override check on {field}',
   'review.override.reason.label': 'Reason for the override',
   'review.override.help': 'You can override a check only when the system could not do the check.',
   'review.reject': 'Reject case',
@@ -191,6 +197,7 @@ export const copy = {
   'error.no_form':
     'Processing stopped before the form existed. Retry processing, or reject the case.',
   'error.not_found': 'The system cannot find this run. Upload the licence again.',
+  'error.invalid_request': 'Some values are too long or not valid. Correct them. Try again.',
   'error.network': 'The system cannot connect to the server. Try again.',
 
   // Reason codes
@@ -268,6 +275,22 @@ export const copy = {
   'trace.column.cost': 'Cost',
   'trace.masked': 'The system hides personal data on this page.',
   'runs.trace.link': 'Trace',
+  'runs.trace.linkFor': 'Trace of {name}',
+  'span.failed': 'This step stopped with an error.',
+  'span.refusal': 'The model did not give an answer.',
+  'span.invalid_arguments': 'The tool call had incorrect arguments.',
+  'span.field_out_of_scope': 'The tool call asked for a field that passed its checks.',
+  'span.page_not_found': 'The tool call asked for a page that does not exist.',
+  'span.region_unreadable': 'The region has no text that the system can read.',
+  'span.registry_unavailable': 'The register did not answer.',
+  'span.registry_not_applicable': 'This authority has no register.',
+  'span.vision_call_failed': 'The second reading of the region stopped with an error.',
+  'span.proposal_refused': 'The proposed value did not pass the checks.',
+  'span.duplicate_call':
+    'The tool call repeated an earlier call. The system gave the earlier result again.',
+  'span.budget_soft_limit': 'The investigation is near its limit.',
+  'span.budget_hard_limit': 'The investigation reached its limit.',
+  'span.tool_internal_error': 'The tool stopped with an error.',
   'runs.empty': 'There are no runs. Upload a licence.',
   'runStatus.received': 'Received',
   'runStatus.processing': 'Processing',
@@ -300,5 +323,7 @@ export function hasCopy(key: string): key is CopyKey {
 
 /** The string for `key`, with each `{name}` replaced by `values[name]` when it is given. */
 export function format(key: CopyKey, values: Readonly<Record<string, string>> = {}): string {
-  return copy[key].replace(/\{(\w+)\}/g, (match, name: string) => values[name] ?? match);
+  // A key built from a server code this page does not know yet must not crash the page.
+  const text: string = hasCopy(key) ? copy[key] : '';
+  return text.replace(/\{(\w+)\}/g, (match, name: string) => values[name] ?? match);
 }

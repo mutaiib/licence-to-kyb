@@ -5,14 +5,14 @@ import { Text } from '@astryxdesign/core/Text';
 
 import type { SpanView } from '../api/client';
 import { format } from '../copy';
-import { stepLabel } from '../text';
+import { spanOutcomeText, stepLabel } from '../text';
 
 function children(spans: readonly SpanView[], parentId: string | null): SpanView[] {
   return spans.filter((span) => span.parent_id === parentId);
 }
 
 function details(span: SpanView): string[] {
-  const parts = [`${String(span.latency_ms)} ms`];
+  const parts = [format('unit.ms', { value: String(span.latency_ms) })];
   if (span.kind === 'model_call') {
     parts.push(
       span.model ?? '',
@@ -20,7 +20,7 @@ function details(span: SpanView): string[] {
         input: String(span.input_tokens),
         output: String(span.output_tokens),
       }),
-      `$${span.cost_usd.toFixed(4)}`,
+      format('unit.usd', { value: span.cost_usd.toFixed(4) }),
     );
   }
   return parts.filter((part) => part !== '');
@@ -38,7 +38,7 @@ function SpanItem({ span, spans }: { span: SpanView; spans: readonly SpanView[] 
           <Text color="secondary" hasTabularNumbers>
             {details(span).join(' · ')}
           </Text>
-          {span.summary !== 'ok' && <Text color="secondary">{span.summary}</Text>}
+          {span.summary !== 'ok' && <Text color="secondary">{spanOutcomeText(span.summary)}</Text>}
           {nested.length > 0 && <SpanList spans={spans} parentId={span.span_id} />}
         </>
       }

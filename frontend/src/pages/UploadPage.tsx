@@ -23,6 +23,8 @@ const ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
 const ACCEPTED_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png']);
 const ACCEPTED_EXTENSIONS = /\.(pdf|jpe?g|png)$/i;
 export const POLL_MS = 1000;
+/** The longest business name the server accepts (POST /api/runs). */
+const MAX_NAME_LENGTH = 200;
 const ACTIVE = new Set<RunView['status']>(['received', 'processing']);
 
 /** A reason the browser can see before the upload: the file type or the size. */
@@ -140,7 +142,9 @@ export function UploadPage() {
               label={copy['upload.applicantName.label']}
               description={copy['upload.applicantName.help']}
               value={applicantName}
-              onChange={setApplicantName}
+              onChange={(text) => {
+                setApplicantName(text.slice(0, MAX_NAME_LENGTH));
+              }}
               autoComplete="organization"
             />
             <Button
