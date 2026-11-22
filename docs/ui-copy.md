@@ -328,7 +328,6 @@ The key in `copy.ts` is `reason.<code>`. Each failure states the condition, then
 | `runStatus.rejected` | Rejected |
 | `runStatus.awaiting_review` | Needs examination |
 | `runStatus.awaiting_submit` | Ready to submit |
-| `runStatus.submitted` | Submitted |
 | `runStatus.done` | Done |
 | `trace.tokens.value` | {input} in, {output} out |
 | `trace.back` | Back to the form |

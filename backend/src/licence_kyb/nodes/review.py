@@ -42,7 +42,8 @@ CORRECTABLE = frozenset(
         "chamber_number",
     }
 )
-DATE_FIELDS = frozenset({"issue_date", "expiry_date"})
+# The date fields of the KYB form (a reviewer's value is normalised to ISO).
+FORM_DATE_FIELDS = frozenset({"issue_date", "expiry_date"})
 RETRYABLE = frozenset({"processing_failed", "budget_exhausted"})
 
 RunRules = Callable[[TradeLicenceExtraction], list[RuleResult]]
@@ -111,7 +112,9 @@ def corrected_extraction(read: dict[str, Any], decisions: dict[str, Any]) -> dic
         if d["action"] != "correct":
             continue
         source = SOURCES[target]
-        value = date.fromisoformat(d["value"]).isoformat() if target in DATE_FIELDS else d["value"]
+        value = (
+            date.fromisoformat(d["value"]).isoformat() if target in FORM_DATE_FIELDS else d["value"]
+        )
         read_field = read.get(source, {})
         updated[source] = {
             "value": value,
@@ -204,7 +207,7 @@ def check_review_target(state: dict[str, Any], d: dict[str, Any]) -> None:
     name = d.get("field")
     if name not in SOURCES or (d["action"] == "correct" and name not in CORRECTABLE):
         raise ActionRefused("blocking_rule_failed", field=name)
-    if d["action"] == "correct" and name in DATE_FIELDS:
+    if d["action"] == "correct" and name in FORM_DATE_FIELDS:
         try:
             date.fromisoformat(d.get("value") or "")
         except ValueError:

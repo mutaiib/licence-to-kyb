@@ -88,7 +88,6 @@ class ModelRequest:
     system: str
     messages: list[dict[str, Any]]
     output_model: type[BaseModel] | None = None
-    # Used from User Story 4: the resolver's read-only tools.
     tools: list[dict[str, Any]] = field(default_factory=list)
     cache_system: bool = True
 

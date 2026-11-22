@@ -31,7 +31,6 @@ class RunState(TypedDict, total=False):
     resolver_done: bool
     """No further round: a limit was reached, or the last round accepted nothing."""
     # confidence / gate / form
-    # Used from User Story 3 (confidence and routing).
     confidence: dict[str, dict[str, Any]]
     decision: dict[str, Any]
     form: dict[str, Any]

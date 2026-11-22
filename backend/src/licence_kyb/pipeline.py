@@ -1,8 +1,9 @@
 """The processing pipeline for one run (architecture §4; tasks T051).
 
-Graph:
-    preprocess → route → extract → validate → confidence → map_form → gate → persist
-        → wait_for_reviewer → apply_action → (wait_for_reviewer | retry | END)
+Graph (diagram in docs/architecture.md, "As built"):
+    preprocess → route → extract → validate ⇄ resolve (at most 2 rounds) → confidence
+        → map_form → gate → persist → wait_for_reviewer → apply_action
+        → (wait_for_reviewer | retry from preprocess, route or extract | END)
 
 - ``route`` goes straight to ``gate`` when the file is not a trade licence.
 - When extraction fails, ``map_form`` builds an empty form, so the reviewer can enter values.
@@ -201,11 +202,12 @@ class Pipeline:
         snapshot = self.graph.get_state(thread_config(run_id))
         return dict(snapshot.values) if snapshot and snapshot.values else {}
 
-    def check(self, run_id: str, action: dict[str, Any]) -> None:
-        """Refuse an invalid action with ``review.ActionRefused``. Changes nothing."""
+    def check(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
+        """Refuse an invalid action with ``review.ActionRefused``. Changes nothing. Returns the
+        run state that was checked."""
         state = self.state(run_id)
         if action["action_id"] in state.get("applied_ids", []):
-            return  # a repeated action is answered, not refused
+            return state  # a repeated action is answered, not refused
         kind = action["kind"]
         if kind == "review":
             review.apply_review(state, action, self._rules_for(state))
@@ -216,12 +218,13 @@ class Pipeline:
             review.check_reopen(state)
         elif kind == "retry":
             review.check_retry(state)
+        return state
 
     def act(self, run_id: str, action: dict[str, Any]) -> dict[str, Any]:
         """Check one reviewer action, then resume the paused run with it."""
-        self.check(run_id, action)
-        if action["action_id"] in self.state(run_id).get("applied_ids", []):
-            return self.state(run_id)
+        state = self.check(run_id, action)
+        if action["action_id"] in state.get("applied_ids", []):
+            return state  # a repeated click: nothing new to do
         if action["kind"] == "retry":
             self.db.update_run(run_id, status="processing", deadline_at=self.ops.new_deadline())
         result: dict[str, Any] = self.graph.invoke(Command(resume=action), thread_config(run_id))
@@ -495,8 +498,10 @@ class Pipeline:
             applicant_name=state["applicant_name"],
             applicant_threshold=self.deps.applicant_threshold,
         )
-        # An uncorroborated "expired" becomes "expiry_uncertain" here, once, so the resolver,
-        # the gate, the review page and the review re-check all see the same result.
+        # An uncorroborated "expired" becomes "expiry_uncertain" here, so the resolver, the
+        # gate, the review page and the review re-check all see the same result. The gate
+        # applies the same change again so it is correct on its own; a second pass changes
+        # nothing.
         return with_expiry_corroboration(run_rules(ctx), state.get("agreement", {}))
 
     def _map_form(self, state: RunState) -> dict[str, Any]:

@@ -274,7 +274,6 @@ export const copy = {
   'runStatus.rejected': 'Rejected',
   'runStatus.awaiting_review': 'Needs examination',
   'runStatus.awaiting_submit': 'Ready to submit',
-  'runStatus.submitted': 'Submitted',
   'runStatus.done': 'Done',
   'trace.tokens.value': '{input} in, {output} out',
   'trace.back': 'Back to the form',

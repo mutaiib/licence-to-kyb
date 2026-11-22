@@ -458,7 +458,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "submitted" | "done";
+            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "done";
         };
         /** RunList */
         RunList: {
@@ -483,7 +483,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "submitted" | "done";
+            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "done";
         };
         /** RunView */
         RunView: {
@@ -511,7 +511,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "submitted" | "done";
+            status: "received" | "processing" | "rejected" | "awaiting_review" | "awaiting_submit" | "done";
             /** Steps */
             steps: components["schemas"]["StepView"][];
         };
