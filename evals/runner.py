@@ -1,19 +1,16 @@
-"""Minimal case runner (task T033): runs a pipeline headless over labelled cases.
+"""Labelled cases and a runner that gives each case a clean directory (T033, US6).
 
-Each case runs in a fresh working directory (clean database and checkpoints) with the fixed
-clock. A simulated reviewer answers every pause from the case's ground truth; its answers
-count as review work, not as system errors. US6 adds graders and reports on top of this.
+The eval (``evals/run.py``) grades each case on its state at the first pause.
 """
 
 from __future__ import annotations
 
 import json
-import shutil
 import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -53,26 +50,19 @@ class Case:
         )
 
 
-class CasePipeline(Protocol):
-    """What the runner needs from a pipeline: start a case and resume it after a pause.
-
-    This is not ``licence_kyb.pipeline.Pipeline``, which has no ``start`` or ``resume``.
-    """
-
-    def start(self, case: Case) -> dict[str, Any]: ...
-
-    def resume(self, case: Case, payload: dict[str, Any]) -> dict[str, Any]: ...
-
-
-Reviewer = Callable[[dict[str, Any], Case], dict[str, Any]]
-
-
-@dataclass
-class CaseResult:
-    case: Case
-    final_state: dict[str, Any]
-    resumes: int
-    error: str | None = None
+def run_each(
+    cases: list[Case], run_one: Callable[[Case, Path], dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Run each case in its own new, empty directory (a clean database and checkpoints).
+    A case that fails is recorded with its error type; the other cases still run."""
+    results: dict[str, dict[str, Any]] = {}
+    for case in cases:
+        with tempfile.TemporaryDirectory(prefix=f"{case.case_id}-") as workdir:
+            try:
+                results[case.case_id] = run_one(case, Path(workdir))
+            except Exception as exc:
+                results[case.case_id] = {"error": type(exc).__name__}
+    return results
 
 
 def load_cases(
@@ -87,40 +77,3 @@ def load_cases(
         for c in cases
         if (split is None or c.split == split) and (groups is None or c.group in groups)
     ]
-
-
-class CaseRunner:
-    def __init__(
-        self,
-        pipeline_factory: Callable[[Path], CasePipeline],
-        reviewer: Reviewer,
-        *,
-        workroot: Path | None = None,
-        max_resumes: int = 10,
-    ) -> None:
-        self.pipeline_factory = pipeline_factory
-        self.reviewer = reviewer
-        self.workroot = workroot
-        self.max_resumes = max_resumes
-
-    def run(self, cases: list[Case]) -> list[CaseResult]:
-        return [self._run_one(case) for case in cases]
-
-    def _run_one(self, case: Case) -> CaseResult:
-        workdir = Path(tempfile.mkdtemp(prefix=f"{case.case_id}-", dir=self.workroot))
-        try:
-            pipeline = self.pipeline_factory(workdir)
-            state = pipeline.start(case)
-            resumes = 0
-            while "__interrupt__" in state:
-                if resumes >= self.max_resumes:
-                    return CaseResult(case, state, resumes, error="resume_limit")
-                state = pipeline.resume(case, self.reviewer(state["__interrupt__"], case))
-                resumes += 1
-            return CaseResult(case, state, resumes)
-        except Exception as exc:
-            return CaseResult(case, {}, 0, error=type(exc).__name__)
-        finally:
-            # A caller-given workroot is kept for inspection; a temporary one is removed.
-            if self.workroot is None:
-                shutil.rmtree(workdir, ignore_errors=True)

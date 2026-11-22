@@ -39,7 +39,7 @@ eval-precision:    ## paid, release branches only
 	$(BACKEND) python -m evals.run --precision
 
 approve-capture:
-	$(BACKEND) python scripts/make_twin.py --approve $(ID)
+	PYTHONPATH=$(CURDIR) $(BACKEND) python scripts/make_twin.py $(ID)
 
 measure:           ## paid: throughput probe (task T034)
 	$(BACKEND) python scripts/measure_throughput.py --yes-spend

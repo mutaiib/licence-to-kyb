@@ -252,6 +252,21 @@ class Database:
         verified = None if row["verified"] is None else bool(row["verified"])
         return SubmissionRow(row["submission_id"], row["run_id"], row["form_version"], verified)
 
+    def capture(self, capture_key: str) -> dict[str, Any] | None:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM captured_corrections WHERE capture_key = ?", (capture_key,)
+            ).fetchone()
+        return dict(row) if row else None
+
+    def set_capture_status(self, capture_key: str, status: str) -> None:
+        """``approved_for_eval`` or ``discarded`` (a maintainer's decision, FR-033)."""
+        with self.connect() as conn:
+            conn.execute(
+                "UPDATE captured_corrections SET status = ? WHERE capture_key = ?",
+                (status, capture_key),
+            )
+
     def day_summary(self, day: str) -> dict[str, Any]:
         """Counts for runs created on ``day`` (YYYY-MM-DD, UTC) that finished processing."""
         with self.connect() as conn:
