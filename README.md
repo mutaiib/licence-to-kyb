@@ -117,6 +117,7 @@ Measured numbers only. A target that is missed is reported as missed.
 
 | Document | Content |
 |---|---|
+| [Walkthrough](docs/walkthrough.md) | One licence through the real system, step by step, with the page, the OCR words, every check and the audit trail |
 | [Status](docs/status.md) | What is complete, what is pending and why, and the known limits |
 | [Handbook](docs/handbook/) | One page per concept, each with self-check questions; written to revisit the ideas |
 | [Glossary](docs/glossary.md) | Every term in these docs, with where it lives in the code |
