@@ -1,5 +1,5 @@
 # Common tasks. Run from the repository root.
-.PHONY: setup data lint test types eval eval-live eval-compare approve-capture measure demo dev serve backup local-model mutation
+.PHONY: setup data lint test types eval eval-live eval-compare approve-capture measure demo dev serve walkthrough backup local-model mutation
 
 BACKEND := uv --project backend run
 export TESSDATA_PREFIX := $(CURDIR)/var/tessdata
@@ -49,6 +49,9 @@ demo:
 
 dev:               ## demo backend: answers from the case labels, no model, no key; prints the password on first run
 	scripts/dev_demo.sh
+
+walkthrough:       ## trace one licence through the real pipeline; writes docs/walkthrough.md
+	$(BACKEND) python scripts/walkthrough.py
 
 serve:             ## backend with a real model: MODEL_PROFILE (anthropic or local) and backend/.env
 	cd backend && uv run uvicorn licence_kyb.api.main:app --host 127.0.0.1 --port 8000

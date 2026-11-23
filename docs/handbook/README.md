@@ -49,6 +49,7 @@ This handbook collects the ideas behind this repository, one topic per page. Eac
 |---|---|
 | [Agent design framework](../agent-design-framework.md) | the method: 13 steps (0 to 12) to design any agent system |
 | [Design worksheet](../design-worksheet.md) | the method applied to this project, in nine rows |
+| [Walkthrough](../walkthrough.md) | one licence through the real system, with images and real outputs |
 | [Architecture](../architecture.md) | how this system works, end to end |
 | [Glossary](../glossary.md) | every term, with where it lives in the code |
 | [Reference](../reference.md) | API, configuration, rules, reason codes |
